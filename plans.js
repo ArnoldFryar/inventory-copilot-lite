@@ -95,14 +95,14 @@ async function getPlanForUser(userId, supabaseAdmin) {
   try {
     const { data, error } = await supabaseAdmin
       .from('user_subscriptions')
-      .select('plan_key, stripe_status')
+      .select('plan, subscription_status')
       .eq('user_id', userId)
       .single();
 
     if (error || !data) return PLANS.free;
 
     // Only grant Pro when the subscription is in an active state
-    if (data.plan_key === 'pro' && ACTIVE_STATUSES.has(data.stripe_status)) {
+    if (data.plan === 'pro' && data.subscription_status === 'active') {
       return PLANS.pro;
     }
     return PLANS.free;

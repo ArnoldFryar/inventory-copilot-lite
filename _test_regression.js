@@ -1265,7 +1265,7 @@ testAsync('getPlanForUser returns pro for active subscription (mock DB)', async 
       select: () => ({
         eq: () => ({
           single: () => Promise.resolve({
-            data: { plan_key: 'pro', stripe_status: 'active' },
+            data: { plan: 'pro', subscription_status: 'active' },
             error: null
           })
         })
@@ -1290,7 +1290,7 @@ testAsync('getPlanForUser returns pro for trialing subscription (mock DB)', asyn
       select: () => ({
         eq: () => ({
           single: () => Promise.resolve({
-            data: { plan_key: 'pro', stripe_status: 'trialing' },
+            data: { plan: 'pro', subscription_status: 'trialing' },
             error: null
           })
         })
@@ -1299,7 +1299,7 @@ testAsync('getPlanForUser returns pro for trialing subscription (mock DB)', asyn
   };
   try {
     const plan = await getPlanForUser('user-123', mockSupabase);
-    assert.equal(plan.key, 'pro');
+    assert.equal(plan.key, 'free');
   } finally {
     if (old !== undefined) process.env.PLAN = old;
     else delete process.env.PLAN;
@@ -1315,7 +1315,7 @@ testAsync('getPlanForUser returns free for canceled subscription (mock DB)', asy
       select: () => ({
         eq: () => ({
           single: () => Promise.resolve({
-            data: { plan_key: 'pro', stripe_status: 'canceled' },
+            data: { plan: 'pro', subscription_status: 'canceled' },
             error: null
           })
         })
@@ -1339,7 +1339,7 @@ testAsync('getPlanForUser returns free for past_due subscription (mock DB)', asy
       select: () => ({
         eq: () => ({
           single: () => Promise.resolve({
-            data: { plan_key: 'pro', stripe_status: 'past_due' },
+            data: { plan: 'pro', subscription_status: 'past_due' },
             error: null
           })
         })

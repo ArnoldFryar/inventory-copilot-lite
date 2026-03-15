@@ -43,16 +43,19 @@ CREATE INDEX IF NOT EXISTS idx_runs_user_uploaded
 ALTER TABLE analysis_runs ENABLE ROW LEVEL SECURITY;
 
 -- Allow authenticated users to SELECT their own rows only.
+DROP POLICY IF EXISTS "Users can read own runs" ON analysis_runs;
 CREATE POLICY "Users can read own runs"
   ON analysis_runs FOR SELECT
   USING (auth.uid() = user_id);
 
 -- Allow authenticated users to INSERT rows with their own user_id.
+DROP POLICY IF EXISTS "Users can insert own runs" ON analysis_runs;
 CREATE POLICY "Users can insert own runs"
   ON analysis_runs FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
 -- Allow authenticated users to DELETE their own rows only.
+DROP POLICY IF EXISTS "Users can delete own runs" ON analysis_runs;
 CREATE POLICY "Users can delete own runs"
   ON analysis_runs FOR DELETE
   USING (auth.uid() = user_id);
@@ -76,19 +79,33 @@ CREATE POLICY "Users can delete own runs"
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS user_subscriptions (
-  user_id                uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  stripe_customer_id     text UNIQUE,
+  id                     uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id                uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  stripe_customer_id     text        UNIQUE,
   stripe_subscription_id text,
-  stripe_price_id        text,
-  plan_key               text NOT NULL DEFAULT 'free',
-  stripe_status          text NOT NULL DEFAULT 'none',
+  subscription_status    text        NOT NULL DEFAULT 'inactive',
+  plan                   text        NOT NULL DEFAULT 'free',
+  current_period_end     timestamptz,
+  created_at             timestamptz NOT NULL DEFAULT now(),
   updated_at             timestamptz NOT NULL DEFAULT now()
 );
 
--- RLS — each user can read their own subscription row.
--- The service-role key (used by the server) bypasses RLS.
+-- Fast lookup by user (most queries filter on user_id).
+CREATE INDEX IF NOT EXISTS idx_user_subscriptions_user_id
+  ON user_subscriptions (user_id);
+
+-- Unique index on user_id so UPSERT (onConflict: 'user_id') works correctly.
+-- One subscription row per Supabase user.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_user_subscriptions_user_id_uniq
+  ON user_subscriptions (user_id);
+
+-- ── Row-Level Security ──────────────────────────────────────────────────────
+-- Enable RLS so the anon key cannot access rows directly.
+-- The service-role key (used by the server) bypasses RLS automatically.
 ALTER TABLE user_subscriptions ENABLE ROW LEVEL SECURITY;
 
+-- Allow authenticated users to SELECT their own subscription row only.
+DROP POLICY IF EXISTS "Users can read own subscription" ON user_subscriptions;
 CREATE POLICY "Users can read own subscription"
   ON user_subscriptions FOR SELECT
   USING (auth.uid() = user_id);

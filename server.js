@@ -93,8 +93,9 @@ app.use((_req, res, next) => {
 // ---------------------------------------------------------------------------
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Stripe subscription event types we care about (module-level constant)
+// Stripe event types handled by the webhook (module-level constant)
 const SUBSCRIPTION_EVENTS = new Set([
+  'checkout.session.completed',
   'customer.subscription.created',
   'customer.subscription.updated',
   'customer.subscription.deleted'
@@ -128,37 +129,69 @@ app.post('/api/billing/webhook',
     // Process subscription lifecycle events
     if (SUBSCRIPTION_EVENTS.has(event.type)) {
       try {
-        const sub        = event.data.object;
-        const customerId = sub.customer;
-        const status     = sub.status;            // active, canceled, past_due, etc.
-        const priceId    = sub.items?.data?.[0]?.price?.id || '';
+        const obj = event.data.object;
 
-        // Map price to plan key
-        const planKey = (priceId === STRIPE_CONFIG.proPriceId) ? 'pro' : 'free';
+        if (event.type === 'checkout.session.completed') {
+          // Session object shape: { customer, subscription, metadata }
+          const userId     = obj.metadata?.user_id || obj.metadata?.supabase_user_id;
+          const customerId = obj.customer;
+          const subId      = obj.subscription;
 
-        // Resolve Supabase user_id from stripe_customer_id
-        const { data: subRow } = await supabaseAdmin
-          .from('user_subscriptions')
-          .select('user_id')
-          .eq('stripe_customer_id', customerId)
-          .single();
+          if (!userId) {
+            console.warn('[Stripe webhook] checkout.session.completed: no user_id in session metadata');
+          } else {
+            const { error } = await supabaseAdmin
+              .from('user_subscriptions')
+              .upsert({
+                user_id:                userId,
+                stripe_customer_id:     customerId,
+                stripe_subscription_id: subId,
+                subscription_status:    'active',
+                plan:                   'pro',
+                updated_at:             new Date().toISOString()
+              }, { onConflict: 'user_id' });
 
-        if (subRow) {
-          const { error } = await supabaseAdmin
-            .from('user_subscriptions')
-            .update({
-              plan_key:            planKey,
-              stripe_status:       status,
-              stripe_subscription_id: sub.id,
-              stripe_price_id:     priceId,
-              updated_at:          new Date().toISOString()
-            })
-            .eq('user_id', subRow.user_id);
-
-          if (error) console.error('[Stripe webhook] update error:', error.message);
-          else       console.log(`[Stripe webhook] ${event.type}: user ${subRow.user_id} → ${planKey}/${status}`);
+            if (error) console.error('[Stripe webhook] checkout upsert error:', error.message);
+            else       console.log(`[Stripe webhook] checkout.session.completed: user ${userId} → pro/active`);
+          }
         } else {
-          console.warn(`[Stripe webhook] No user found for customer ${customerId}`);
+          // customer.subscription.created / .updated / .deleted
+          const customerId = obj.customer;
+          const priceId    = obj.items?.data?.[0]?.price?.id || '';
+          const plan       = (priceId === STRIPE_CONFIG.proPriceId) ? 'pro' : 'free';
+          const periodEnd  = obj.current_period_end
+            ? new Date(obj.current_period_end * 1000).toISOString()
+            : null;
+
+          // Prefer user_id from subscription metadata; fall back to DB lookup by customer
+          let userId = obj.metadata?.user_id || obj.metadata?.supabase_user_id;
+          if (!userId) {
+            const { data: existing } = await supabaseAdmin
+              .from('user_subscriptions')
+              .select('user_id')
+              .eq('stripe_customer_id', customerId)
+              .single();
+            userId = existing?.user_id;
+          }
+
+          if (!userId) {
+            console.warn(`[Stripe webhook] ${event.type}: no user found for customer ${customerId}`);
+          } else {
+            const { error } = await supabaseAdmin
+              .from('user_subscriptions')
+              .upsert({
+                user_id:                userId,
+                stripe_customer_id:     customerId,
+                stripe_subscription_id: obj.id,
+                subscription_status:    obj.status,
+                plan,
+                current_period_end:     periodEnd,
+                updated_at:             new Date().toISOString()
+              }, { onConflict: 'user_id' });
+
+            if (error) console.error('[Stripe webhook] upsert error:', error.message);
+            else       console.log(`[Stripe webhook] ${event.type}: user ${userId} → ${plan}/${obj.status}`);
+          }
         }
       } catch (dbErr) {
         console.error('[Stripe webhook] DB error:', dbErr.message);
@@ -265,21 +298,22 @@ app.post('/api/billing/checkout', requireAuth, async (req, res) => {
       await supabaseAdmin
         .from('user_subscriptions')
         .upsert({
-          user_id:            userId,
-          stripe_customer_id: customerId,
-          plan_key:           'free',
-          stripe_status:      'none',
-          updated_at:         new Date().toISOString()
+          user_id:             userId,
+          stripe_customer_id:  customerId,
+          subscription_status: 'inactive',
+          plan:                'free',
+          updated_at:          new Date().toISOString()
         }, { onConflict: 'user_id' });
     }
 
     const session = await stripe.checkout.sessions.create({
-      mode:                 'subscription',
-      customer:             customerId,
-      line_items:           [{ price: STRIPE_CONFIG.proPriceId, quantity: 1 }],
-      success_url:          `${returnUrl}?billing=success`,
-      cancel_url:           `${returnUrl}?billing=cancelled`,
-      subscription_data:    { metadata: { supabase_user_id: userId } }
+      mode:              'subscription',
+      customer:          customerId,
+      line_items:        [{ price: STRIPE_CONFIG.proPriceId, quantity: 1 }],
+      success_url:       `${returnUrl}?billing=success`,
+      cancel_url:        `${returnUrl}?billing=cancelled`,
+      metadata:          { user_id: userId, plan: 'pro' },
+      subscription_data: { metadata: { user_id: userId, plan: 'pro' } }
     });
 
     res.json({ url: session.url });
@@ -325,6 +359,16 @@ app.post('/api/billing/portal', requireAuth, async (req, res) => {
   }
 });
 
+// Aliases — used by the billing dashboard frontend
+app.post('/api/billing/create-checkout-session', requireAuth, async (req, res, next) => {
+  req.url = '/api/billing/checkout';
+  app.handle(req, res, next);
+});
+app.post('/api/billing/create-portal-session', requireAuth, async (req, res, next) => {
+  req.url = '/api/billing/portal';
+  app.handle(req, res, next);
+});
+
 // ---------------------------------------------------------------------------
 // GET /api/plan — returns the active plan and feature entitlements.
 // When the user is authenticated, resolves their per-user subscription
@@ -359,6 +403,38 @@ app.get('/api/plan', async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
+// GET /api/user/plan — returns the authenticated user's plan, subscription
+// status, and renewal date.  Used by the billing dashboard.
+// Response: { plan, subscriptionStatus, currentPeriodEnd }
+// ---------------------------------------------------------------------------
+app.get('/api/user/plan', requireAuth, async (req, res) => {
+  if (!supabaseAdmin) {
+    return res.json({ plan: 'free', subscriptionStatus: 'inactive', currentPeriodEnd: null });
+  }
+  try {
+    const { data } = await supabaseAdmin
+      .from('user_subscriptions')
+      .select('plan, subscription_status, current_period_end')
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (!data) {
+      return res.json({ plan: 'free', subscriptionStatus: 'inactive', currentPeriodEnd: null });
+    }
+
+    const plan = (data.subscription_status === 'active' && data.plan === 'pro') ? 'pro' : 'free';
+    res.json({
+      plan,
+      subscriptionStatus: data.subscription_status || 'inactive',
+      currentPeriodEnd:   data.current_period_end || null
+    });
+  } catch (err) {
+    console.error('[GET /api/user/plan]', err.message);
+    res.status(500).json({ error: 'Could not resolve plan.' });
+  }
+});
+
+// ---------------------------------------------------------------------------
 // POST /api/event — receives client-side telemetry events.
 // Privacy: only enumerated event names and aggregate numeric props are logged.
 // No user identifiers, file contents, or IP addresses are stored.
@@ -388,6 +464,24 @@ app.get('/sample-data', (_req, res) => {
       res.status(500).json({ error: 'Sample file not available.' });
     }
   });
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/demo-analysis — runs the triage engine on a bundled sample dataset.
+// No file upload required; lets visitors try the tool instantly.
+// ---------------------------------------------------------------------------
+const demoRows = require('./server/demo/sampleInventory.json');
+
+app.get('/api/demo-analysis', (_req, res) => {
+  try {
+    const result = analyzeRows(demoRows);
+    res.json(result);
+  } catch (err) {
+    console.error('[demo-analysis] error:', err);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Demo analysis failed.' });
+    }
+  }
 });
 
 // ---------------------------------------------------------------------------

@@ -36,8 +36,21 @@
   const submitBtn       = document.getElementById('submitBtn');
   const submitLabel     = document.getElementById('submitLabel');
   const loadSampleBtn   = document.getElementById('loadSampleBtn');
+  const liveDemoBtn     = document.getElementById('liveDemoBtn');
+  const demoBadge       = document.getElementById('demoBadge');
   const errorBanner     = document.getElementById('errorBanner');
   const warningBanner   = document.getElementById('warningBanner');
+
+  // Executive summary
+  const execSummarySection = document.getElementById('execSummarySection');
+  const execScoreRing      = document.getElementById('execScoreRing');
+  const execScoreValue     = document.getElementById('execScoreValue');
+  const execScoreLabel     = document.getElementById('execScoreLabel');
+  const execUrgentCount    = document.getElementById('execUrgentCount');
+  const execExcessCount    = document.getElementById('execExcessCount');
+  const execTopRisk        = document.getElementById('execTopRisk');
+  const execTopOpp         = document.getElementById('execTopOpp');
+  const execNarrative      = document.getElementById('execNarrative');
 
   // Post-upload action bar
   const actionBar          = document.getElementById('actionBar');
@@ -161,6 +174,7 @@
     event.preventDefault();
     hideError();
     hideResults();
+    if (demoBadge) demoBadge.classList.add('hidden');
 
     const file = fileInput.files[0];
     if (!file) {
@@ -301,6 +315,67 @@
       track('sample_csv_downloaded');
     });
   }
+
+  // ── Live demo ─────────────────────────────────────────────────────────────
+  // Fetches pre-analyzed sample data from /api/demo-analysis and renders it
+  // directly — no file upload round-trip required.
+  if (liveDemoBtn) {
+    liveDemoBtn.addEventListener('click', async () => {
+      if (inFlight) {
+        showError('An upload is already in progress. Please wait for it to complete.');
+        return;
+      }
+      inFlight = true;
+      liveDemoBtn.disabled    = true;
+      liveDemoBtn.textContent = 'Loading\u2026';
+      hideError();
+      hideResults();
+      if (demoBadge) demoBadge.classList.add('hidden');
+
+      try {
+        const response = await fetch('/api/demo-analysis');
+        if (!response.ok) throw new Error('Could not load the demo analysis.');
+
+        const data = await response.json();
+        if (demoBadge) demoBadge.classList.remove('hidden');
+        track('demo_loaded');
+        renderAll(data);
+      } catch (err) {
+        showError(err.message || 'Failed to load demo analysis.');
+      } finally {
+        inFlight = false;
+        liveDemoBtn.disabled    = false;
+        liveDemoBtn.textContent = '\u25B6 Try Live Demo';
+      }
+    });
+  }
+
+  // ── Executive summary renderer ─────────────────────────────────────────
+
+  function renderExecSummary(data) {
+    if (!execSummarySection || typeof buildExecutiveSummary !== 'function') return;
+
+    var brief = buildExecutiveSummary(data);
+
+    // Score ring
+    execScoreRing.className = 'exec-score-ring ' + brief.colorClass;
+    execScoreValue.textContent = brief.score;
+    execScoreLabel.textContent = brief.label;
+
+    // KPI counts
+    execUrgentCount.textContent = brief.urgent;
+    execExcessCount.textContent = brief.excess;
+
+    // Top Risk
+    execTopRisk.textContent = brief.topRisk ? brief.topRisk.detail : 'None identified';
+
+    // Top Opportunity
+    execTopOpp.textContent = brief.topOpp ? brief.topOpp.detail : 'None identified';
+
+    // Narrative
+    execNarrative.textContent = brief.narrative;
+  }
+
   // ── Main render ───────────────────────────────────────────────────────────
 
   /**
@@ -332,6 +407,7 @@
       encoding:             data.encodingDetected || 'utf8'
     });
 
+    renderExecSummary(data);
     renderSummary(data.summary);
     renderLeadershipSummary(data.summary, data.topPriority, data.analyzedAt, data.thresholds, data.columnAliases);
     renderPriorityPanel(data.topPriority);
@@ -450,6 +526,7 @@
       printFooter.appendChild(leftSpan);
       printFooter.appendChild(rightSpan);
     }
+    if (execSummarySection) execSummarySection.classList.remove('hidden');
     summarySection.classList.remove('hidden');
     resultsSection.classList.remove('hidden');
 
@@ -744,6 +821,7 @@
   function hideResults() {
     allResults   = [];
     lastResponse = null;
+    if (execSummarySection) execSummarySection.classList.add('hidden');
     summarySection.classList.add('hidden');
     leadershipSection.classList.add('hidden');
     prioritySection.classList.add('hidden');

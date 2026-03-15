@@ -843,6 +843,59 @@ tbody tr.status-invalid:hover    { background: var(--brand-100)  !important; }
 
 .link-btn:hover { color: var(--brand-700); }
 
+/* ── Hero headline ────────────────────────────────────────── */
+.hero-headline {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.hero-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink-900);
+  margin: 0 0 6px;
+}
+.hero-subtext {
+  font-size: 14px;
+  color: var(--ink-500);
+  margin: 0;
+}
+
+/* ── Demo button ──────────────────────────────────────────── */
+.demo-btn {
+  display: inline-block;
+  background: var(--brand-600);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: background 0.15s;
+  vertical-align: middle;
+}
+.demo-btn:hover { background: var(--brand-700); }
+.demo-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Demo badge ───────────────────────────────────────────── */
+.demo-badge {
+  background: var(--brand-50);
+  border: 1px solid var(--brand-100);
+  border-left: 4px solid var(--brand-600);
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--ink-700);
+  margin-bottom: 12px;
+}
+.demo-badge strong {
+  color: var(--brand-700);
+}
+
 /* ── File requirements disclosure ─────────────────────────── */
 details.file-requirements {
   margin-bottom: 16px;
@@ -1013,6 +1066,128 @@ details[open].faq-block > summary::before {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* ── Executive Summary section ─────────────────────────────── */
+.exec-summary-section {
+  border-left: 4px solid var(--brand-600);
+}
+
+.section-label-exec {
+  background: var(--brand-50);
+  color: var(--brand-700);
+}
+
+.exec-summary-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px 24px;
+  align-items: start;
+  margin-bottom: 20px;
+}
+
+/* Health Score ring */
+.exec-score-ring {
+  grid-row: 1 / 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 5px solid var(--border-2);
+  background: var(--surface);
+}
+.exec-score-ring.score-strong  { border-color: var(--green-400); }
+.exec-score-ring.score-fair    { border-color: var(--brand-600); }
+.exec-score-ring.score-at-risk { border-color: var(--amber-400); }
+.exec-score-ring.score-critical{ border-color: var(--red-500); }
+
+.exec-score-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink-900);
+}
+.exec-score-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ink-500);
+  margin-top: 4px;
+}
+
+/* KPI row */
+.exec-kpis {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.exec-kpi {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  min-width: 110px;
+}
+.exec-kpi-value {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.exec-kpi-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-500);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.exec-kpi-urgent .exec-kpi-value { color: var(--red-600); }
+.exec-kpi-excess .exec-kpi-value { color: var(--amber-600); }
+
+/* Callouts — top risk / top opportunity */
+.exec-callout {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.exec-callout-risk {
+  background: var(--red-50);
+  border-color: var(--red-100);
+}
+.exec-callout-opp {
+  background: var(--green-50);
+  border-color: var(--green-100);
+}
+.exec-callout-heading {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--ink-500);
+}
+.exec-callout-risk .exec-callout-heading { color: var(--red-600); }
+.exec-callout-opp  .exec-callout-heading { color: var(--green-700); }
+
+.exec-callout-detail {
+  font-size: 13px;
+  color: var(--ink-700);
+  line-height: 1.5;
+}
+
+/* Narrative paragraph */
+.exec-narrative {
+  font-size: 14px;
+  line-height: 1.85;
+  color: var(--ink-700);
+  margin: 0;
 }
 
 /* ── Leadership summary section ───────────────────────────── */
@@ -1678,6 +1853,20 @@ details[open].faq-block > summary::before {
 .ai-helper-meta-tag {
   font-size: 11px;
   color: var(--ink-400);
+}
+
+/* ── Executive Summary responsive ──────────────────────────── */
+@media (max-width: 600px) {
+  .exec-summary-grid {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  .exec-score-ring {
+    grid-row: auto;
+  }
+  .exec-kpis {
+    justify-content: center;
+  }
 }
 
 /* ── Print / PDF styles ───────────────────────────────────── */

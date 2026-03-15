@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpsCopilot-Lite &mdash; Billing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="billing.css" />
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="app-header-inner">
+      <div class="app-header-text">
+        <h1>
+          <a href="/" class="header-home-link">OpsCopilot&#8209;Lite</a>
+          <span class="header-badge">Billing</span>
+        </h1>
+        <p class="subtitle">Manage your subscription and plan.</p>
+      </div>
+      <div id="accountMenu" class="account-menu hidden">
+        <span id="accountEmail" class="account-email"></span>
+        <button id="signOutBtn" class="link-btn" type="button">Sign out</button>
+      </div>
+      <button id="signInBtn" class="sign-in-btn hidden" type="button">Sign in</button>
+    </div>
+  </header>
+
+  <main class="billing-main">
+
+    <!-- Loading state -->
+    <div id="billingLoading" class="billing-loading">
+      <div class="billing-spinner"></div>
+      <p>Loading billing information&hellip;</p>
+    </div>
+
+    <!-- Error state -->
+    <div id="billingError" class="billing-banner billing-banner--error hidden">
+      <span id="billingErrorMsg"></span>
+    </div>
+
+    <!-- Success banner (e.g. after returning from Stripe) -->
+    <div id="billingSuccess" class="billing-banner billing-banner--success hidden">
+      <span id="billingSuccessMsg"></span>
+    </div>
+
+    <!-- Main content — hidden until loaded -->
+    <div id="billingContent" class="billing-content hidden">
+
+      <!-- Section A — Current Plan Card -->
+      <section class="billing-card billing-plan-card">
+        <div class="billing-plan-header">
+          <div>
+            <span id="planLabel" class="billing-plan-label">Free</span>
+            <span id="statusBadge" class="billing-status-badge"></span>
+          </div>
+        </div>
+        <p id="planMessage" class="billing-plan-message"></p>
+        <p id="renewalInfo" class="billing-renewal hidden"></p>
+      </section>
+
+      <!-- Section B — Action Buttons -->
+      <section class="billing-card billing-actions">
+        <button id="upgradeBtn" class="billing-btn billing-btn--primary hidden" type="button">
+          Upgrade to Pro
+        </button>
+        <button id="manageBtn" class="billing-btn billing-btn--secondary hidden" type="button">
+          Manage Subscription
+        </button>
+        <p id="actionSpinner" class="billing-action-spinner hidden">Redirecting&hellip;</p>
+      </section>
+
+      <!-- Section C — Plan Comparison -->
+      <section class="billing-card billing-comparison">
+        <h2>Compare Plans</h2>
+        <div class="billing-plans-grid">
+          <div class="billing-plan-col billing-plan-col--free">
+            <h3>Free</h3>
+            <ul>
+              <li>Basic inventory triage</li>
+              <li>Limited saved runs</li>
+              <li>Standard CSV analysis</li>
+            </ul>
+          </div>
+          <div class="billing-plan-col billing-plan-col--pro">
+            <h3>Pro</h3>
+            <ul>
+              <li>Unlimited saved analyses</li>
+              <li>Export reports</li>
+              <li>AI-powered insights</li>
+              <li>Future advanced features</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <a href="/">Back to Inventory Triage</a>
+  </footer>
+
+  <!-- Auth module (shared with main app) -->
+  <script src="auth.js"></script>
+  <script src="billing.js"></script>
+
+</body>
+</html>

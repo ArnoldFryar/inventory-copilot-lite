@@ -48,6 +48,10 @@
 
     <!-- ── Upload form ──────────────────────────────────────────────────── -->
     <section class="upload-section card">
+      <div class="hero-headline">
+        <h2 class="hero-title">Analyze your inventory risk in 30 seconds</h2>
+        <p class="hero-subtext">Upload a CSV from your ERP or try the live demo &mdash; no signup required.</p>
+      </div>
       <p class="section-label section-label-upload">Step 1</p>
       <h2>Upload your inventory CSV</h2>
       <p class="context-block">
@@ -98,8 +102,11 @@
       </form>
       <p class="demo-hint">
         No file yet?
-        <button id="loadSampleBtn" class="link-btn" type="button">Load sample data</button>
-        to see a demo, or
+        <button id="liveDemoBtn" class="demo-btn" type="button">&#9654; Try Live Demo</button>
+        &mdash; see a full triage report with sample data instantly.
+        Or
+        <button id="loadSampleBtn" class="link-btn" type="button">load sample data</button>
+        into the uploader, or
         <a href="/sample-data" id="sampleDownloadLink" class="link-btn" download="sample_inventory.csv">download the sample CSV</a>
         as a format reference.
       </p>
@@ -141,6 +148,11 @@
       </details>
     </section>
 
+    <!-- ── Demo mode badge ─────────────────────────────────────────────── -->
+    <div id="demoBadge" class="demo-badge hidden" role="status">
+      <strong>Demo Mode</strong> &mdash; These results use sample data. Upload your own CSV above for real analysis.
+    </div>
+
     <!-- ── Error banner ─────────────────────────────────────────────────── -->
     <!--
       Hidden by default. script.js populates and shows this when the backend
@@ -156,6 +168,40 @@
       text content is set via textContent (never innerHTML) to prevent XSS.
     -->
     <div id="warningBanner" class="warning-banner hidden" role="status" aria-live="polite"></div>
+
+    <!-- ── Executive Summary ─────────────────────────────────────────────── -->
+    <section id="execSummarySection" class="exec-summary-section card hidden" aria-label="Executive summary">
+      <p class="section-label section-label-exec">Executive Summary</p>
+      <div class="exec-summary-grid">
+        <!-- Health Score -->
+        <div class="exec-score-ring" id="execScoreRing">
+          <span class="exec-score-value" id="execScoreValue">—</span>
+          <span class="exec-score-label" id="execScoreLabel">Health Score</span>
+        </div>
+        <!-- KPI metrics -->
+        <div class="exec-kpis">
+          <div class="exec-kpi exec-kpi-urgent">
+            <span class="exec-kpi-value" id="execUrgentCount">0</span>
+            <span class="exec-kpi-label">Urgent Items</span>
+          </div>
+          <div class="exec-kpi exec-kpi-excess">
+            <span class="exec-kpi-value" id="execExcessCount">0</span>
+            <span class="exec-kpi-label">Excess / Dead Stock</span>
+          </div>
+        </div>
+        <!-- Top Risk -->
+        <div class="exec-callout exec-callout-risk">
+          <span class="exec-callout-heading">Top Risk</span>
+          <span class="exec-callout-detail" id="execTopRisk">None identified</span>
+        </div>
+        <!-- Top Opportunity -->
+        <div class="exec-callout exec-callout-opp">
+          <span class="exec-callout-heading">Top Opportunity</span>
+          <span class="exec-callout-detail" id="execTopOpp">None identified</span>
+        </div>
+      </div>
+      <p class="exec-narrative" id="execNarrative"></p>
+    </section>
 
     <!-- ── Post-upload action bar ────────────────────────────────────────── -->
     <!--
@@ -411,6 +457,7 @@
 
   <script src="analytics.js"></script>
   <script src="auth.js"></script>
+  <script src="executiveSummary.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
