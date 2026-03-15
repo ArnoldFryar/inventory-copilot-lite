@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpsCopilot-Lite &mdash; Inventory Triage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="app-header-inner">
+      <div class="app-header-text">
+        <h1>OpsCopilot&#8209;Lite <span class="header-badge">Inventory Triage</span></h1>
+        <p class="subtitle">Inventory stockout and excess risk triage for manufacturing materials teams.</p>
+        <p class="header-tagline">Upload an inventory CSV from your ERP. Get a prioritized risk list and triage report &mdash; fixed classification rules, no AI inference.</p>
+      </div>
+      <span class="header-method-pill">Deterministic rules &nbsp;&middot;&nbsp; No AI inference</span>
+      <span id="planBadge" class="plan-badge hidden"></span>
+      <!-- Account menu — shown when Supabase auth is configured -->
+      <div id="accountMenu" class="account-menu hidden">
+        <span id="accountEmail" class="account-email"></span>
+        <button id="manageBillingBtn" class="link-btn hidden" type="button">Manage billing</button>
+        <button id="signOutBtn" class="link-btn" type="button">Sign out</button>
+      </div>
+      <button id="signInBtn" class="sign-in-btn hidden" type="button">Sign in</button>
+    </div>
+  </header>
+
+  <main class="app-main">
+
+    <!-- ── Print-only report header ─────────────────────────────────────── -->
+    <!--
+      Hidden on screen. Shown in @media print as a professional document header
+      at the top of every printed/PDF page.  Populated by script.js renderAll().
+    -->
+    <div id="printHeader" class="print-only print-report-header">
+      <div class="print-title">Inventory Triage Report</div>
+      <div class="print-meta">
+        <span id="printTimestamp"></span>
+        <span class="print-meta-sep">&nbsp;&middot;&nbsp;</span>
+        <span id="printFilename"></span>
+      </div>
+      <div class="print-method" id="printMethod"></div>
+    </div>
+
+    <!-- ── Upload form ──────────────────────────────────────────────────── -->
+    <section class="upload-section card">
+      <p class="section-label section-label-upload">Step 1</p>
+      <h2>Upload your inventory CSV</h2>
+      <p class="context-block">
+        Each part receives a coverage score &mdash; days of stock on hand divided by daily usage &mdash;
+        and is classified against its supplier lead time.
+        Results fall into seven categories: Urgent Stockout Risk, Stockout Risk, Healthy,
+        Excess Inventory, Potential Dead Stock, No Usage Data, and Invalid.
+      </p>
+      <p class="hint">
+        Export your inventory to CSV from your ERP and upload it below.
+        Common column names &mdash; <code>Part No</code>, <code>QTY ON HAND</code>,
+        <code>Avg Daily Usage</code>, <code>Lead Time</code> &mdash; are recognized
+        automatically. <strong>Lead Time must be in calendar days.</strong>
+        Maximum file size: 5&thinsp;MB.
+        If your ERP exports Unicode (UTF-16) files, open in Excel first and re-save as
+        <em>File &rarr; Save As &rarr; CSV (Comma delimited) (*.csv)</em>.
+      </p>
+
+      <details class="file-requirements">
+        <summary>File requirements &amp; supported formats</summary>
+        <div class="file-req-body">
+          <p><strong>Required columns</strong> &mdash; common ERP names are recognized automatically:</p>
+          <ul>
+            <li><strong>Part Number</strong> &mdash; Part No, Item, SKU, Material, Component</li>
+            <li><strong>Quantity on Hand</strong> &mdash; QTY ON HAND, Stock, Balance, Unrestricted</li>
+            <li><strong>Daily Usage</strong> &mdash; Avg Daily Usage, ADU, Consumption, Demand/Day</li>
+            <li><strong>Lead Time</strong> &mdash; LT, LT Days &mdash; <em>must be in calendar days</em></li>
+          </ul>
+          <p><strong>File format</strong></p>
+          <ul>
+            <li>Comma-delimited CSV (.csv) only, maximum 5&thinsp;MB</li>
+            <li>UTF-8 or Windows-1252 encoding (standard ERP exports)</li>
+            <li>Up to 20 metadata rows above the header row are skipped automatically</li>
+          </ul>
+          <p class="file-req-not-supported"><strong>Not supported:</strong> UTF-16&thinsp;/&thinsp;Unicode files, semicolon or tab-delimited exports, CJK encodings (Shift-JIS, GB2312). For any of these, open in Excel and re-save as <em>CSV (Comma delimited) (*.csv)</em>.</p>
+        </div>
+      </details>
+
+      <form id="uploadForm" enctype="multipart/form-data">
+        <label class="file-label" for="csvfile">
+          <span class="file-label-icon" aria-hidden="true">&#8593;</span>
+          <span id="fileLabel">Choose a CSV file&hellip;</span>
+          <input type="file" id="csvfile" name="csvfile" accept=".csv" />
+        </label>
+        <button type="submit" id="submitBtn" disabled>
+          <span id="submitLabel">Analyze</span>
+        </button>
+      </form>
+      <p class="demo-hint">
+        No file yet?
+        <button id="loadSampleBtn" class="link-btn" type="button">Load sample data</button>
+        to see a demo, or
+        <a href="/sample-data" id="sampleDownloadLink" class="link-btn" download="sample_inventory.csv">download the sample CSV</a>
+        as a format reference.
+      </p>
+
+      <details class="faq-block">
+        <summary>Common upload errors and fixes</summary>
+        <div class="file-req-body">
+          <p class="faq-q">Error: &ldquo;missing required columns&rdquo;</p>
+          <p class="faq-a">The file doesn&rsquo;t contain a column name the tool recognises. Open <em>File requirements &amp; supported formats</em> above to see accepted names, or <a href="/sample-data" download="sample_inventory.csv">download the sample CSV</a> as a naming reference.</p>
+
+          <p class="faq-q">Error mentions semicolons, tabs, or pipes</p>
+          <p class="faq-a">Your ERP exported a non-comma-delimited file. Open it in Excel and re-save as <em>File &rarr; Save As &rarr; CSV (Comma delimited) (*.csv)</em>.</p>
+
+          <p class="faq-q">Error mentions UTF-16 or Unicode</p>
+          <p class="faq-a">Some ERP Unicode exports cannot be read directly. Open the file in Excel and re-save as <em>File &rarr; Save As &rarr; CSV (Comma delimited) (*.csv)</em>, then upload again.</p>
+
+          <p class="faq-q">Error: file is too large</p>
+          <p class="faq-a">Maximum is 5&thinsp;MB. Filter the ERP export to a smaller scope &mdash; a single site, product family, or planner group &mdash; and re-export.</p>
+
+          <p class="faq-q">Error: &ldquo;no data rows&rdquo;</p>
+          <p class="faq-a">The file was read but contained no usable rows. Confirm the export includes data below the column headers and is not an empty or filtered-out report.</p>
+        </div>
+      </details>
+
+      <details class="faq-block">
+        <summary>What do the result categories mean?</summary>
+        <div class="file-req-body">
+          <ul>
+            <li><strong>Urgent Stockout Risk</strong> &mdash; Coverage is below 50% of the supplier lead time. A standard replenishment order may not arrive before stock runs out at current usage rates.</li>
+            <li><strong>Stockout Risk</strong> &mdash; Coverage is below the full lead time. Open purchase orders should be reviewed and expedited if needed.</li>
+            <li><strong>Healthy</strong> &mdash; Coverage is within the normal replenishment window. No action required.</li>
+            <li><strong>Excess Inventory</strong> &mdash; Coverage exceeds twice the lead time. More stock than needed for the current replenishment cycle.</li>
+            <li><strong>Potential Dead Stock</strong> &mdash; Coverage exceeds six times the lead time. The part may be obsolete or severely over-procured. Disposition review warranted.</li>
+            <li><strong>No Usage Data</strong> &mdash; Daily usage is zero or not recorded. Coverage cannot be calculated for this part.</li>
+            <li><strong>Invalid</strong> &mdash; One or more required fields are missing or contain non-numeric values. Review the Reason column in the detail table to see exactly which fields need correction.</li>
+          </ul>
+          <p class="file-req-not-supported">Classification uses fixed rules applied uniformly to every row. Coverage = on-hand &divide; daily usage (days of stock remaining). The thresholds and column mapping used are shown in the Triage Summary classification basis after each analysis.</p>
+        </div>
+      </details>
+    </section>
+
+    <!-- ── Error banner ─────────────────────────────────────────────────── -->
+    <!--
+      Hidden by default. script.js populates and shows this when the backend
+      returns an error or a network failure occurs. Text is set via
+      textContent (never innerHTML) to prevent XSS.
+    -->
+    <div id="errorBanner" class="error-banner hidden" role="alert" aria-live="polite"></div>
+
+    <!-- ── Data quality warning banner ──────────────────────────────────────
+      Shown when the analysis succeeds but the data contains quality issues
+      that do not prevent triage but could mislead results, e.g. duplicate
+      part numbers that are analyzed twice independently.
+      text content is set via textContent (never innerHTML) to prevent XSS.
+    -->
+    <div id="warningBanner" class="warning-banner hidden" role="status" aria-live="polite"></div>
+
+    <!-- ── Post-upload action bar ────────────────────────────────────────── -->
+    <!--
+      Visible after a successful analysis. Shows the analysis timestamp and
+      surfaces the PDF download button at the top so it's easy to find.
+    -->
+    <div id="actionBar" class="action-bar hidden" aria-label="Report actions">
+      <p id="actionBarTimestamp" class="action-timestamp"></p>
+      <span id="pdfUpgrade" class="upgrade-callout hidden"></span>
+      <button id="saveRunBtn" class="save-run-btn hidden" type="button">Save to History</button>
+      <button id="pdfBtn" class="pdf-btn" type="button">Print / Save as PDF</button>
+    </div>
+
+    <!-- ── Summary metrics ──────────────────────────────────────────────── -->
+    <section id="summarySection" class="summary-section card hidden" aria-label="Analysis summary">
+      <p class="section-label section-label-neutral">Analysis Results</p>
+      <h2>Summary</h2>
+      <ul class="summary-grid">
+        <li class="summary-card">
+          <span class="summary-value" id="metricTotal">—</span>
+          <span class="summary-label">Parts Analyzed</span>
+        </li>
+        <li class="summary-card urgent">
+          <span class="summary-value" id="metricUrgent">—</span>
+          <span class="summary-label">Urgent Stockout</span>
+        </li>
+        <li class="summary-card risk">
+          <span class="summary-value" id="metricStockout">—</span>
+          <span class="summary-label">Stockout Risk</span>
+        </li>
+        <li class="summary-card no-usage">
+          <span class="summary-value" id="metricNoUsage">—</span>
+          <span class="summary-label">No Usage Data</span>
+        </li>
+        <li class="summary-card excess">
+          <span class="summary-value" id="metricExcess">—</span>
+          <span class="summary-label">Excess Inventory</span>
+        </li>
+        <li class="summary-card dead-stock">
+          <span class="summary-value" id="metricDeadStock">—</span>
+          <span class="summary-label">Potential Dead Stock</span>
+        </li>
+        <li class="summary-card healthy">
+          <span class="summary-value" id="metricHealthy">—</span>
+          <span class="summary-label">Healthy</span>
+        </li>
+        <li class="summary-card invalid">
+          <span class="summary-value" id="metricInvalid">—</span>
+          <span class="summary-label">Invalid Rows</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ── Leadership summary ───────────────────────────────────────────── -->
+    <!--
+      Plain-language executive digest of the analysis results.
+      Intended for forwarding to plant or supply chain leadership.
+      Generated deterministically by script.js — no AI inference.
+    -->
+    <section id="leadershipSection" class="leadership-section card hidden" aria-label="Leadership summary">
+      <div class="leadership-header">
+        <h2>Triage Summary</h2>
+        <span class="audit-tag">Deterministic rules &mdash; no AI inference</span>
+      </div>
+      <p id="leadershipNarrative" class="leadership-narrative"></p>
+      <div class="audit-note">
+        <strong>Classification basis:</strong>
+        <span id="auditThresholds"></span>
+      </div>
+    </section>
+
+    <!-- ── Changes Since Last Upload ─────────────────────────────────────── -->
+    <!--
+      Compact comparison panel shown when a prior saved run exists.
+      Populated by script.js after upload or when loading a history run.
+      Hidden when there is no prior run to compare against.
+    -->
+    <section id="comparisonSection" class="comparison-section card hidden" aria-label="Changes since last upload">
+      <div class="comparison-header">
+        <h2 id="comparisonTitle">Changes Since Last Upload</h2>
+        <span id="comparisonPrior" class="comparison-prior"></span>
+      </div>
+      <p id="comparisonSentence" class="comparison-sentence"></p>
+      <div id="comparisonGrid" class="comparison-grid"></div>
+      <details id="comparisonDetails" class="comparison-details hidden">
+        <summary id="comparisonDetailsSummary">View changed items</summary>
+        <div id="comparisonDetailsBody" class="comparison-details-body"></div>
+      </details>
+    </section>
+
+    <!-- ── Top priority panel ───────────────────────────────────────────── -->
+    <!--
+      Shows the most urgent non-Low items (High then Medium).
+      Hidden when empty. Populated by script.js via textContent.
+    -->
+    <section id="prioritySection" class="priority-section card hidden" aria-label="Top priority items">
+      <p class="section-label" id="prioritySectionLabel">Action Required</p>
+      <h2>Needs Attention Now</h2>
+      <p class="hint" id="priorityHint"></p>
+      <div id="priorityAllClear" class="priority-all-clear hidden">
+        All parts are adequately stocked against their lead times &mdash; nothing requires immediate action.
+      </div>
+      <ol id="priorityList" class="priority-list">
+        <!-- Items injected by script.js -->
+      </ol>
+    </section>
+
+    <!-- ── AI Helpers panel (Pro only) ───────────────────────────────────── -->
+    <!--
+      Optional premium actions downstream of the deterministic triage.
+      AI drafts text grounded in the current run's data.
+      Never reclassifies parts or changes thresholds.
+      Hidden when: no analysis loaded, or user is not Pro.
+    -->
+    <section id="aiHelpersSection" class="ai-helpers-section card hidden" aria-label="AI helper actions">
+      <div class="ai-helpers-header">
+        <h2>AI Draft Helpers</h2>
+        <span class="ai-helpers-tag">Pro &middot; AI-generated drafts</span>
+      </div>
+      <p class="ai-helpers-disclaimer">
+        These are AI-generated drafts for human review. Verify all details before sending or acting on this content.
+        AI never changes the deterministic classification above.
+      </p>
+      <div class="ai-helpers-actions">
+        <button class="ai-helper-btn" type="button" data-helper="expedite_email">
+          <span class="ai-helper-btn-icon">&#9993;</span>
+          <span class="ai-helper-btn-label">Draft Expedite Email</span>
+          <span class="ai-helper-btn-desc">Supplier email for urgent parts</span>
+        </button>
+        <button class="ai-helper-btn" type="button" data-helper="escalation_summary">
+          <span class="ai-helper-btn-icon">&#9888;</span>
+          <span class="ai-helper-btn-label">Escalation Summary</span>
+          <span class="ai-helper-btn-desc">Internal summary for leadership</span>
+        </button>
+        <button class="ai-helper-btn" type="button" data-helper="meeting_talking_points">
+          <span class="ai-helper-btn-icon">&#128172;</span>
+          <span class="ai-helper-btn-label">Meeting Talking Points</span>
+          <span class="ai-helper-btn-desc">S&amp;OP / materials review prep</span>
+        </button>
+      </div>
+      <div id="aiHelperResult" class="ai-helper-result hidden">
+        <div class="ai-helper-result-header">
+          <strong id="aiHelperResultLabel"></strong>
+          <button id="aiHelperCopyBtn" class="ai-helper-copy-btn" type="button">Copy to clipboard</button>
+        </div>
+        <pre id="aiHelperResultText" class="ai-helper-result-text"></pre>
+        <p class="ai-helper-result-meta">
+          <span id="aiHelperResultModel" class="ai-helper-meta-tag"></span>
+          <span class="ai-helper-meta-tag">Draft &mdash; verify before use</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- ── Results table ────────────────────────────────────────────────── -->
+    <section id="resultsSection" class="results-section card hidden" aria-label="Analysis results">
+      <div class="results-header">
+        <h2>All Results</h2>
+        <!-- Filter bar — all controls operate on the in-memory results array -->
+        <div class="filter-bar">
+          <input
+            type="search"
+            id="filterPart"
+            class="filter-input"
+            placeholder="Search part number…"
+            aria-label="Search by part number"
+          />
+          <select id="filterStatus" class="filter-select" aria-label="Filter by status">
+            <option value="">All Statuses</option>
+            <option value="Urgent Stockout Risk">Urgent Stockout Risk</option>
+            <option value="Stockout Risk">Stockout Risk</option>
+            <option value="No Usage Data">No Usage Data</option>
+            <option value="Excess Inventory">Excess Inventory</option>
+            <option value="Potential Dead Stock">Potential Dead Stock</option>
+            <option value="Healthy">Healthy</option>
+            <option value="Invalid">Invalid</option>
+          </select>
+          <select id="filterSeverity" class="filter-select" aria-label="Filter by severity">
+            <option value="">All Severities</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+          <button id="exportBtn" class="export-btn" type="button">Export CSV</button>
+          <span id="exportUpgrade" class="upgrade-callout hidden" aria-live="polite"></span>
+        </div>
+      </div>
+      <p id="filterCount" class="filter-count hidden"></p>
+      <div id="tableLimitNotice" class="plan-limit-notice hidden" role="status" aria-live="polite"></div>
+      <div class="table-wrapper">
+        <table id="resultsTable">
+          <thead>
+            <tr>
+              <th scope="col">Part Number</th>
+              <th scope="col">Coverage (days)</th>
+              <th scope="col">Status</th>
+              <th scope="col">Severity</th>
+              <th scope="col">On Hand</th>
+              <th scope="col">Daily Usage</th>
+              <th scope="col">Lead Time (days)</th>
+              <th scope="col">Reason</th>
+              <th scope="col">Recommended Action</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody">
+            <!-- Rows injected by script.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── Print-only page footer ─────────────────────────────────────────
+         Rendered on every printed page via position:fixed in @media print.
+         Populated by script.js renderAll(). Hidden on screen.
+    -->
+    <div id="printFooter" class="print-only print-footer"></div>
+
+    <!-- ── Saved history panel ────────────────────────────────────────────── -->
+    <section id="historySection" class="history-section card hidden" aria-label="Saved analysis history">
+      <h2>Saved History</h2>
+      <p class="hint" id="historyHint">Your saved analysis runs appear here.</p>
+      <ul id="historyList" class="history-list"></ul>
+      <p id="historyEmpty" class="history-empty hidden">No saved runs yet.</p>
+      <p id="historySignIn" class="history-sign-in hidden">Sign in to save and view your analysis history.</p>
+      <p id="historyUpgrade" class="history-upgrade hidden">Saved history is available on the Pro plan. <button class="upgrade-link-btn" type="button" data-upgrade>Upgrade to Pro</button></p>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>OpsCopilot-Lite &nbsp;&middot;&nbsp; Inventory Triage &amp; Coverage Analysis &nbsp;&middot;&nbsp; Pilot v0.4</p>
+  </footer>
+
+  <!-- ── Auth modal ─────────────────────────────────────────────────────── -->
+  <div id="authModal" class="auth-modal-backdrop hidden" role="dialog" aria-modal="true" aria-label="Sign in">
+    <div class="auth-modal">
+      <button id="authModalClose" class="auth-modal-close" type="button" aria-label="Close">&times;</button>
+      <h2 id="authModalTitle">Sign in</h2>
+      <p class="auth-modal-hint">Save your analysis history and access it anywhere.</p>
+      <form id="authForm" autocomplete="on">
+        <label for="authEmail" class="auth-label">Email</label>
+        <input type="email" id="authEmail" class="auth-input" required autocomplete="email" />
+        <label for="authPassword" class="auth-label">Password</label>
+        <input type="password" id="authPassword" class="auth-input" required minlength="6" autocomplete="current-password" />
+        <div id="authError" class="auth-error hidden" role="alert"></div>
+        <button type="submit" id="authSubmitBtn" class="auth-submit">Sign in</button>
+      </form>
+      <p class="auth-toggle-row">
+        <span id="authToggleText">No account?</span>
+        <button id="authToggleBtn" class="link-btn" type="button">Create one</button>
+      </p>
+    </div>
+  </div>
+
+  <script src="analytics.js"></script>
+  <script src="auth.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
