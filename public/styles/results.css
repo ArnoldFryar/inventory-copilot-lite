@@ -177,6 +177,10 @@
   margin-top: var(--space-2);
 }
 
+/* Hierarchy transitions: primary → support → detail */
+.leadership-section { margin-top: var(--space-4); }
+.results-section    { margin-top: var(--space-6); }
+
 /* ========================================================= */
 /*  2 · ACTION BAR  –  clean post-analysis toolbar           */
 /* ========================================================= */
@@ -839,6 +843,13 @@ tbody tr:hover { background: var(--surface-2) !important; }
 /* ========================================================= */
 /*  9 · FILTERS / RESULTS HEADER                             */
 /* ========================================================= */
+
+/* Tertiary section: reduced heading prominence */
+.results-section h2 {
+  font-size: 16px;
+  letter-spacing: -0.2px;
+  color: var(--ink-700);
+}
 .results-header {
   display: flex;
   align-items: center;

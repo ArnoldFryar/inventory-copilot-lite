@@ -67,18 +67,17 @@
         </div>
       <p class="context-block">
         Each part receives a coverage score &mdash; days of stock on hand divided by daily usage &mdash;
-        and is classified against its supplier lead time.
-        Results fall into seven categories: Urgent Stockout Risk, Stockout Risk, Healthy,
-        Excess Inventory, Potential Dead Stock, No Usage Data, and Invalid.
+        classified against its lead time.
+        Results span seven categories: Urgent Stockout, Stockout Risk, Healthy,
+        Excess Inventory, Potential Dead Stock, No Usage, and Invalid.
       </p>
       <p class="hint">
-        Export your inventory to CSV from your ERP and upload it below.
-        Common column names &mdash; <code>Part No</code>, <code>QTY ON HAND</code>,
+        Export your ERP inventory as CSV and upload below.
+        Column names &mdash; <code>Part No</code>, <code>QTY ON HAND</code>,
         <code>Avg Daily Usage</code>, <code>Lead Time</code> &mdash; are recognized
-        automatically. <strong>Lead Time must be in calendar days.</strong>
-        Maximum file size: 5&thinsp;MB.
-        If your ERP exports Unicode (UTF-16) files, open in Excel first and re-save as
-        <em>File &rarr; Save As &rarr; CSV (Comma delimited) (*.csv)</em>.
+        automatically. <strong>Lead Time in calendar days.</strong>
+        Max 5&thinsp;MB. UTF-16 files: open in Excel and re-save as
+        <em>CSV (Comma delimited) (*.csv)</em>.
       </p>
 
       <details class="file-requirements">
@@ -252,6 +251,7 @@
       Generated deterministically by script.js — no AI inference.
     -->
     <section id="leadershipSection" class="leadership-section card hidden" aria-label="Leadership summary">
+      <p class="section-label section-label-neutral">Leadership Summary</p>
       <div class="leadership-header">
         <h2>Triage Summary</h2>
         <span class="audit-tag">Deterministic rules &mdash; no AI inference</span>
@@ -377,6 +377,7 @@
 
     <!-- ── Results table ────────────────────────────────────────────────── -->
     <section id="resultsSection" class="results-section card hidden" aria-label="Analysis results">
+      <p class="section-label section-label-neutral">Detailed Results</p>
       <div class="results-header">
         <h2>All Results</h2>
         <!-- Filter bar — all controls operate on the in-memory results array -->
