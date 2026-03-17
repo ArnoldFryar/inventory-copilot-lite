@@ -31,7 +31,13 @@ const SUBSCRIPTION_EVENTS = new Set([
 // ---------------------------------------------------------------------------
 async function createCheckoutSession(req, res) {
   if (!stripeConfigured) {
+    console.warn('[POST /api/billing/checkout] Stripe is not configured — STRIPE_SECRET_KEY or STRIPE_PRO_PRICE_ID missing.');
     return res.status(503).json({ error: 'Billing is not configured.' });
+  }
+
+  if (!supabaseAdmin) {
+    console.error('[POST /api/billing/checkout] supabaseAdmin is null — SUPABASE_URL or SUPABASE_SERVICE_KEY missing.');
+    return res.status(503).json({ error: 'Database connection is not configured. Cannot create checkout session.' });
   }
 
   try {
@@ -79,7 +85,9 @@ async function createCheckoutSession(req, res) {
 
     res.json({ url: session.url });
   } catch (err) {
-    console.error('[POST /api/billing/checkout]', err.message);
+    console.error('[POST /api/billing/checkout] Stripe error:', err.message,
+      '| priceId:', STRIPE_CONFIG.proPriceId || '(not set)',
+      '| userId:', req.user?.id);
     res.status(500).json({ error: 'Could not create checkout session. Please try again.' });
   }
 }
@@ -94,7 +102,13 @@ async function createCheckoutSession(req, res) {
 // ---------------------------------------------------------------------------
 async function createPortalSession(req, res) {
   if (!stripeConfigured) {
+    console.warn('[POST /api/billing/portal] Stripe is not configured — STRIPE_SECRET_KEY or STRIPE_PRO_PRICE_ID missing.');
     return res.status(503).json({ error: 'Billing is not configured.' });
+  }
+
+  if (!supabaseAdmin) {
+    console.error('[POST /api/billing/portal] supabaseAdmin is null — SUPABASE_URL or SUPABASE_SERVICE_KEY missing.');
+    return res.status(503).json({ error: 'Database connection is not configured. Cannot open portal.' });
   }
 
   try {

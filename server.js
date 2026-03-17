@@ -25,11 +25,28 @@ const PORT = process.env.PORT || 3000;
 app.use((_req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-  const connectSrc = SUPABASE_URL ? `'self' ${SUPABASE_URL}` : "'self'";
-  const scriptSrc  = SUPABASE_URL ? "'self' https://cdn.jsdelivr.net" : "'self'";
+
+  // script-src: always allow jsdelivr (Supabase browser SDK loaded from CDN)
+  const scriptSrc = "'self' https://cdn.jsdelivr.net";
+
+  // style-src: always allow inline (used throughout) + Google Fonts stylesheet
+  const styleSrc = "'self' 'unsafe-inline' https://fonts.googleapis.com";
+
+  // font-src: Google Fonts delivers font files from fonts.gstatic.com
+  const fontSrc = "'self' https://fonts.gstatic.com";
+
+  // connect-src: include the Supabase project URL (https) and websocket (wss)
+  // for realtime subscriptions, plus the CDN itself for auth config fetches.
+  let connectSrc = "'self'";
+  if (SUPABASE_URL) {
+    // Derive the wss:// form from the https:// URL
+    const wsUrl = SUPABASE_URL.replace(/^https:\/\//, 'wss://');
+    connectSrc = `'self' ${SUPABASE_URL} ${wsUrl}`;
+  }
+
   res.setHeader(
     'Content-Security-Policy',
-    `default-src 'self'; script-src ${scriptSrc}; style-src 'self' 'unsafe-inline'; connect-src ${connectSrc}; object-src 'none'; frame-ancestors 'none'`
+    `default-src 'self'; script-src ${scriptSrc}; style-src ${styleSrc}; font-src ${fontSrc}; connect-src ${connectSrc}; object-src 'none'; frame-ancestors 'none'`
   );
   next();
 });
@@ -78,6 +95,14 @@ app.use((err, _req, res, _next) => {
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
 if (!fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+}
+
+if (!SUPABASE_URL) {
+  console.warn('[startup] SUPABASE_URL is not set — auth and database features will be unavailable.');
+}
+const { stripeConfigured } = require('./plans');
+if (!stripeConfigured) {
+  console.warn('[startup] STRIPE_SECRET_KEY or STRIPE_PRO_PRICE_ID not set — billing features will be unavailable.');
 }
 
 app.listen(PORT, () => {
