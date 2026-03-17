@@ -248,14 +248,24 @@ async function generateHelper(helperType, runData) {
     temperature: 0.3,   // low temperature for factual, grounded output
   };
 
-  const res = await fetch(`${AI_CONFIG.baseUrl}/chat/completions`, {
-    method:  'POST',
-    headers: {
-      'Content-Type':  'application/json',
-      'Authorization': `Bearer ${AI_CONFIG.apiKey}`,
-    },
-    body: JSON.stringify(body),
-  });
+  // Abort the request after 10 seconds to prevent indefinite hangs.
+  const controller = new AbortController();
+  const timeoutId  = setTimeout(() => controller.abort(), 10_000);
+
+  let res;
+  try {
+    res = await fetch(`${AI_CONFIG.baseUrl}/chat/completions`, {
+      method:  'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${AI_CONFIG.apiKey}`,
+      },
+      body:   JSON.stringify(body),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!res.ok) {
     const errBody = await res.text().catch(() => '');

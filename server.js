@@ -554,9 +554,14 @@ app.post('/api/ai-helper', requireAuth, async (req, res) => {
       disclaimer: 'This is an AI-generated draft for human review. Verify all details before sending or acting on this content.',
     });
   } catch (err) {
-    console.error('[POST /api/ai-helper]', err.message);
+    console.error('AI_HELPER_ERROR', {
+      helperType,
+      error:     err.message,
+      timestamp: new Date().toISOString(),
+    });
     res.status(502).json({
-      error: 'AI generation failed. The provider may be temporarily unavailable. Please try again.',
+      error:   'ai_provider_error',
+      message: 'AI provider unavailable',
     });
   }
 });

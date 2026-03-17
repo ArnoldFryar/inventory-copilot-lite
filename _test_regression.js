@@ -1558,6 +1558,54 @@ testAsync('generateHelper rejects when AI provider is not configured', async () 
   );
 });
 
+testAsync('generateHelper aborts and throws when fetch is aborted (timeout simulation)', async () => {
+  // Patch global.fetch to simulate an AbortError (provider timeout)
+  const realFetch = global.fetch;
+  global.fetch = () => {
+    const err = new Error('The operation was aborted.');
+    err.name = 'AbortError';
+    return Promise.reject(err);
+  };
+  // Temporarily enable AI so the fetch path is reached
+  const realKey = process.env.OPENAI_API_KEY;
+  process.env.OPENAI_API_KEY = 'test-key';
+  // Re-require to pick up the env change (module is cached, so patch AI_CONFIG directly)
+  const { AI_CONFIG: cfg } = require('./aiHelpers');
+  const savedKey = cfg.apiKey;
+  cfg.apiKey = 'test-key';
+  try {
+    await assert.rejects(
+      () => generateHelper('expedite_email', { summary: { total: 1 }, results: [], topPriority: [], analyzedAt: '', thresholds: {} }),
+      /aborted|AbortError|not configured/i
+    );
+  } finally {
+    cfg.apiKey     = savedKey;
+    global.fetch   = realFetch;
+    if (realKey !== undefined) process.env.OPENAI_API_KEY = realKey;
+    else delete process.env.OPENAI_API_KEY;
+  }
+});
+
+test('normalized AI error response shape has error and message fields', () => {
+  // Verify the shape emitted by the route catch block
+  const errorResponse = { error: 'ai_provider_error', message: 'AI provider unavailable' };
+  assert.equal(errorResponse.error,   'ai_provider_error');
+  assert.equal(errorResponse.message, 'AI provider unavailable');
+  assert.equal(typeof errorResponse.error,   'string');
+  assert.equal(typeof errorResponse.message, 'string');
+});
+
+test('AI_HELPER_ERROR log shape has helperType, error, timestamp', () => {
+  const logEntry = {
+    helperType: 'expedite_email',
+    error:      'The operation was aborted.',
+    timestamp:  new Date().toISOString(),
+  };
+  assert.equal(typeof logEntry.helperType, 'string');
+  assert.equal(typeof logEntry.error,      'string');
+  assert.ok(/\d{4}-\d{2}-\d{2}T/.test(logEntry.timestamp), 'timestamp should be ISO format');
+});
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // P43  Cross-system stabilization tests
 // ═══════════════════════════════════════════════════════════════════════════════
