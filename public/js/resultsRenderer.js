@@ -145,7 +145,7 @@
         var beforeTrunc = data.totalBeforeTruncation;
         dom.tableLimitNotice.textContent =
           'Free plan: showing ' + shown + ' of ' + beforeTrunc + ' parts. ' +
-          'Upgrade to Pro to see every part, export CSV/PDF reports, and track runs over time.';
+          'Upgrade to Pro ($49/mo) for full results, CSV/PDF export, and run history.';
         dom.tableLimitNotice.classList.remove('hidden');
       } else {
         dom.tableLimitNotice.textContent = '';

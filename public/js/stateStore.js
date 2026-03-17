@@ -231,12 +231,19 @@
 
     wrap.appendChild(body);
 
+    if (config.valueAnchor) {
+      var anchor = document.createElement('p');
+      anchor.className = 'upsell-cta-value-anchor';
+      anchor.textContent = config.valueAnchor;
+      wrap.appendChild(anchor);
+    }
+
     if (config.showBtn !== false) {
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'upsell-cta-btn';
       btn.setAttribute('data-upgrade', '');
-      btn.textContent = config.btnText || 'Upgrade to Pro for Full Access \u2192';
+      btn.textContent = config.btnText || 'Upgrade to Pro \u2014 $49/mo \u2192';
       wrap.appendChild(btn);
     }
 

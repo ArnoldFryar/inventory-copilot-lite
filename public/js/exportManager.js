@@ -226,7 +226,7 @@
 
     if (!planData.entitlements.csvExport) {
       dom.exportBtn.classList.add('locked');
-      dom.exportBtn.setAttribute('title', 'Upgrade to Pro to export triage reports as CSV');
+      dom.exportBtn.setAttribute('title', 'Pro feature ($49/mo) — full CSV export for every part');
       if (dom.exportUpgrade) {
         while (dom.exportUpgrade.firstChild) dom.exportUpgrade.removeChild(dom.exportUpgrade.firstChild);
         dom.exportUpgrade.classList.remove('hidden');
@@ -251,7 +251,7 @@
 
     if (!planData.entitlements.pdfExport) {
       dom.pdfBtn.classList.add('locked');
-      dom.pdfBtn.setAttribute('title', 'Upgrade to Pro to export triage reports as PDF');
+      dom.pdfBtn.setAttribute('title', 'Pro feature ($49/mo) — print-ready PDF triage report');
       if (dom.pdfUpgrade) {
         while (dom.pdfUpgrade.firstChild) dom.pdfUpgrade.removeChild(dom.pdfUpgrade.firstChild);
         dom.pdfUpgrade.classList.remove('hidden');

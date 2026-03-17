@@ -518,6 +518,15 @@
   transform: translateY(-1px);
 }
 
+.upsell-cta-value-anchor {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-500);
+  font-style: italic;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+}
+
 /* -- Inline upgrade callout (export / PDF action bar) -- */
 .upgrade-callout-label {
   font-size: 10px;

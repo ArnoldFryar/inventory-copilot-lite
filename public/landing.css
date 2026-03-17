@@ -461,6 +461,13 @@
   width: 100%;
   text-align: center;
 }
+.lp-pricing-value-anchor {
+  font-size: 12px;
+  color: #64748b;
+  font-style: italic;
+  text-align: center;
+  margin: 0 0 12px;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════ */
 /*  FINAL CTA                                                            */

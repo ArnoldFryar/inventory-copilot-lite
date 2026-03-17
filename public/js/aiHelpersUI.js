@@ -46,7 +46,7 @@
         description: 'Generate ready-to-send expedite emails, leadership escalation briefs, and S&OP meeting prep \u2014 grounded in this analysis, not generic templates.',
         features: ['Supplier expedite emails', 'Escalation briefs for leadership', 'S&OP / materials review prep'],
         showBtn: state.billingConfigured !== false,
-        btnText: 'Unlock AI Helpers \u2192',
+        btnText: 'Unlock AI Helpers \u2014 $49/mo \u2192',
       });
       dom.aiHelpersLockedCta.appendChild(aiCta);
     }
@@ -63,7 +63,7 @@
         description: 'Compare this run to any prior analysis. Surface new urgent items, confirm resolved risks, and show measurable improvement \u2014 with data, not gut feel.',
         features: ['New urgent items flagged instantly', 'Resolved risks confirmed', 'Status shift deltas', 'Run-over-run trend visibility'],
         showBtn: state.billingConfigured !== false,
-        btnText: 'Unlock Trend Comparison \u2192',
+        btnText: 'Unlock Trend Comparison \u2014 $49/mo \u2192',
       });
       dom.comparisonLockedCta.appendChild(cmpCta);
     }
