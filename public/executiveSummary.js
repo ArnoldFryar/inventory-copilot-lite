@@ -74,13 +74,17 @@ var buildExecutiveSummary = (function () {
     });
     var pool = tier1.length > 0 ? tier1 : candidates;
 
+    // Sort within the pool: largest lead-time gap (leadTime − coverage) first.
+    // This matches the backend sort order and correctly ranks a part that is
+    // 20 days short of a 30-day lead time above one that is 3 days short of
+    // a 7-day lead time.  Tie-break on coverage ASC (most depleted first).
     pool.sort(function (a, b) {
-      var usageA = (a.daily_usage != null) ? a.daily_usage : 0;
-      var usageB = (b.daily_usage != null) ? b.daily_usage : 0;
-      if (usageB !== usageA) return usageB - usageA;          // higher usage first
+      var gapA = (a.lead_time != null && a.coverage != null) ? a.lead_time - a.coverage : 0;
+      var gapB = (b.lead_time != null && b.coverage != null) ? b.lead_time - b.coverage : 0;
+      if (gapB !== gapA) return gapB - gapA;          // larger gap first
       var covA = (a.coverage != null) ? a.coverage : Infinity;
       var covB = (b.coverage != null) ? b.coverage : Infinity;
-      return covA - covB;                                      // lower coverage first
+      return covA - covB;                              // lower coverage first
     });
 
     var r = pool[0];

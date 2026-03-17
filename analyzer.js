@@ -358,16 +358,23 @@ function analyzeRows(rows, preResolved) {
   }
 
   // Sort: Tier 1 (active stockouts) before Tier 2 (imminent risks) before
-  // Tier 3 (everything else).  Within the same tier, ascending coverage so
-  // the most at-risk row surfaces first.  Null coverage sorts to the bottom
-  // of its tier (treated as Infinity).
+  // Tier 3 (everything else).
+  // Within the same tier, sort by lead-time gap DESC — a part that is
+  // 20 days short of its 30-day lead time (gap = 20) is more urgent than
+  // one that is 3 days short of a 7-day lead time (gap = 3) even if both
+  // have positive coverage.  Tie-break on coverage ASC so the most
+  // depleted row surfaces first when gaps are equal.
+  // Null lead_time or coverage → gap defaults to 0; null coverage → Infinity.
   results.sort((a, b) => {
     const tA = priorityTierOf(a);
     const tB = priorityTierOf(b);
     if (tA !== tB) return tA - tB;
+    const gapA = (a.lead_time != null && a.coverage != null) ? a.lead_time - a.coverage : 0;
+    const gapB = (b.lead_time != null && b.coverage != null) ? b.lead_time - b.coverage : 0;
+    if (gapB !== gapA) return gapB - gapA;  // DESC: larger gap = higher urgency
     const cA = (a.coverage !== null && a.coverage !== undefined) ? a.coverage : Infinity;
     const cB = (b.coverage !== null && b.coverage !== undefined) ? b.coverage : Infinity;
-    return cA - cB;
+    return cA - cB;  // ASC: lower coverage first
   });
 
   const count = (pred) => results.filter(pred).length;
