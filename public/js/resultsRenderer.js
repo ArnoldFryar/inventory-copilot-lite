@@ -82,23 +82,21 @@
 
     if (preambleCount > 0) {
       notices.push(
-        preambleCount + ' metadata row' + (preambleCount > 1 ? 's were' : ' was') + ' skipped before the ' +
-        'column header \u2014 common in ERP report exports.'
+        preambleCount + ' metadata row' + (preambleCount > 1 ? 's' : '') + ' skipped before the column header \u2014 standard in ERP exports.'
       );
     }
 
     if (isWin1252) {
       notices.push(
-        'File was decoded as Windows-1252 (legacy encoding detected). ' +
-        'Verify that accented characters in part numbers are correct.'
+        'Decoded as Windows-1252. Verify accented characters in part numbers are correct.'
       );
     }
 
     if (dups.length > 0) {
       notices.push(
-        dups.length + ' part number' + (dups.length > 1 ? 's appear' : ' appears') + ' more than once ' +
-        'in this export (' + dups.slice(0, 5).join(', ') + (dups.length > 5 ? '\u2026' : '') + '). ' +
-        'Each occurrence is analyzed independently. De-duplicate the source file before acting on these results.'
+        dups.length + ' duplicate part number' + (dups.length > 1 ? 's' : '') + ' found (' +
+        dups.slice(0, 5).join(', ') + (dups.length > 5 ? '\u2026' : '') + '). ' +
+        'Each is analyzed independently \u2014 de-duplicate before acting on results.'
       );
     }
 

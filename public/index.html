@@ -81,12 +81,10 @@
         potential dead stock, and data quality flags &mdash; seven categories, zero&nbsp;guesswork.
       </p>
       <p class="hint">
-        Export your ERP inventory as CSV and upload below.
-        Column names &mdash; <code>Part No</code>, <code>QTY ON HAND</code>,
-        <code>Avg Daily Usage</code>, <code>Lead Time</code> &mdash; are recognized
-        automatically. <strong>Lead Time in calendar days.</strong>
-        Max 5&thinsp;MB. UTF-16 files: open in Excel and re-save as
-        <em>CSV (Comma delimited) (*.csv)</em>.
+        Columns recognized automatically: <code>Part No</code>, <code>QTY ON HAND</code>,
+        <code>Avg Daily Usage</code>, <code>Lead Time</code>.
+        <strong>Lead time must be in calendar days.</strong>
+        Max 5&thinsp;MB. UTF-16 exports: re-save in Excel as <em>CSV (Comma delimited)</em>.
       </p>
 
       <details class="file-requirements">
@@ -105,7 +103,7 @@
             <li>UTF-8 or Windows-1252 encoding (standard ERP exports)</li>
             <li>Up to 20 metadata rows above the header row are skipped automatically</li>
           </ul>
-          <p class="file-req-not-supported"><strong>Not supported:</strong> UTF-16&thinsp;/&thinsp;Unicode files, semicolon or tab-delimited exports, CJK encodings (Shift-JIS, GB2312). For any of these, open in Excel and re-save as <em>CSV (Comma delimited) (*.csv)</em>.</p>
+          <p class="file-req-not-supported"><strong>Not supported:</strong> UTF-16, semicolon&thinsp;/&thinsp;tab-delimited, or CJK-encoded files. Open in Excel and re-save as <em>CSV (Comma delimited) (*.csv)</em>.</p>
         </div>
       </details>
 
@@ -121,14 +119,14 @@
         </button>
       </form>
       <p class="demo-hint">
-        No file yet?
+        No file?
         <button id="liveDemoBtn" class="demo-btn" type="button">&#9654; Try Live Demo</button>
-        &mdash; see a full triage report with sample data instantly.
+        &mdash; instant triage with sample data.
         Or
         <button id="loadSampleBtn" class="link-btn" type="button">load sample data</button>
         into the uploader, or
         <a href="/sample-data" id="sampleDownloadLink" class="link-btn" download="sample_inventory.csv">download the sample CSV</a>
-        as a format reference.
+        for a format reference.
       </p>
       </div><!-- /.upload-engine-wrapper -->
 
@@ -136,19 +134,19 @@
         <summary>Common upload errors and fixes</summary>
         <div class="file-req-body">
           <p class="faq-q">Error: &ldquo;missing required columns&rdquo;</p>
-          <p class="faq-a">The file doesn&rsquo;t contain a column name the tool recognises. Open <em>File requirements &amp; supported formats</em> above to see accepted names, or <a href="/sample-data" download="sample_inventory.csv">download the sample CSV</a> as a naming reference.</p>
+          <p class="faq-a">No recognised column name found. Check accepted names in <em>File requirements</em> above, or <a href="/sample-data" download="sample_inventory.csv">download the sample CSV</a> as a reference.</p>
 
           <p class="faq-q">Error mentions semicolons, tabs, or pipes</p>
-          <p class="faq-a">Your ERP exported a non-comma-delimited file. Open it in Excel and re-save as <em>File &rarr; Save As &rarr; CSV (Comma delimited) (*.csv)</em>.</p>
+          <p class="faq-a">Non-comma delimiter detected. In Excel: <em>Save As &rarr; CSV (Comma delimited) (*.csv)</em>.</p>
 
           <p class="faq-q">Error mentions UTF-16 or Unicode</p>
-          <p class="faq-a">Some ERP Unicode exports cannot be read directly. Open the file in Excel and re-save as <em>File &rarr; Save As &rarr; CSV (Comma delimited) (*.csv)</em>, then upload again.</p>
+          <p class="faq-a">UTF-16 exports cannot be read directly. In Excel: <em>Save As &rarr; CSV (Comma delimited) (*.csv)</em>, then re-upload.</p>
 
           <p class="faq-q">Error: file is too large</p>
-          <p class="faq-a">Maximum is 5&thinsp;MB. Filter the ERP export to a smaller scope &mdash; a single site, product family, or planner group &mdash; and re-export.</p>
+          <p class="faq-a">Max 5&thinsp;MB. Narrow the ERP export to a single site, product family, or planner group and re-export.</p>
 
           <p class="faq-q">Error: &ldquo;no data rows&rdquo;</p>
-          <p class="faq-a">The file was read but contained no usable rows. Confirm the export includes data below the column headers and is not an empty or filtered-out report.</p>
+          <p class="faq-a">File parsed but no data rows found. Confirm the export contains rows below the column header and isn&rsquo;t an empty report.</p>
         </div>
       </details>
 
@@ -164,14 +162,14 @@
             <li><strong>No Usage Data</strong> &mdash; Daily usage is zero or not recorded. Coverage cannot be calculated for this part.</li>
             <li><strong>Invalid</strong> &mdash; One or more required fields are missing or contain non-numeric values. Review the Reason column in the detail table to see exactly which fields need correction.</li>
           </ul>
-          <p class="file-req-not-supported">Classification uses fixed rules applied uniformly to every row. Coverage = on-hand &divide; daily usage (days of stock remaining). The thresholds and column mapping used are shown in the Triage Summary classification basis after each analysis.</p>
+          <p class="file-req-not-supported">Fixed rules, applied uniformly. Coverage = on-hand &divide; daily usage. Thresholds and column mapping are shown in the Triage Summary after each analysis.</p>
         </div>
       </details>
     </section>
 
     <!-- ── Demo mode badge ─────────────────────────────────────────────── -->
     <div id="demoBadge" class="demo-badge hidden" role="status">
-      <strong>Demo Mode</strong> &mdash; These results use sample data. Upload your own CSV above for real analysis.
+      <strong>Demo Mode</strong> &mdash; Sample data only. Upload your own CSV for live results.
     </div>
 
     <!-- ── Error banner ─────────────────────────────────────────────────── -->
