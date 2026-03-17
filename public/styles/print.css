@@ -35,7 +35,9 @@
   .upsell-cta,
   #comparisonLockedCta,
   #aiHelpersLockedCta,
-  .comparison-export-btn {
+  .comparison-export-btn,
+  #upgradeToProBtn,
+  .upgrade-to-pro-btn {
     display: none !important;
   }
 
@@ -54,6 +56,15 @@
   }
 
   .app-header::before { display: none; }
+
+  /* Suppress decorative accent bars in print */
+  .exec-summary-section::before,
+  .ai-helpers-section::before,
+  .auth-modal::before,
+  .upload-section::before,
+  .history-section::before,
+  .leadership-section::before,
+  .comparison-section::before { display: none; }
 
   .app-header-inner {
     max-width: 100%;

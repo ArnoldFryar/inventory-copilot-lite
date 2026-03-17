@@ -1,21 +1,31 @@
-/* =========================================================
-   utilities.css — Hidden helper, link-btn, responsive
+﻿/* =========================================================
+   utilities.css - Helper classes
    ======================================================= */
 
 .hidden { display: none !important; }
 
-/* ── Link button ─────────────────────────────────────────── */
 .link-btn {
   background: none;
   border: none;
   color: var(--brand-600);
-  cursor: pointer;
   font-size: 13px;
+  font-weight: 600;
   font-family: var(--font-sans);
-  padding: 0;
-  font-weight: 500;
   text-decoration: underline;
   text-underline-offset: 2px;
+  cursor: pointer;
+  padding: 0;
+  transition: color var(--tx);
 }
-
 .link-btn:hover { color: var(--brand-700); }
+
+/* Visually hidden but accessible */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -1,63 +1,86 @@
-/* =========================================================
-   upload.css — Upload form, hero, file requirements, banners
+﻿/* =========================================================
+   upload.css - Hero, premium upload panel, banners, FAQ
    ======================================================= */
 
-/* ── Upload section ──────────────────────────────────────── */
+/* -- Upload section -- premium card */
 .upload-section {
   position: relative;
+  overflow: hidden;
+}
+
+/* Subtle gradient accent on top edge */
+.upload-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--brand-500) 0%, var(--brand-400) 50%, #8b5cf6 100%);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .context-block {
-  margin-bottom: 18px;
+  margin-bottom: var(--space-5);
+  color: var(--ink-600);
+  line-height: 1.7;
 }
 
 .hint {
   font-size: 13px;
   color: var(--ink-500);
-  line-height: 1.6;
+  line-height: 1.7;
 }
 
 .hint code {
-  background: var(--surface-2);
+  background: var(--surface-3);
   border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 1px 5px;
+  border-radius: var(--radius-xs);
+  padding: 1px 6px;
   font-size: 12px;
   color: var(--ink-700);
-  font-family: 'Courier New', monospace;
+  font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
 }
 
-/* ── Upload form ─────────────────────────────────────────── */
+/* -- Upload form -- premium treatment */
 #uploadForm {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-4);
 }
 
 .file-label {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px 18px;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-6);
   border: 2px dashed var(--border-2);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: border-color var(--tx), background var(--tx);
+  transition: all var(--tx-slow);
   background: var(--surface-2);
-  color: var(--ink-600);
+  color: var(--ink-500);
   font-size: 14px;
   font-weight: 500;
+  text-align: center;
 }
 
 .file-label:hover {
-  border-color: var(--brand-600);
+  border-color: var(--brand-400);
   background: var(--brand-50);
   color: var(--brand-700);
+  box-shadow: var(--shadow-glow);
 }
 
 .file-label-icon {
-  font-size: 20px;
+  font-size: 24px;
   flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.file-label:hover .file-label-icon {
+  opacity: 1;
 }
 
 #uploadForm input[type="file"] {
@@ -65,7 +88,7 @@
 }
 
 button[type="submit"] {
-  padding: 11px 28px;
+  padding: var(--space-3) var(--space-8);
   background: var(--brand-600);
   color: #fff;
   border: none;
@@ -74,35 +97,37 @@ button[type="submit"] {
   font-family: var(--font-sans);
   font-weight: 700;
   cursor: pointer;
-  transition: background var(--tx), box-shadow var(--tx), transform var(--tx);
+  transition: all var(--tx);
   letter-spacing: -0.2px;
   align-self: flex-start;
+  box-shadow: 0 1px 3px rgba(79,70,229,0.3);
 }
 
 button[type="submit"]:hover {
   background: var(--brand-700);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 12px rgba(79,70,229,0.3);
   transform: translateY(-1px);
 }
 
 button[type="submit"]:active {
   transform: none;
-  box-shadow: none;
+  box-shadow: 0 1px 3px rgba(79,70,229,0.2);
 }
 
 button[type="submit"]:disabled {
-  opacity: 0.55;
+  opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
-/* ── Error / warning banners ─────────────────────────────── */
+/* -- Error / warning banners -- */
 .error-banner {
   background: var(--red-50);
   border: 1px solid var(--red-200);
   border-left: 4px solid var(--red-500);
   border-radius: var(--radius-sm);
-  padding: 12px 16px;
+  padding: var(--space-3) var(--space-4);
   font-size: 13px;
   color: var(--red-700);
   font-weight: 500;
@@ -110,10 +135,10 @@ button[type="submit"]:disabled {
 
 .warning-banner {
   background: var(--amber-50);
-  border: 1px solid var(--amber-400);
+  border: 1px solid rgba(245,158,11,0.3);
   border-left: 4px solid var(--amber-500);
   border-radius: var(--radius-sm);
-  padding: 12px 16px;
+  padding: var(--space-3) var(--space-4);
   font-size: 13px;
   color: var(--amber-700);
 }
@@ -127,69 +152,110 @@ button[type="submit"]:disabled {
   margin-bottom: 3px;
 }
 
-/* ── Hero headline ────────────────────────────────────────── */
+/* -- Hero headline -- premium centered hero */
 .hero-headline {
   text-align: center;
-  margin-bottom: 20px;
-}
-.hero-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--ink-900);
-  margin: 0 0 6px;
-}
-.hero-subtext {
-  font-size: 14px;
-  color: var(--ink-500);
-  margin: 0;
+  margin-bottom: var(--space-8);
+  padding: var(--space-6) 0 var(--space-4);
 }
 
-/* ── Demo button ──────────────────────────────────────────── */
+.hero-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--ink-900);
+  margin: 0 0 var(--space-2);
+  letter-spacing: -0.8px;
+  line-height: 1.2;
+}
+
+.hero-subtext {
+  font-size: 16px;
+  color: var(--ink-500);
+  margin: 0;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* -- Trust strip below hero -- */
+.trust-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  padding: var(--space-4) 0;
+  margin-bottom: var(--space-4);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 12px;
+  color: var(--ink-500);
+  font-weight: 500;
+}
+
+.trust-icon {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+/* -- Demo button -- premium */
 .demo-btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   background: var(--brand-600);
   color: #fff;
   border: none;
-  border-radius: 6px;
-  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  padding: 7px 16px;
   font-size: 13px;
   font-weight: 600;
   font-family: var(--font-sans);
   cursor: pointer;
-  transition: background 0.15s;
-  vertical-align: middle;
+  transition: all var(--tx);
+  box-shadow: 0 1px 3px rgba(79,70,229,0.25);
 }
-.demo-btn:hover { background: var(--brand-700); }
+.demo-btn:hover {
+  background: var(--brand-700);
+  box-shadow: 0 2px 8px rgba(79,70,229,0.3);
+  transform: translateY(-1px);
+}
 .demo-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
-/* ── Demo badge ───────────────────────────────────────────── */
+/* -- Demo badge -- */
 .demo-badge {
   background: var(--brand-50);
   border: 1px solid var(--brand-100);
-  border-left: 4px solid var(--brand-600);
-  border-radius: 6px;
-  padding: 10px 16px;
+  border-left: 4px solid var(--brand-500);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
   font-size: 13px;
   color: var(--ink-700);
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 .demo-badge strong {
   color: var(--brand-700);
 }
 
-/* ── Demo hint ────────────────────────────────────────────── */
+/* -- Demo hint -- */
 .demo-hint {
-  margin-top: 14px;
+  margin-top: var(--space-5);
   font-size: 13px;
   color: var(--ink-500);
+  line-height: 1.8;
 }
 
-/* ── File requirements disclosure ─────────────────────────── */
+/* -- File requirements disclosure -- */
 details.file-requirements {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 details.file-requirements > summary {
@@ -218,14 +284,14 @@ details[open].file-requirements > summary::before {
 }
 
 .file-req-body {
-  margin-top: 10px;
-  padding: 14px 16px;
+  margin-top: var(--space-3);
+  padding: var(--space-4);
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--ink-600);
   font-size: 13px;
-  line-height: 1.65;
+  line-height: 1.7;
 }
 
 .file-req-body p {
@@ -249,9 +315,9 @@ p.file-req-not-supported {
   color: var(--ink-400);
 }
 
-/* ── FAQ disclosures ─────────────────────────────────────── */
+/* -- FAQ disclosures -- */
 details.faq-block {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 details.faq-block > summary {
@@ -292,7 +358,7 @@ details[open].faq-block > summary::before {
   color: var(--ink-600);
 }
 
-/* ── Loading state on submit button ──────────────────────── */
+/* -- Loading state on submit button -- */
 #submitBtn.is-loading {
   position: relative;
   color: transparent;
@@ -315,4 +381,25 @@ details[open].faq-block > summary::before {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* -- Section label -- moved here for upload usage */
+.section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--red-500);
+  margin-bottom: 4px;
+}
+
+.section-label-ok      { color: var(--green-400) !important; }
+.section-label-neutral { color: var(--ink-400); }
+.section-label-upload  { color: var(--brand-600); }
+
+@media (max-width: 640px) {
+  .hero-title { font-size: 22px; }
+  .hero-subtext { font-size: 14px; }
+  .file-label { padding: var(--space-5) var(--space-4); }
+  .trust-strip { flex-wrap: wrap; gap: var(--space-3); }
 }

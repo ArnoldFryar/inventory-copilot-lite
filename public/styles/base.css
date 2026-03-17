@@ -1,24 +1,30 @@
-/* =========================================================
-   base.css — Design tokens, reset, typography
+﻿/* =========================================================
+   base.css - Design tokens, reset, typography
+   Premium SaaS design system inspired by Stripe/Linear/Vercel
    ======================================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 
-  /* Brand */
+  /* Brand - refined indigo palette */
   --brand-50:  #eef2ff;
   --brand-100: #e0e7ff;
   --brand-200: #c7d2fe;
+  --brand-300: #a5b4fc;
   --brand-400: #818cf8;
   --brand-500: #6366f1;
   --brand-600: #4f46e5;
   --brand-700: #4338ca;
+  --brand-800: #3730a3;
+  --brand-900: #312e81;
 
-  /* Ink (text) */
+  /* Ink (text) - refined hierarchy */
+  --ink-50:  #f8fafc;
   --ink-100: #f1f5f9;
   --ink-200: #e2e8f0;
+  --ink-300: #cbd5e1;
   --ink-400: #94a3b8;
   --ink-500: #64748b;
   --ink-600: #475569;
@@ -26,18 +32,21 @@
   --ink-800: #1e293b;
   --ink-900: #0f172a;
 
-  /* Surfaces */
-  --bg:        #f1f5f9;
+  /* Surfaces - premium depth */
+  --bg:        #f8fafc;
   --surface:   #ffffff;
   --surface-2: #f8fafc;
+  --surface-3: #f1f5f9;
 
-  /* Borders */
-  --border:   #e2e8f0;
-  --border-2: #cbd5e1;
+  /* Borders - subtle hierarchy */
+  --border:    #e2e8f0;
+  --border-2:  #cbd5e1;
+  --border-3:  #94a3b8;
 
   /* Semantic */
   --danger:  #dc2626;
   --success: #16a34a;
+  --warning: #d97706;
 
   /* Red */
   --red-50:  #fef2f2;
@@ -50,6 +59,7 @@
 
   /* Amber */
   --amber-50:  #fffbeb;
+  --amber-100: #fef3c7;
   --amber-400: #fbbf24;
   --amber-500: #f59e0b;
   --amber-600: #d97706;
@@ -67,21 +77,41 @@
   --green-700: #15803d;
 
   /* Purple */
+  --purple-50:  #faf5ff;
   --purple-400: #c084fc;
   --purple-500: #a855f7;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.05);
-  --shadow-lg: 0 10px 30px rgba(0,0,0,0.12), 0 4px 10px rgba(0,0,0,0.07);
+  /* Shadows - premium depth system */
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.04);
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:  0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+  --shadow-lg:  0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.05);
+  --shadow-xl:  0 20px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.04);
+  --shadow-glow: 0 0 0 1px rgba(99,102,241,0.1), 0 4px 16px rgba(99,102,241,0.08);
 
   /* Radii */
+  --radius-xs:   6px;
   --radius-sm:   8px;
   --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-xl:   20px;
   --radius-pill: 999px;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
 
   /* Transitions */
   --tx:         0.15s ease;
+  --tx-slow:    0.25s ease;
   --transition: 0.15s ease;
 }
 
@@ -99,6 +129,7 @@ body {
   display: flex;
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   font-size: 14px;
   line-height: 1.6;
 }
