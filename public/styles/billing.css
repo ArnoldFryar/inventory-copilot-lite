@@ -257,34 +257,97 @@
 
 /* -- Upsell CTA component -- */
 .upsell-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
   padding: var(--space-8) var(--space-6);
-  border: 2px dashed var(--brand-200);
+  border: 1px solid var(--brand-100);
   border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, var(--brand-50) 0%, var(--surface) 100%);
+  background: linear-gradient(145deg, var(--brand-50) 0%, #f5f3ff 50%, var(--surface) 100%);
+  position: relative;
+  overflow: hidden;
 }
 
-.upsell-cta h3 {
-  font-size: 18px;
+/* Subtle top accent bar */
+.upsell-cta::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--brand-500) 0%, #8b5cf6 50%, var(--brand-400) 100%);
+}
+
+.upsell-cta-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(99,102,241,0.10), rgba(139,92,246,0.08));
+  border: 1px solid rgba(99,102,241,0.12);
+  font-size: 22px;
+  line-height: 1;
+  margin-bottom: var(--space-3);
+  flex-shrink: 0;
+}
+
+.upsell-cta-body {
+  max-width: 420px;
+}
+
+.upsell-cta-headline {
+  font-size: 17px;
   font-weight: 800;
   color: var(--ink-900);
   letter-spacing: -0.3px;
   margin-bottom: var(--space-2);
+  line-height: 1.3;
 }
 
-.upsell-cta p {
-  font-size: 14px;
+.upsell-cta-desc {
+  font-size: 13px;
   color: var(--ink-500);
   margin-bottom: var(--space-4);
-  line-height: 1.6;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
+  line-height: 1.65;
+}
+
+.upsell-cta-features {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 12px;
+  margin-bottom: var(--space-5);
+  padding: 0;
+}
+
+.upsell-cta-features li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-600);
+  padding: 4px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.upsell-cta-features li::before {
+  content: '\2713';
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--brand-500);
 }
 
 .upsell-cta-btn {
   display: inline-flex;
   align-items: center;
+  gap: 6px;
   padding: 10px 28px;
   background: linear-gradient(135deg, var(--brand-600) 0%, #7c3aed 100%);
   color: #fff;
@@ -295,11 +358,40 @@
   font-family: var(--font-sans);
   cursor: pointer;
   transition: all var(--tx);
+  box-shadow: 0 2px 8px rgba(79,70,229,0.15);
 }
 
 .upsell-cta-btn:hover {
-  box-shadow: 0 4px 16px rgba(79,70,229,0.3);
+  box-shadow: 0 6px 20px rgba(79,70,229,0.28);
   transform: translateY(-1px);
+}
+
+/* -- Inline upgrade callout (export / PDF action bar) -- */
+.upgrade-callout-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--brand-600);
+}
+
+.upgrade-callout-btn {
+  padding: 4px 12px;
+  background: var(--brand-600);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all var(--tx);
+  white-space: nowrap;
+}
+
+.upgrade-callout-btn:hover {
+  background: var(--brand-700);
+  box-shadow: 0 2px 8px rgba(79,70,229,0.2);
 }
 
 /* -- Inline upgrade callout (in locked sections) -- */
@@ -322,4 +414,17 @@
   text-decoration: underline;
   text-underline-offset: 2px;
   cursor: pointer;
+}
+
+/* -- History upgrade and sign-in states -- */
+.history-upgrade {
+  margin-top: var(--space-3);
+}
+
+.history-sign-in {
+  text-align: center;
+  padding: var(--space-6) var(--space-4);
+  color: var(--ink-400);
+  font-size: 13px;
+  font-weight: 500;
 }

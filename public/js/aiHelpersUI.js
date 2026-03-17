@@ -42,10 +42,11 @@
       }
       var aiCta = App.buildUpsellCta({
         icon: '\u2728',
-        headline: 'AI Draft Helpers \u2014 Pro Feature',
-        description: 'Turn your triage data into ready-to-send drafts in seconds. Grounded in the current analysis and reviewed by you before use.',
-        features: ['Expedite email', 'Escalation summary', 'Meeting talking points'],
+        headline: 'Generate Action Drafts Faster',
+        description: 'Turn your triage results into ready-to-send expedite emails, escalation summaries, and meeting prep \u2014 grounded in this analysis.',
+        features: ['Expedite supplier emails', 'Leadership escalation briefs', 'S&OP talking points'],
         showBtn: state.billingConfigured !== false,
+        btnText: 'Unlock AI Helpers \u2192',
       });
       dom.aiHelpersLockedCta.appendChild(aiCta);
     }
@@ -58,10 +59,11 @@
       }
       var cmpCta = App.buildUpsellCta({
         icon: '\uD83D\uDCC8',
-        headline: 'Trend Comparison \u2014 Pro Feature',
-        description: 'See exactly what changed since your last upload \u2014 new urgent items, resolved risks, and status shifts over time.',
-        features: ['New urgent items', 'Resolved risks', 'Status change tracking', 'Trend deltas'],
+        headline: 'Compare Uploads & Catch Risk Shifts',
+        description: 'See exactly what changed between uploads \u2014 new urgent items, resolved risks, and status shifts that need attention.',
+        features: ['New urgent items flagged', 'Resolved risks tracked', 'Status change deltas', 'Trend visibility over time'],
         showBtn: state.billingConfigured !== false,
+        btnText: 'Unlock Trend Comparison \u2192',
       });
       dom.comparisonLockedCta.appendChild(cmpCta);
     }

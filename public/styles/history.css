@@ -199,5 +199,4 @@
   font-size: 13px;
 }
 
-/* History section when locked */
-.history-section .upgrade-callout { margin-top: var(--space-3); }
+/* History section — locked / sign-in states handled via billing.css upsell-cta system */

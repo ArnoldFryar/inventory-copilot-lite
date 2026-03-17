@@ -229,14 +229,22 @@
   transform: translateY(-1px);
 }
 
-.export-btn.locked { opacity: 0.45; cursor: not-allowed; }
+.export-btn.locked {
+  opacity: 0.40;
+  cursor: not-allowed;
+  position: relative;
+}
 .export-btn.locked:hover {
   background: var(--surface);
   color: var(--brand-600);
   border-color: var(--brand-200);
   box-shadow: none;
 }
-.pdf-btn.locked { opacity: 0.45; cursor: not-allowed; }
+.pdf-btn.locked {
+  opacity: 0.40;
+  cursor: not-allowed;
+  position: relative;
+}
 .pdf-btn.locked:hover {
   background: var(--ink-900);
   box-shadow: none;
@@ -246,13 +254,14 @@
 .upgrade-callout {
   display: inline-flex;
   align-items: center;
+  gap: 8px;
   font-size: 11px;
   font-weight: 600;
-  color: var(--brand-600);
-  background: var(--brand-50);
+  color: var(--brand-700);
+  background: linear-gradient(135deg, var(--brand-50) 0%, #f5f3ff 100%);
   border: 1px solid var(--brand-100);
   border-radius: var(--radius-pill);
-  padding: 3px 10px;
+  padding: 4px 12px;
   white-space: nowrap;
 }
 

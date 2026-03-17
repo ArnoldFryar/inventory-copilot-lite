@@ -232,7 +232,7 @@
         dom.exportUpgrade.classList.remove('hidden');
         var csvLabel = document.createElement('span');
         csvLabel.className = 'upgrade-callout-label';
-        csvLabel.textContent = 'Pro feature';
+        csvLabel.textContent = 'Pro';
         dom.exportUpgrade.appendChild(csvLabel);
         if (state.billingConfigured) {
           var csvBtn = document.createElement('button');
@@ -257,7 +257,7 @@
         dom.pdfUpgrade.classList.remove('hidden');
         var pdfLabel = document.createElement('span');
         pdfLabel.className = 'upgrade-callout-label';
-        pdfLabel.textContent = 'Pro feature';
+        pdfLabel.textContent = 'Pro';
         dom.pdfUpgrade.appendChild(pdfLabel);
         if (state.billingConfigured) {
           var pdfBtn2 = document.createElement('button');

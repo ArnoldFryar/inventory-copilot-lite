@@ -152,10 +152,11 @@
         while (dom.historyUpgrade.firstChild) dom.historyUpgrade.removeChild(dom.historyUpgrade.firstChild);
         var cta = App.buildUpsellCta({
           icon: '\uD83D\uDDC2\uFE0F',
-          headline: 'Run History \u2014 Pro Feature',
-          description: 'Save your analysis runs and access them from any device. Compare successive uploads to track how your inventory health changes over time.',
-          features: ['Save unlimited runs', 'Compare uploads side-by-side', 'Search & filter history', 'Load past results instantly'],
+          headline: 'Track Changes Over Time',
+          description: 'Save every analysis run and compare them side-by-side. Spot trends, verify improvements, and keep an audit trail for leadership.',
+          features: ['Unlimited saved runs', 'Side-by-side comparison', 'Search & filter history', 'Instant past results'],
           showBtn: state.billingConfigured !== false,
+          btnText: 'Unlock Run History \u2192',
         });
         dom.historyUpgrade.appendChild(cta);
       }

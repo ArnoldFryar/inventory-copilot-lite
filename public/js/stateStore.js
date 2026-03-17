@@ -195,6 +195,7 @@
 
     var iconEl = document.createElement('span');
     iconEl.className = 'upsell-cta-icon';
+    iconEl.setAttribute('aria-hidden', 'true');
     iconEl.textContent = config.icon || '\uD83D\uDD12';
     wrap.appendChild(iconEl);
 
