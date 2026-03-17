@@ -1,5 +1,7 @@
 'use strict';
 
+const { hasProAccess, ACTIVE_SUB_STATUSES } = require('./server/lib/planAccess');
+
 // ---------------------------------------------------------------------------
 // OpsCopilot-Lite — Plan model, feature entitlements, and Stripe billing
 //
@@ -62,7 +64,8 @@ function getStripe() {
 }
 
 // Active Stripe subscription statuses that grant Pro access.
-const ACTIVE_STATUSES = new Set(['active', 'trialing']);
+// Derived from planAccess so there is a single definition.
+const ACTIVE_STATUSES = ACTIVE_SUB_STATUSES;
 
 // ---------------------------------------------------------------------------
 // getPlan(userId?) — returns the plan for a given user.
@@ -102,7 +105,7 @@ async function getPlanForUser(userId, supabaseAdmin) {
     if (error || !data) return PLANS.free;
 
     // Only grant Pro when the subscription is in an active state
-    if (data.plan === 'pro' && data.subscription_status === 'active') {
+    if (hasProAccess({ plan: data.plan, status: data.subscription_status })) {
       return PLANS.pro;
     }
     return PLANS.free;

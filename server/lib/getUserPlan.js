@@ -1,5 +1,7 @@
 'use strict';
 
+const { hasProAccess } = require('./planAccess');
+
 // ---------------------------------------------------------------------------
 // getUserPlan — resolves the active plan for a Supabase user.
 //
@@ -38,7 +40,7 @@ async function getUserPlan(userId, supabaseAdmin) {
 
     if (error || !data) return 'free';
 
-    if (data.subscription_status === 'active' && data.plan === 'pro') {
+    if (hasProAccess({ plan: data.plan, status: data.subscription_status })) {
       return 'pro';
     }
     return 'free';
