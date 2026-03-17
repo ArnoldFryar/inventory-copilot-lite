@@ -1282,7 +1282,7 @@ testAsync('getPlanForUser returns pro for active subscription (mock DB)', async 
   }
 });
 
-testAsync('getPlanForUser returns pro for trialing subscription (mock DB)', async () => {
+testAsync('getPlanForUser returns pro for trialing subscription (mock DB — trialing grants Pro)', async () => {
   const old = process.env.PLAN;
   delete process.env.PLAN;
   const mockSupabase = {
@@ -1299,7 +1299,7 @@ testAsync('getPlanForUser returns pro for trialing subscription (mock DB)', asyn
   };
   try {
     const plan = await getPlanForUser('user-123', mockSupabase);
-    assert.equal(plan.key, 'free');
+    assert.equal(plan.key, 'pro');
   } finally {
     if (old !== undefined) process.env.PLAN = old;
     else delete process.env.PLAN;
@@ -1746,14 +1746,18 @@ test('server.js does not import csv-parser (cleaned up)', () => {
   assert.ok(!serverSrc.includes('require("csv-parser")'), 'csv-parser import should be removed');
 });
 
-test('server.js SUBSCRIPTION_EVENTS is at module level (not inside handler)', () => {
-  const fs = require('fs');
-  const serverSrc = fs.readFileSync(require('path').join(__dirname, 'server.js'), 'utf8');
-  // SUBSCRIPTION_EVENTS should appear before the webhook route handler
-  const subEventsIdx = serverSrc.indexOf('const SUBSCRIPTION_EVENTS');
-  const webhookIdx   = serverSrc.indexOf("app.post('/api/billing/webhook'");
+test('SUBSCRIPTION_EVENTS is at module level in billingController (not inside handler)', () => {
+  const fs   = require('fs');
+  const path = require('path');
+  // After the billing controller refactor SUBSCRIPTION_EVENTS lives in the
+  // controller file at module level, not inline inside the webhook handler.
+  const controllerSrc = fs.readFileSync(
+    path.join(__dirname, 'server', 'controllers', 'billingController.js'), 'utf8'
+  );
+  const subEventsIdx    = controllerSrc.indexOf('const SUBSCRIPTION_EVENTS');
+  const handlerFnIdx    = controllerSrc.indexOf('async function stripeWebhookHandler');
   assert.ok(subEventsIdx > -1, 'SUBSCRIPTION_EVENTS should exist');
-  assert.ok(subEventsIdx < webhookIdx, 'SUBSCRIPTION_EVENTS should be defined before webhook route');
+  assert.ok(subEventsIdx < handlerFnIdx, 'SUBSCRIPTION_EVENTS should be defined before the webhook handler function');
 });
 
 // ─── Run async tests then print final summary ────────────────────────────────
