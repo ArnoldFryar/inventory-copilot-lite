@@ -200,3 +200,35 @@
 }
 
 /* History section — locked / sign-in states handled via billing.css upsell-cta system */
+
+/* ========================================================= */
+/*  Responsive                                              */
+/* ========================================================= */
+@media (max-width: 640px) {
+  .history-item {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .history-item-actions {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: var(--space-1);
+  }
+
+  .history-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .history-toolbar-actions {
+    justify-content: flex-end;
+  }
+
+  .compare-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+}

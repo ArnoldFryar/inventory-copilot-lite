@@ -121,6 +121,11 @@
   padding: 0;
 }
 
+/* Ensure form elements inherit font from body */
+button, input, select, textarea {
+  font-family: inherit;
+}
+
 body {
   font-family: var(--font-sans);
   background: var(--bg);

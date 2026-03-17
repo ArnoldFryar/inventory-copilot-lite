@@ -417,7 +417,7 @@ details[open].faq-block > summary::before { content: '\25be  '; }
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1.2px;
+  letter-spacing: 1px;
   color: var(--red-500);
   margin-bottom: 4px;
 }

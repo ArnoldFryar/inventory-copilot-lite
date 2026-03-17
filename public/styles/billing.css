@@ -179,6 +179,199 @@
   background: linear-gradient(90deg, #8b5cf6 0%, var(--brand-500) 50%, #06b6d4 100%);
 }
 
+.ai-helpers-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.ai-helpers-header h2 { margin-bottom: 0; }
+
+.ai-helpers-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: linear-gradient(135deg, rgba(139,92,246,0.10), rgba(6,182,212,0.07));
+  color: #6d28d9;
+  border: 1px solid rgba(139,92,246,0.18);
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: 0.1px;
+}
+
+.ai-helpers-disclaimer {
+  font-size: 12px;
+  color: var(--ink-400);
+  margin-bottom: var(--space-5);
+  line-height: 1.65;
+  font-style: italic;
+}
+
+/* Helper trigger buttons — card-style tiles */
+.ai-helpers-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.ai-helper-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: var(--space-4);
+  background: var(--surface);
+  color: var(--ink-800);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-sans);
+  transition: all var(--tx);
+}
+
+.ai-helper-btn:hover {
+  border-color: var(--brand-300);
+  background: var(--brand-50);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.ai-helper-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.ai-helper-btn-icon {
+  font-size: 18px;
+  opacity: 0.70;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.ai-helper-btn-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-900);
+  line-height: 1.3;
+}
+
+.ai-helper-btn-desc {
+  font-size: 12px;
+  color: var(--ink-400);
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* AI result panel */
+.ai-helper-result {
+  margin-top: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.ai-helper-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-3);
+  border-bottom: 1px solid var(--border);
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.ai-helper-result-header strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-800);
+}
+
+.ai-helper-copy-btn {
+  padding: 4px 12px;
+  background: var(--surface);
+  color: var(--ink-600);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all var(--tx);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.ai-helper-copy-btn:hover {
+  background: var(--brand-50);
+  border-color: var(--brand-300);
+  color: var(--brand-700);
+}
+
+.ai-helper-result-text {
+  display: block;
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface-2);
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--ink-700);
+  white-space: pre-wrap;
+  font-family: var(--font-sans);
+  word-break: break-word;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.ai-helper-result-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding: var(--space-2) var(--space-4);
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.ai-helper-meta-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-400);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+/* Legacy aliases (kept for any dynamic usage) */
+.ai-result {
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink-700);
+  white-space: pre-line;
+}
+
+.ai-result-loading {
+  color: var(--ink-400);
+  font-style: italic;
+}
+
+/* Legacy grid/card (kept for backward compat) */
 .ai-helpers-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -212,47 +405,6 @@
   color: var(--ink-500);
   line-height: 1.5;
   margin-bottom: var(--space-3);
-}
-
-.ai-helper-btn {
-  padding: 6px 14px;
-  font-size: 12px;
-  font-weight: 700;
-  font-family: var(--font-sans);
-  background: var(--brand-600);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--tx);
-}
-
-.ai-helper-btn:hover {
-  background: var(--brand-700);
-  box-shadow: 0 2px 8px rgba(79,70,229,0.2);
-}
-
-.ai-helper-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* AI result text area */
-.ai-result {
-  margin-top: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  font-size: 13px;
-  line-height: 1.7;
-  color: var(--ink-700);
-  white-space: pre-line;
-}
-
-.ai-result-loading {
-  color: var(--ink-400);
-  font-style: italic;
 }
 
 /* -- Upsell CTA component -- */
@@ -427,4 +579,30 @@
   color: var(--ink-400);
   font-size: 13px;
   font-weight: 500;
+}
+
+/* ========================================================= */
+/*  Responsive                                              */
+/* ========================================================= */
+@media (max-width: 640px) {
+  .upsell-cta {
+    padding: var(--space-6) var(--space-4);
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .upsell-cta-icon { align-self: flex-start; }
+
+  .ai-helpers-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-helper-result-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ai-helper-copy-btn {
+    margin-left: 0;
+  }
 }

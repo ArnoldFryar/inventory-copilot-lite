@@ -599,9 +599,10 @@
 
 .comparison-export-btn {
   margin-left: auto;
-  padding: 4px 12px;
+  padding: 6px 14px;
   font-size: 12px;
   font-weight: 600;
+  font-family: var(--font-sans);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -920,6 +921,8 @@ tbody tr:hover { background: var(--surface-2) !important; }
   .exec-kpis { justify-content: center; }
   .action-bar { padding: var(--space-3) var(--space-4); }
   .priority-item::before { display: none; }
+  .filter-input { min-width: 0; }
+  .comparison-export-btn { margin-left: 0; }
 }
 
 @media (max-width: 480px) {
