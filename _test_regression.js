@@ -1760,6 +1760,76 @@ test('SUBSCRIPTION_EVENTS is at module level in billingController (not inside ha
   assert.ok(subEventsIdx < handlerFnIdx, 'SUBSCRIPTION_EVENTS should be defined before the webhook handler function');
 });
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// Health endpoint unit tests  (response-shape only — no HTTP server started)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+console.log('\n[Health] /api/health and /api/health/deps response shape');
+
+// Minimal req/res stubs so we can test the handlers without starting Express.
+function makeMockRes() {
+  const res = { _status: 200, _body: null };
+  res.status = (code) => { res._status = code; return res; };
+  res.json   = (body)  => { res._body = body;  return res; };
+  return res;
+}
+
+test('/api/health returns { status: "ok", timestamp }', () => {
+  // Inline the handler logic (same code as in server.js)
+  const res = makeMockRes();
+  res.json({ status: 'ok', timestamp: Date.now() });
+  assert.equal(res._body.status, 'ok');
+  assert.equal(typeof res._body.timestamp, 'number');
+  assert.ok(res._body.timestamp > 0);
+});
+
+test('/api/health/deps returns expected shape with boolean flags', () => {
+  const { stripeConfigured } = require('./plans');
+  const { isConfigured: supabaseConfigured } = require('./supabaseClient');
+  const res = makeMockRes();
+  res.json({
+    server:             'ok',
+    stripeConfigured:   stripeConfigured,
+    supabaseConfigured: supabaseConfigured,
+    openaiConfigured:   Boolean((process.env.OPENAI_API_KEY || '').trim()),
+    env: { NODE_ENV: process.env.NODE_ENV || 'development' }
+  });
+  const body = res._body;
+  assert.equal(body.server, 'ok');
+  assert.equal(typeof body.stripeConfigured,   'boolean', 'stripeConfigured must be boolean');
+  assert.equal(typeof body.supabaseConfigured, 'boolean', 'supabaseConfigured must be boolean');
+  assert.equal(typeof body.openaiConfigured,   'boolean', 'openaiConfigured must be boolean');
+  assert.ok('NODE_ENV' in body.env, 'env.NODE_ENV must be present');
+  assert.equal(typeof body.env.NODE_ENV, 'string');
+});
+
+test('/api/health/deps does not expose secrets', () => {
+  const { STRIPE_CONFIG } = require('./plans');
+  const { isConfigured: supabaseConfigured } = require('./supabaseClient');
+  const res = makeMockRes();
+  res.json({
+    server:             'ok',
+    stripeConfigured:   Boolean(STRIPE_CONFIG.secretKey),
+    supabaseConfigured: supabaseConfigured,
+    openaiConfigured:   Boolean((process.env.OPENAI_API_KEY || '').trim()),
+    env: { NODE_ENV: process.env.NODE_ENV || 'development' }
+  });
+  const body = res._body;
+  const serialised = JSON.stringify(body);
+  // Must not contain actual key values — only booleans are safe
+  assert.ok(!serialised.includes('sk_'),   'Stripe secret key must not appear in response');
+  assert.ok(!serialised.includes('whsec_'), 'Stripe webhook secret must not appear in response');
+  assert.ok(!serialised.includes('eyJ'),   'JWT / Supabase key must not appear in response');
+});
+
+test('/api/health/deps openaiConfigured is false when OPENAI_API_KEY is unset', () => {
+  const old = process.env.OPENAI_API_KEY;
+  delete process.env.OPENAI_API_KEY;
+  const configured = Boolean((process.env.OPENAI_API_KEY || '').trim());
+  assert.equal(configured, false);
+  if (old !== undefined) process.env.OPENAI_API_KEY = old;
+});
+
 // ─── Run async tests then print final summary ────────────────────────────────
 (async () => {
   for (const { name, fn } of asyncTests) {

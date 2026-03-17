@@ -118,6 +118,38 @@ app.post('/api/billing/webhook',
 app.use(express.json({ limit: '10mb' }));
 
 // ---------------------------------------------------------------------------
+// GET /api/health — lightweight liveness probe.
+// Returns { status: 'ok', timestamp } and never crashes.
+// ---------------------------------------------------------------------------
+app.get('/api/health', (_req, res) => {
+  try {
+    res.json({ status: 'ok', timestamp: Date.now() });
+  } catch (_) {
+    res.status(500).json({ status: 'error' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/health/deps — dependency diagnostics.
+// Reports configuration presence only — no secrets are exposed.
+// ---------------------------------------------------------------------------
+app.get('/api/health/deps', (_req, res) => {
+  try {
+    res.json({
+      server:             'ok',
+      stripeConfigured:   stripeConfigured,
+      supabaseConfigured: supabaseConfigured,
+      openaiConfigured:   Boolean((process.env.OPENAI_API_KEY || '').trim()),
+      env: {
+        NODE_ENV: process.env.NODE_ENV || 'development'
+      }
+    });
+  } catch (_) {
+    res.status(500).json({ status: 'error' });
+  }
+});
+
+// ---------------------------------------------------------------------------
 // GET /api/config — exposes active business thresholds to the frontend.
 // Used by the leadership summary and PDF auditability note so the report
 // always reflects the thresholds actually applied to the data.
