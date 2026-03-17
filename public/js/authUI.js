@@ -1,0 +1,113 @@
+/* authUI.js — authentication modal, sign-in/sign-up/sign-out wiring. */
+(function () {
+  'use strict';
+
+  var App   = window.App;
+  var dom   = App.dom;
+  var state = App.state;
+
+  // ── Open auth modal ───────────────────────────────────────────────────────
+  dom.signInBtn.addEventListener('click', function () {
+    setAuthMode('signin');
+    dom.authModal.classList.remove('hidden');
+    dom.authEmail.focus();
+  });
+
+  // ── Close auth modal ──────────────────────────────────────────────────────
+  dom.authModalClose.addEventListener('click', closeAuthModal);
+  dom.authModal.addEventListener('click', function (e) {
+    if (e.target === dom.authModal) closeAuthModal();
+  });
+
+  function closeAuthModal() {
+    dom.authModal.classList.add('hidden');
+    dom.authError.classList.add('hidden');
+    dom.authForm.reset();
+  }
+
+  // ── Toggle between sign in / sign up ──────────────────────────────────────
+  dom.authToggleBtn.addEventListener('click', function () {
+    setAuthMode(state.authMode === 'signin' ? 'signup' : 'signin');
+  });
+
+  function setAuthMode(mode) {
+    state.authMode = mode;
+    if (mode === 'signup') {
+      dom.authModalTitle.textContent = 'Create account';
+      dom.authSubmitBtn.textContent = 'Create account';
+      dom.authToggleText.textContent = 'Already have an account?';
+      dom.authToggleBtn.textContent = 'Sign in';
+      dom.authPassword.setAttribute('autocomplete', 'new-password');
+    } else {
+      dom.authModalTitle.textContent = 'Sign in';
+      dom.authSubmitBtn.textContent = 'Sign in';
+      dom.authToggleText.textContent = 'No account?';
+      dom.authToggleBtn.textContent = 'Create one';
+      dom.authPassword.setAttribute('autocomplete', 'current-password');
+    }
+    dom.authError.classList.add('hidden');
+  }
+
+  // ── Submit auth form ──────────────────────────────────────────────────────
+  dom.authForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    dom.authError.classList.add('hidden');
+    dom.authSubmitBtn.disabled = true;
+    dom.authSubmitBtn.textContent = state.authMode === 'signup' ? 'Creating\u2026' : 'Signing in\u2026';
+
+    try {
+      if (state.authMode === 'signup') {
+        await window.authModule.signUp(dom.authEmail.value, dom.authPassword.value);
+      } else {
+        await window.authModule.signIn(dom.authEmail.value, dom.authPassword.value);
+      }
+      closeAuthModal();
+    } catch (err) {
+      dom.authError.textContent = err.message || 'Authentication failed.';
+      dom.authError.classList.remove('hidden');
+    } finally {
+      dom.authSubmitBtn.disabled = false;
+      setAuthMode(state.authMode);
+    }
+  });
+
+  // ── Sign out ──────────────────────────────────────────────────────────────
+  dom.signOutBtn.addEventListener('click', async function () {
+    await window.authModule.signOut();
+  });
+
+  // ── Auth state change handler ─────────────────────────────────────────────
+  function onAuthStateChanged(_event, session) {
+    state.currentUser = session?.user || null;
+    updateAccountUI();
+    App.historyManager.refreshHistory();
+    // Re-fetch plan to get per-user subscription state
+    App.exportManager.fetchPlan();
+  }
+
+  function updateAccountUI() {
+    if (!window.authModule || !window.authModule.isConfigured()) {
+      dom.accountMenu.classList.add('hidden');
+      dom.signInBtn.classList.add('hidden');
+      return;
+    }
+    if (state.currentUser) {
+      dom.accountEmail.textContent = state.currentUser.email || 'Account';
+      dom.accountMenu.classList.remove('hidden');
+      dom.signInBtn.classList.add('hidden');
+      if (dom.saveRunBtn && state.lastResponse) {
+        var canSaveHistory = state.currentPlan && state.currentPlan.entitlements.savedHistory;
+        if (canSaveHistory) dom.saveRunBtn.classList.remove('hidden');
+      }
+    } else {
+      dom.accountMenu.classList.add('hidden');
+      dom.signInBtn.classList.remove('hidden');
+      if (dom.saveRunBtn) dom.saveRunBtn.classList.add('hidden');
+    }
+  }
+
+  App.authUI = {
+    onAuthStateChanged: onAuthStateChanged,
+    updateAccountUI:    updateAccountUI,
+  };
+})();
