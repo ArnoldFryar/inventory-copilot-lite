@@ -236,7 +236,7 @@
       btn.type = 'button';
       btn.className = 'upsell-cta-btn';
       btn.setAttribute('data-upgrade', '');
-      btn.textContent = config.btnText || 'Upgrade to Pro \u2192';
+      btn.textContent = config.btnText || 'Upgrade to Pro for Full Access \u2192';
       wrap.appendChild(btn);
     }
 

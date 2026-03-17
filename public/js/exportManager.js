@@ -226,7 +226,7 @@
 
     if (!planData.entitlements.csvExport) {
       dom.exportBtn.classList.add('locked');
-      dom.exportBtn.setAttribute('title', 'CSV export is a Pro plan feature');
+      dom.exportBtn.setAttribute('title', 'Upgrade to Pro to export triage reports as CSV');
       if (dom.exportUpgrade) {
         while (dom.exportUpgrade.firstChild) dom.exportUpgrade.removeChild(dom.exportUpgrade.firstChild);
         dom.exportUpgrade.classList.remove('hidden');
@@ -239,7 +239,7 @@
           csvBtn.type = 'button';
           csvBtn.className = 'upgrade-callout-btn';
           csvBtn.setAttribute('data-upgrade', '');
-          csvBtn.textContent = 'Unlock CSV Export \u2192';
+          csvBtn.textContent = 'Export Full Triage as CSV \u2192';
           dom.exportUpgrade.appendChild(csvBtn);
         }
       }
@@ -251,7 +251,7 @@
 
     if (!planData.entitlements.pdfExport) {
       dom.pdfBtn.classList.add('locked');
-      dom.pdfBtn.setAttribute('title', 'PDF export is a Pro plan feature');
+      dom.pdfBtn.setAttribute('title', 'Upgrade to Pro to export triage reports as PDF');
       if (dom.pdfUpgrade) {
         while (dom.pdfUpgrade.firstChild) dom.pdfUpgrade.removeChild(dom.pdfUpgrade.firstChild);
         dom.pdfUpgrade.classList.remove('hidden');
@@ -264,7 +264,7 @@
           pdfBtn2.type = 'button';
           pdfBtn2.className = 'upgrade-callout-btn';
           pdfBtn2.setAttribute('data-upgrade', '');
-          pdfBtn2.textContent = 'Unlock PDF Export \u2192';
+          pdfBtn2.textContent = 'Export Triage Report as PDF \u2192';
           dom.pdfUpgrade.appendChild(pdfBtn2);
         }
       }

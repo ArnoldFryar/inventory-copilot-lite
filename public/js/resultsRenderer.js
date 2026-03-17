@@ -147,7 +147,7 @@
         var beforeTrunc = data.totalBeforeTruncation;
         dom.tableLimitNotice.textContent =
           'Free plan: showing ' + shown + ' of ' + beforeTrunc + ' parts. ' +
-          'Upgrade to Pro for full results, CSV export, and PDF reports.';
+          'Upgrade to Pro to see every part, export CSV/PDF reports, and track runs over time.';
         dom.tableLimitNotice.classList.remove('hidden');
       } else {
         dom.tableLimitNotice.textContent = '';
@@ -243,16 +243,16 @@
 
     if (highCount > 0 && mediumCount > 0) {
       dom.priorityHint.textContent =
-        highCount + ' part' + (highCount > 1 ? 's are' : ' is') + ' at critical coverage levels; ' +
-        mediumCount + ' additional part' + (mediumCount > 1 ? 's' : '') + ' flagged for purchasing review.';
+        highCount + ' part' + (highCount > 1 ? 's are' : ' is') + ' at critical coverage levels and need immediate action; ' +
+        mediumCount + ' additional part' + (mediumCount > 1 ? 's' : '') + ' should be reviewed with purchasing this cycle.';
     } else if (highCount > 0) {
       dom.priorityHint.textContent =
         highCount + ' part' + (highCount > 1 ? 's are' : ' is') + ' at or below the emergency coverage threshold' +
-        ' \u2014 open PO status should be confirmed now.';
+        ' \u2014 confirm open PO status and escalate to buyers immediately.';
     } else {
       dom.priorityHint.textContent =
-        'No urgent stockout risk. ' + items.length + ' part' + (items.length > 1 ? 's have' : ' has') +
-        ' coverage below its lead time \u2014 confirm open PO status with purchasing.';
+        'No urgent stockout risk detected. ' + items.length + ' part' + (items.length > 1 ? 's have' : ' has') +
+        ' coverage below lead time \u2014 review open POs and confirm replenishment timing with purchasing.';
     }
 
     items.forEach(function (row) {

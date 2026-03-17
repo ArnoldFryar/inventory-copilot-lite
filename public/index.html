@@ -14,8 +14,8 @@
     <div class="app-header-inner">
       <div class="app-header-text">
         <h1>OpsCopilot&#8209;Lite <span class="header-badge">Inventory Triage</span></h1>
-        <p class="subtitle">Inventory stockout and excess risk triage for manufacturing materials teams.</p>
-        <p class="header-tagline">Upload an inventory CSV from your ERP. Get a prioritized risk list and triage report &mdash; fixed classification rules, no AI inference.</p>
+        <p class="subtitle">The materials manager&rsquo;s command center for stockout risk and excess&nbsp;exposure.</p>
+        <p class="header-tagline">Upload a CSV from your ERP. Know exactly which parts need action &mdash; before the line goes&nbsp;down.</p>
       </div>
       <span class="header-method-pill">Deterministic rules &nbsp;&middot;&nbsp; No AI inference</span>
       <!-- Right-aligned cluster: plan + upgrade + account -->
@@ -61,25 +61,24 @@
     <!-- ── Upload form ──────────────────────────────────────────────────── -->
     <section class="upload-section card">
       <div class="hero-headline">
-        <h2 class="hero-title">Turn raw inventory data into a prioritized risk&nbsp;report</h2>
-        <p class="hero-subtext">Upload your ERP export. Get stockout risks, excess flags, and actionable triage &mdash; in&nbsp;seconds, not&nbsp;hours.</p>
+        <h2 class="hero-title">Know which parts will stop the line &mdash; before they&nbsp;do</h2>
+        <p class="hero-subtext">Upload your ERP export. Get a severity-ranked stockout report with coverage analysis, recommended actions, and an executive summary &mdash; in&nbsp;seconds.</p>
         <div class="trust-strip">
-          <span class="trust-item"><span class="trust-icon" aria-hidden="true">&#x2713;</span> 7 risk categories</span>
-          <span class="trust-item"><span class="trust-icon" aria-hidden="true">&#x2713;</span> Deterministic rules</span>
-          <span class="trust-item"><span class="trust-icon" aria-hidden="true">&#x2713;</span> Results in seconds</span>
+          <span class="trust-item"><span class="trust-icon" aria-hidden="true">&#x2713;</span> 7 deterministic risk categories</span>
+          <span class="trust-item"><span class="trust-icon" aria-hidden="true">&#x2713;</span> Fixed rules &mdash; no AI hallucination</span>
+          <span class="trust-item"><span class="trust-icon" aria-hidden="true">&#x2713;</span> Triage-ready in seconds</span>
         </div>
       </div>
 
       <div class="upload-engine-wrapper">
         <div class="upload-engine-header">
           <span class="upload-step-badge">Step 1</span>
-          <h2>Upload your inventory CSV</h2>
+          <h2>Upload your ERP inventory export</h2>
         </div>
       <p class="context-block">
-        Each part receives a coverage score &mdash; days of stock on hand divided by daily usage &mdash;
-        classified against its lead time.
-        Results span seven categories: Urgent Stockout, Stockout Risk, Healthy,
-        Excess Inventory, Potential Dead Stock, No Usage, and Invalid.
+        Each part is scored by days of stock remaining relative to its lead time.
+        Active stockouts surface first, followed by imminent risks, excess inventory,
+        potential dead stock, and data quality flags &mdash; seven categories, zero&nbsp;guesswork.
       </p>
       <p class="hint">
         Export your ERP inventory as CSV and upload below.
@@ -247,7 +246,7 @@
       <h2>Needs Attention Now</h2>
       <p class="hint" id="priorityHint"></p>
       <div id="priorityAllClear" class="priority-all-clear hidden">
-        All parts are adequately stocked against their lead times &mdash; nothing requires immediate action.
+        Every part has adequate coverage against its lead time. No immediate supply-chain action required &mdash; review again after the next replenishment&nbsp;cycle.
       </div>
       <ol id="priorityList" class="priority-list">
         <!-- Items injected by script.js -->
@@ -470,15 +469,15 @@
       </div>
       <p id="historyCount" class="history-count hidden"></p>
       <ul id="historyList" class="history-list"></ul>
-      <p id="historyEmpty" class="history-empty hidden">No saved runs yet.</p>
-      <p id="historySignIn" class="history-sign-in hidden">Sign in to save and view your analysis history.</p>
+      <p id="historyEmpty" class="history-empty hidden">No analysis runs saved yet. Upload a CSV to create your first&nbsp;one.</p>
+      <p id="historySignIn" class="history-sign-in hidden">Sign in to build an audit trail &mdash; every analysis is saved automatically for trend tracking.</p>
       <div id="historyUpgrade" class="history-upgrade hidden"></div>
     </section>
 
   </main>
 
   <footer class="app-footer">
-    <p>OpsCopilot-Lite &nbsp;&middot;&nbsp; Inventory Triage &amp; Coverage Analysis &nbsp;&middot;&nbsp; Pilot v0.4</p>
+    <p>OpsCopilot-Lite &nbsp;&middot;&nbsp; Deterministic Inventory Triage for Manufacturing Materials&nbsp;Teams</p>
   </footer>
 
   <!-- ── Auth modal ─────────────────────────────────────────────────────── -->
@@ -486,7 +485,7 @@
     <div class="auth-modal">
       <button id="authModalClose" class="auth-modal-close" type="button" aria-label="Close">&times;</button>
       <h2 id="authModalTitle">Sign in</h2>
-      <p class="auth-modal-hint">Save your analysis history and access it anywhere.</p>
+      <p class="auth-modal-hint">Sign in to save every analysis, track trends, and build an audit trail for leadership.</p>
       <form id="authForm" autocomplete="on">
         <label for="authEmail" class="auth-label">Email</label>
         <input type="email" id="authEmail" class="auth-input" required autocomplete="email" />

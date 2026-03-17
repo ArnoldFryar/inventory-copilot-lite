@@ -42,9 +42,9 @@
       }
       var aiCta = App.buildUpsellCta({
         icon: '\u2728',
-        headline: 'Generate Action Drafts Faster',
-        description: 'Turn your triage results into ready-to-send expedite emails, escalation summaries, and meeting prep \u2014 grounded in this analysis.',
-        features: ['Expedite supplier emails', 'Leadership escalation briefs', 'S&OP talking points'],
+        headline: 'Turn Triage Into Action in Seconds',
+        description: 'Generate ready-to-send expedite emails, leadership escalation briefs, and S&OP meeting prep \u2014 grounded in this analysis, not generic templates.',
+        features: ['Supplier expedite emails', 'Escalation briefs for leadership', 'S&OP / materials review prep'],
         showBtn: state.billingConfigured !== false,
         btnText: 'Unlock AI Helpers \u2192',
       });
@@ -59,9 +59,9 @@
       }
       var cmpCta = App.buildUpsellCta({
         icon: '\uD83D\uDCC8',
-        headline: 'Compare Uploads & Catch Risk Shifts',
-        description: 'See exactly what changed between uploads \u2014 new urgent items, resolved risks, and status shifts that need attention.',
-        features: ['New urgent items flagged', 'Resolved risks tracked', 'Status change deltas', 'Trend visibility over time'],
+        headline: 'Prove Progress to Leadership',
+        description: 'Compare this run to any prior analysis. Surface new urgent items, confirm resolved risks, and show measurable improvement \u2014 with data, not gut feel.',
+        features: ['New urgent items flagged instantly', 'Resolved risks confirmed', 'Status shift deltas', 'Run-over-run trend visibility'],
         showBtn: state.billingConfigured !== false,
         btnText: 'Unlock Trend Comparison \u2192',
       });
