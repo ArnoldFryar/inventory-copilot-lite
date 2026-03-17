@@ -27,7 +27,8 @@ app.use((_req, res, next) => {
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
 
   // script-src: always allow jsdelivr (Supabase browser SDK loaded from CDN)
-  const scriptSrc = "'self' https://cdn.jsdelivr.net";
+  // and Tailwind Play CDN (used on ops.html marketing page)
+  const scriptSrc = "'self' https://cdn.jsdelivr.net https://cdn.tailwindcss.com";
 
   // style-src: always allow inline (used throughout) + Google Fonts stylesheet
   const styleSrc = "'self' 'unsafe-inline' https://fonts.googleapis.com";
