@@ -84,6 +84,10 @@
     // Auth / account UI
     accountMenu:     $('accountMenu'),
     accountEmail:    $('accountEmail'),
+    accountAvatarBtn: $('accountAvatarBtn'),
+    accountInitial:  $('accountInitial'),
+    accountDropdown: $('accountDropdown'),
+    accountDropdownEmail: $('accountDropdownEmail'),
     signOutBtn:      $('signOutBtn'),
     signInBtn:       $('signInBtn'),
     authModal:       $('authModal'),

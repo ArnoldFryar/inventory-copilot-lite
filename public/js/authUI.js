@@ -74,6 +74,39 @@
   // ── Sign out ──────────────────────────────────────────────────────────────
   dom.signOutBtn.addEventListener('click', async function () {
     await window.authModule.signOut();
+    closeAccountDropdown();
+  });
+
+  // ── Account avatar dropdown ───────────────────────────────────────────────
+  dom.accountAvatarBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var isOpen = !dom.accountDropdown.classList.contains('hidden');
+    if (isOpen) {
+      closeAccountDropdown();
+    } else {
+      dom.accountDropdown.classList.remove('hidden');
+      dom.accountAvatarBtn.setAttribute('aria-expanded', 'true');
+    }
+  });
+
+  function closeAccountDropdown() {
+    dom.accountDropdown.classList.add('hidden');
+    dom.accountAvatarBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function (e) {
+    if (!dom.accountDropdown.classList.contains('hidden') &&
+        !dom.accountDropdown.contains(e.target) &&
+        e.target !== dom.accountAvatarBtn &&
+        !dom.accountAvatarBtn.contains(e.target)) {
+      closeAccountDropdown();
+    }
+  });
+
+  // Close dropdown on Escape
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeAccountDropdown();
   });
 
   // ── Auth state change handler ─────────────────────────────────────────────
@@ -85,6 +118,11 @@
     App.exportManager.fetchPlan();
   }
 
+  function getInitial(email) {
+    if (!email) return '?';
+    return email.charAt(0).toUpperCase();
+  }
+
   function updateAccountUI() {
     if (!window.authModule || !window.authModule.isConfigured()) {
       dom.accountMenu.classList.add('hidden');
@@ -92,9 +130,13 @@
       return;
     }
     if (state.currentUser) {
-      dom.accountEmail.textContent = state.currentUser.email || 'Account';
+      var email = state.currentUser.email || 'Account';
+      dom.accountEmail.textContent = email;
+      dom.accountDropdownEmail.textContent = email;
+      dom.accountInitial.textContent = getInitial(email);
       dom.accountMenu.classList.remove('hidden');
       dom.signInBtn.classList.add('hidden');
+      closeAccountDropdown();
       if (dom.saveRunBtn && state.lastResponse) {
         var canSaveHistory = state.currentPlan && state.currentPlan.entitlements.savedHistory;
         if (canSaveHistory) dom.saveRunBtn.classList.remove('hidden');
@@ -102,6 +144,7 @@
     } else {
       dom.accountMenu.classList.add('hidden');
       dom.signInBtn.classList.remove('hidden');
+      closeAccountDropdown();
       if (dom.saveRunBtn) dom.saveRunBtn.classList.add('hidden');
     }
   }

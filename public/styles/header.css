@@ -1,12 +1,12 @@
 ﻿/* =========================================================
-   header.css - Premium app header / nav bar
+   header.css - Premium SaaS app header / nav bar
    ======================================================= */
 
 .app-header {
   background: linear-gradient(135deg, #0c0f1d 0%, #141937 40%, #1a1344 70%, #0f172a 100%);
   padding: 0 var(--space-8);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   border-bottom: 1px solid rgba(99,102,241,0.12);
 }
 
@@ -39,8 +39,7 @@
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
+  gap: var(--space-3);
   position: relative;
   min-height: 52px;
   padding: var(--space-1) 0;
@@ -87,7 +86,7 @@
   display: none;
 }
 
-/* -- Center group: method pill -- */
+/* -- Center: method pill -- */
 .header-method-pill {
   display: inline-flex;
   align-items: center;
@@ -114,7 +113,9 @@
   box-shadow: 0 0 6px rgba(74,222,128,0.4);
 }
 
-/* -- Right group: plan badge, upgrade, account -- */
+/* ========================================================= */
+/*  Right-aligned cluster: plan + upgrade + account          */
+/* ========================================================= */
 .header-right-group {
   display: flex;
   align-items: center;
@@ -122,10 +123,11 @@
   margin-left: auto;
 }
 
+/* -- Plan badge -- reduced weight, pill style */
 .plan-badge {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
+  padding: 2px 8px;
   border-radius: var(--radius-pill);
   font-size: 9px;
   font-weight: 700;
@@ -137,9 +139,9 @@
 }
 
 .plan-badge-free {
-  background: rgba(255,255,255,0.04);
-  color: rgba(255,255,255,0.45);
-  border-color: rgba(255,255,255,0.10);
+  background: transparent;
+  color: rgba(255,255,255,0.35);
+  border-color: rgba(255,255,255,0.08);
 }
 
 .plan-badge-pro {
@@ -149,27 +151,139 @@
   box-shadow: 0 0 8px rgba(99,102,241,0.08);
 }
 
-/* -- Account menu -- */
-.account-menu {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-  flex-wrap: wrap;
+/* -- Upgrade to Pro CTA -- visually primary, compact */
+.upgrade-to-pro-btn {
+  padding: 5px 16px;
+  border: 1px solid rgba(99,102,241,0.40);
+  border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, rgba(99,102,241,0.25) 0%, rgba(139,92,246,0.18) 100%);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--tx);
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+  box-shadow: 0 0 12px rgba(99,102,241,0.10), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.upgrade-to-pro-btn:hover {
+  background: linear-gradient(135deg, rgba(99,102,241,0.40) 0%, rgba(139,92,246,0.30) 100%);
+  border-color: rgba(99,102,241,0.65);
+  box-shadow: 0 0 24px rgba(99,102,241,0.20), inset 0 1px 0 rgba(255,255,255,0.08);
+  transform: translateY(-1px);
 }
 
+/* -- Account menu wrapper -- positioned for dropdown */
+.account-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Keep email in DOM for JS but visually hidden */
 .account-email {
-  font-size: 11px;
-  color: rgba(255,255,255,0.60);
-  max-width: 140px;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+/* -- Avatar button -- initials circle */
+.account-avatar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.14);
+  background: rgba(99,102,241,0.18);
+  color: rgba(255,255,255,0.85);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--tx);
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.account-avatar-btn:hover {
+  border-color: rgba(99,102,241,0.45);
+  background: rgba(99,102,241,0.28);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(99,102,241,0.12);
+}
+.account-avatar-btn[aria-expanded="true"] {
+  border-color: rgba(99,102,241,0.50);
+  background: rgba(99,102,241,0.30);
+  color: #fff;
+}
+
+.account-initial {
+  pointer-events: none;
+  line-height: 1;
+}
+
+/* -- Dropdown menu -- */
+.account-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-2) 0;
+  z-index: 100;
+  animation: dropdown-in 0.12s ease-out;
+}
+
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.account-dropdown-email {
+  display: block;
+  padding: var(--space-2) var(--space-4);
+  font-size: 12px;
+  color: var(--ink-500);
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 400;
+  max-width: 220px;
 }
 
+.account-dropdown-sep {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: var(--space-1) 0;
+}
+
+.account-dropdown-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-2) var(--space-4);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-700);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all var(--tx);
+}
+.account-dropdown-item:hover {
+  background: var(--surface-2);
+  color: var(--brand-600);
+}
+
+/* -- Sign in button -- ghost style */
 .sign-in-btn {
-  margin-left: auto;
   padding: 5px 14px;
   border: 1px solid rgba(255,255,255,0.14);
   border-radius: var(--radius-pill);
@@ -187,29 +301,7 @@
   color: #fff;
 }
 
-/* -- Upgrade to Pro button -- */
-.upgrade-to-pro-btn {
-  padding: 5px 16px;
-  border: 1px solid rgba(99,102,241,0.40);
-  border-radius: var(--radius-pill);
-  background: linear-gradient(135deg, rgba(99,102,241,0.22) 0%, rgba(139,92,246,0.14) 100%);
-  color: var(--brand-200);
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all var(--tx);
-  white-space: nowrap;
-  letter-spacing: 0.2px;
-}
-.upgrade-to-pro-btn:hover {
-  background: linear-gradient(135deg, rgba(99,102,241,0.35) 0%, rgba(139,92,246,0.25) 100%);
-  border-color: rgba(99,102,241,0.60);
-  color: #fff;
-  box-shadow: 0 0 20px rgba(99,102,241,0.15);
-  transform: translateY(-1px);
-}
-
-/* -- link-btn inside header: ghost style -- */
+/* -- Legacy link-btn ghost (still used in dropdown) -- */
 .app-header .link-btn {
   font-size: 11px;
   color: rgba(255,255,255,0.50);
@@ -222,10 +314,12 @@
 /* -- Responsive -- */
 @media (max-width: 640px) {
   .app-header { padding: 0 var(--space-4); }
-  .app-header-inner { min-height: 44px; gap: var(--space-1); }
+  .app-header-inner { min-height: 44px; gap: var(--space-2); }
   .app-header h1 { font-size: 13px; }
   .header-badge { font-size: 8px; padding: 2px 6px; }
   .header-method-pill { display: none; }
-  .account-email { max-width: 90px; font-size: 10px; }
-  .plan-badge { padding: 2px 8px; font-size: 8px; }
+  .plan-badge { padding: 2px 6px; font-size: 8px; }
+  .upgrade-to-pro-btn { font-size: 11px; padding: 4px 12px; }
+  .account-avatar-btn { width: 28px; height: 28px; font-size: 11px; }
+  .account-dropdown { right: -8px; min-width: 180px; }
 }

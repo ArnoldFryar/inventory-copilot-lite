@@ -20,11 +20,20 @@
         </h1>
         <p class="subtitle">Manage your subscription and plan.</p>
       </div>
-      <div id="accountMenu" class="account-menu hidden">
-        <span id="accountEmail" class="account-email"></span>
-        <button id="signOutBtn" class="link-btn" type="button">Sign out</button>
+      <div class="header-right-group">
+        <div id="accountMenu" class="account-menu hidden">
+          <span id="accountEmail" class="account-email"></span>
+          <button id="accountAvatarBtn" class="account-avatar-btn" type="button" aria-label="Account menu" aria-expanded="false" aria-haspopup="true">
+            <span id="accountInitial" class="account-initial" aria-hidden="true"></span>
+          </button>
+          <div id="accountDropdown" class="account-dropdown hidden" role="menu">
+            <span class="account-dropdown-email" id="accountDropdownEmail"></span>
+            <hr class="account-dropdown-sep" />
+            <button id="signOutBtn" class="account-dropdown-item" type="button" role="menuitem">Sign out</button>
+          </div>
+        </div>
+        <button id="signInBtn" class="sign-in-btn hidden" type="button">Sign in</button>
       </div>
-      <button id="signInBtn" class="sign-in-btn hidden" type="button">Sign in</button>
     </div>
   </header>
 

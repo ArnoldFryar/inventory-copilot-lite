@@ -18,15 +18,25 @@
         <p class="header-tagline">Upload an inventory CSV from your ERP. Get a prioritized risk list and triage report &mdash; fixed classification rules, no AI inference.</p>
       </div>
       <span class="header-method-pill">Deterministic rules &nbsp;&middot;&nbsp; No AI inference</span>
-      <span id="planBadge" class="plan-badge hidden"></span>
-      <button id="upgradeToProBtn" class="upgrade-to-pro-btn hidden" type="button" data-upgrade="">Upgrade to Pro</button>
-      <!-- Account menu — shown when Supabase auth is configured -->
-      <div id="accountMenu" class="account-menu hidden">
-        <span id="accountEmail" class="account-email"></span>
-        <button id="manageBillingBtn" class="link-btn hidden" type="button">Manage billing</button>
-        <button id="signOutBtn" class="link-btn" type="button">Sign out</button>
+      <!-- Right-aligned cluster: plan + upgrade + account -->
+      <div class="header-right-group">
+        <span id="planBadge" class="plan-badge hidden"></span>
+        <button id="upgradeToProBtn" class="upgrade-to-pro-btn hidden" type="button" data-upgrade="">Upgrade to Pro</button>
+        <!-- Account area — avatar trigger + dropdown -->
+        <div id="accountMenu" class="account-menu hidden">
+          <span id="accountEmail" class="account-email"></span>
+          <button id="accountAvatarBtn" class="account-avatar-btn" type="button" aria-label="Account menu" aria-expanded="false" aria-haspopup="true">
+            <span id="accountInitial" class="account-initial" aria-hidden="true"></span>
+          </button>
+          <div id="accountDropdown" class="account-dropdown hidden" role="menu">
+            <span class="account-dropdown-email" id="accountDropdownEmail"></span>
+            <hr class="account-dropdown-sep" />
+            <button id="manageBillingBtn" class="account-dropdown-item hidden" type="button" role="menuitem">Manage billing</button>
+            <button id="signOutBtn" class="account-dropdown-item" type="button" role="menuitem">Sign out</button>
+          </div>
+        </div>
+        <button id="signInBtn" class="sign-in-btn hidden" type="button">Sign in</button>
       </div>
-      <button id="signInBtn" class="sign-in-btn hidden" type="button">Sign in</button>
     </div>
   </header>
 

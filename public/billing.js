@@ -27,6 +27,10 @@
 
   var $accountMenu = document.getElementById('accountMenu');
   var $accountEmail = document.getElementById('accountEmail');
+  var $accountAvatarBtn = document.getElementById('accountAvatarBtn');
+  var $accountInitial = document.getElementById('accountInitial');
+  var $accountDropdown = document.getElementById('accountDropdown');
+  var $accountDropdownEmail = document.getElementById('accountDropdownEmail');
   var $signOutBtn  = document.getElementById('signOutBtn');
   var $signInBtn   = document.getElementById('signInBtn');
 
@@ -235,7 +239,10 @@
 
     window.authModule.onAuthChange(async function (_event, session) {
       if (session) {
-        $accountEmail.textContent = session.user.email || '';
+        var email = session.user.email || '';
+        $accountEmail.textContent = email;
+        if ($accountDropdownEmail) $accountDropdownEmail.textContent = email;
+        if ($accountInitial) $accountInitial.textContent = email ? email.charAt(0).toUpperCase() : '?';
         show($accountMenu);
         hide($signInBtn);
       } else {
@@ -243,6 +250,36 @@
         show($signInBtn);
       }
     });
+
+    // Avatar dropdown toggle
+    if ($accountAvatarBtn && $accountDropdown) {
+      $accountAvatarBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var isOpen = !$accountDropdown.classList.contains('hidden');
+        if (isOpen) {
+          $accountDropdown.classList.add('hidden');
+          $accountAvatarBtn.setAttribute('aria-expanded', 'false');
+        } else {
+          $accountDropdown.classList.remove('hidden');
+          $accountAvatarBtn.setAttribute('aria-expanded', 'true');
+        }
+      });
+      document.addEventListener('click', function (e) {
+        if (!$accountDropdown.classList.contains('hidden') &&
+            !$accountDropdown.contains(e.target) &&
+            e.target !== $accountAvatarBtn &&
+            !$accountAvatarBtn.contains(e.target)) {
+          $accountDropdown.classList.add('hidden');
+          $accountAvatarBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          $accountDropdown.classList.add('hidden');
+          $accountAvatarBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
 
     // Sign out
     $signOutBtn.addEventListener('click', async function () {
