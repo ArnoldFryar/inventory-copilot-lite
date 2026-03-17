@@ -155,11 +155,12 @@
   align-items: center;
   gap: 6px;
   margin-left: auto;
+  flex-wrap: wrap;
 }
 
 .account-email {
   font-size: 11px;
-  color: rgba(255,255,255,0.40);
+  color: rgba(255,255,255,0.60);
   max-width: 140px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -211,11 +212,11 @@
 /* -- link-btn inside header: ghost style -- */
 .app-header .link-btn {
   font-size: 11px;
-  color: rgba(255,255,255,0.40);
+  color: rgba(255,255,255,0.50);
   padding: 2px 0;
 }
 .app-header .link-btn:hover {
-  color: rgba(255,255,255,0.70);
+  color: rgba(255,255,255,0.80);
 }
 
 /* -- Responsive -- */

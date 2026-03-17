@@ -33,10 +33,6 @@
   transition: box-shadow var(--tx-slow);
 }
 
-.card:hover {
-  box-shadow: var(--shadow-md);
-}
-
 .card h2 {
   font-size: 18px;
   font-weight: 700;

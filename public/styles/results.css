@@ -75,7 +75,7 @@
   font-weight: 800;
   line-height: 1;
   color: var(--ink-900);
-  letter-spacing: -1.5px;
+  letter-spacing: -1px;
 }
 .exec-score-label {
   font-size: 10px;
@@ -238,7 +238,7 @@
 }
 
 .export-btn.locked {
-  opacity: 0.40;
+  opacity: 0.50;
   cursor: not-allowed;
   position: relative;
 }
@@ -249,7 +249,7 @@
   box-shadow: none;
 }
 .pdf-btn.locked {
-  opacity: 0.40;
+  opacity: 0.50;
   cursor: not-allowed;
   position: relative;
 }
@@ -467,9 +467,9 @@
   flex-shrink: 0;
 }
 
-.sev-dot.sev-high   { background: rgba(239,68,68,0.9);  color: #fff; }
-.sev-dot.sev-medium { background: rgba(245,158,11,0.85); color: #fff; }
-.sev-dot.sev-low    { background: rgba(22,163,74,0.8);   color: #fff; }
+.sev-dot.sev-high   { background: var(--red-500);   color: #fff; }
+.sev-dot.sev-medium { background: var(--amber-500); color: #fff; }
+.sev-dot.sev-low    { background: var(--green-600); color: #fff; }
 
 .priority-part {
   font-weight: 700;
@@ -633,7 +633,7 @@
 
 .comparison-sentence {
   font-size: 14px;
-  line-height: 1.7;
+  line-height: 1.75;
   color: var(--ink-700);
   margin-bottom: var(--space-4);
 }
@@ -768,7 +768,7 @@ thead th {
   text-align: left;
   font-size: 11px;
   font-weight: 700;
-  color: var(--ink-500);
+  color: var(--ink-600);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
@@ -874,7 +874,12 @@ tbody tr:hover { background: var(--surface-2) !important; }
 .filter-select:focus {
   outline: none;
   border-color: var(--brand-500);
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+  box-shadow: var(--shadow-focus);
+}
+
+.filter-input:hover,
+.filter-select:hover {
+  border-color: var(--brand-300);
 }
 
 .export-btn {
@@ -937,4 +942,16 @@ tbody tr:hover { background: var(--surface-2) !important; }
 @media (max-width: 480px) {
   .summary-grid { grid-template-columns: repeat(2, 1fr); }
   .exec-kpi { min-width: 0; }
+  .exec-score-ring { width: 100px; height: 100px; }
+  .exec-score-value { font-size: 28px; }
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filter-input,
+  .filter-select {
+    width: 100%;
+    min-width: 0;
+  }
+  .export-btn { width: 100%; text-align: center; justify-content: center; }
 }
