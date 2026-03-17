@@ -153,6 +153,7 @@
     exportUpgrade:    $('exportUpgrade'),
     tableLimitNotice: $('tableLimitNotice'),
     planBadge:        $('planBadge'),
+    upgradeToProBtn:  $('upgradeToProBtn'),
     manageBillingBtn: $('manageBillingBtn'),
     printFilterContext: $('printFilterContext'),
 

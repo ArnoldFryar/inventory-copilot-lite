@@ -274,6 +274,15 @@
       if (dom.pdfUpgrade) dom.pdfUpgrade.classList.add('hidden');
     }
 
+    // Show/hide upgrade button (free plan only, when billing is configured)
+    if (dom.upgradeToProBtn) {
+      if (state.billingConfigured && planData.plan !== 'pro') {
+        dom.upgradeToProBtn.classList.remove('hidden');
+      } else {
+        dom.upgradeToProBtn.classList.add('hidden');
+      }
+    }
+
     // Show/hide manage-billing button
     if (dom.manageBillingBtn) {
       if (state.billingConfigured && state.currentUser && planData.plan === 'pro') {
