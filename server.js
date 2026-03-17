@@ -35,13 +35,12 @@ app.use((_req, res, next) => {
   // font-src: Google Fonts delivers font files from fonts.gstatic.com
   const fontSrc = "'self' https://fonts.gstatic.com";
 
-  // connect-src: include the Supabase project URL (https) and websocket (wss)
-  // for realtime subscriptions, plus the CDN itself for auth config fetches.
-  let connectSrc = "'self'";
+  // connect-src: Supabase (https + wss for realtime) and jsdelivr (browser
+  // fetches source maps from cdn.jsdelivr.net via XHR/fetch at runtime).
+  let connectSrc = "'self' https://cdn.jsdelivr.net";
   if (SUPABASE_URL) {
-    // Derive the wss:// form from the https:// URL
     const wsUrl = SUPABASE_URL.replace(/^https:\/\//, 'wss://');
-    connectSrc = `'self' ${SUPABASE_URL} ${wsUrl}`;
+    connectSrc = `'self' https://cdn.jsdelivr.net ${SUPABASE_URL} ${wsUrl}`;
   }
 
   res.setHeader(
