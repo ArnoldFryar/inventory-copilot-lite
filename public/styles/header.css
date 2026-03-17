@@ -39,11 +39,11 @@
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   flex-wrap: wrap;
   position: relative;
-  min-height: 60px;
-  padding: var(--space-2) 0;
+  min-height: 52px;
+  padding: var(--space-1) 0;
 }
 
 /* -- Left group: product name + badge -- */
@@ -55,10 +55,10 @@
 }
 
 .app-header h1 {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
   color: #ffffff;
-  letter-spacing: -0.4px;
+  letter-spacing: -0.3px;
   line-height: 1;
   margin: 0;
   white-space: nowrap;
@@ -153,17 +153,18 @@
 .account-menu {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin-left: auto;
 }
 
 .account-email {
-  font-size: 12px;
-  color: rgba(255,255,255,0.55);
-  max-width: 160px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.40);
+  max-width: 140px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 400;
 }
 
 .sign-in-btn {
@@ -207,12 +208,23 @@
   transform: translateY(-1px);
 }
 
+/* -- link-btn inside header: ghost style -- */
+.app-header .link-btn {
+  font-size: 11px;
+  color: rgba(255,255,255,0.40);
+  padding: 2px 0;
+}
+.app-header .link-btn:hover {
+  color: rgba(255,255,255,0.70);
+}
+
 /* -- Responsive -- */
 @media (max-width: 640px) {
   .app-header { padding: 0 var(--space-4); }
-  .app-header-inner { min-height: 52px; gap: var(--space-2); }
-  .app-header h1 { font-size: 14px; }
+  .app-header-inner { min-height: 44px; gap: var(--space-1); }
+  .app-header h1 { font-size: 13px; }
   .header-badge { font-size: 8px; padding: 2px 6px; }
   .header-method-pill { display: none; }
-  .account-email { max-width: 100px; font-size: 11px; }
+  .account-email { max-width: 90px; font-size: 10px; }
+  .plan-badge { padding: 2px 8px; font-size: 8px; }
 }
