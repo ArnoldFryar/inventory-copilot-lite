@@ -6,6 +6,63 @@
   margin-top: 24px;
 }
 
+/* ── History toolbar (search + sort) ────────────────────── */
+.history-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.history-search {
+  flex: 1;
+  min-width: 160px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  color: var(--ink-700);
+  background: var(--surface);
+  height: 32px;
+  transition: border-color var(--tx), box-shadow var(--tx);
+}
+
+.history-search:focus {
+  outline: none;
+  border-color: var(--brand-600);
+  box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
+}
+
+.history-sort {
+  padding: 6px 10px;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  color: var(--ink-700);
+  background: var(--surface);
+  height: 32px;
+  cursor: pointer;
+  transition: border-color var(--tx);
+}
+
+.history-sort:focus {
+  outline: none;
+  border-color: var(--brand-600);
+  box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
+}
+
+/* ── History count label ─────────────────────────────────── */
+.history-count {
+  font-size: 12px;
+  color: var(--ink-400);
+  font-weight: 500;
+  margin-bottom: 10px;
+  margin-top: -4px;
+}
+
 .history-list {
   list-style: none;
   margin: 0;
@@ -86,4 +143,167 @@
   border-radius: var(--radius-pill);
   padding: 1px 7px;
   vertical-align: middle;
+}
+
+/* ── Enhanced history item card ──────────────────────────── */
+.history-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 0 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ink-100);
+}
+.history-item:last-child { border-bottom: none; }
+
+.history-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.history-item-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-item-meta {
+  font-size: 12px;
+  color: var(--ink-500);
+}
+
+.history-item-counts {
+  display: block;
+  font-size: 11px;
+  color: var(--ink-400);
+  margin-top: 2px;
+}
+
+/* ── Compare delta badge ─────────────────────────────────── */
+.history-delta-row {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}
+
+.history-delta-label {
+  font-size: 11px;
+  color: var(--ink-400);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-right: 2px;
+}
+
+.history-delta-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15px;
+  border: 1px solid;
+}
+
+.history-delta-chip.delta-worse {
+  color: var(--red-700);
+  background: var(--red-50);
+  border-color: var(--red-200);
+}
+
+.history-delta-chip.delta-better {
+  color: var(--green-700);
+  background: var(--green-50);
+  border-color: var(--green-100);
+}
+
+.history-delta-chip.delta-neutral {
+  color: var(--ink-500);
+  background: var(--surface-2);
+  border-color: var(--border-2);
+}
+
+/* ── Actions column ──────────────────────────────────────── */
+.history-item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+  align-items: flex-end;
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.history-compare-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--brand-200);
+  border-radius: var(--radius-sm);
+  background: var(--brand-50);
+  color: var(--brand-700);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.history-compare-btn:hover {
+  background: var(--brand-100);
+  border-color: var(--brand-400);
+}
+
+.history-compare-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.history-delete-btn { color: var(--red-600); }
+.history-delete-btn:hover { color: var(--red-700); }
+
+.history-empty,
+.history-sign-in {
+  font-size: 13px;
+  color: var(--ink-500);
+  padding: 12px 0;
+}
+
+.history-upgrade {
+  font-size: 13px;
+  color: var(--brand-600);
+  background: var(--brand-50);
+  border: 1px solid var(--brand-100);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-weight: 500;
+}
+
+/* ── Inline upgrade button ───────────────────────────────── */
+.upgrade-link-btn {
+  display: inline;
+  background: none;
+  border: none;
+  color: var(--brand-600);
+  font-weight: 700;
+  font-size: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+.upgrade-link-btn:hover {
+  color: var(--brand-700, #4338ca);
 }

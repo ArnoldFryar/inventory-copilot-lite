@@ -422,6 +422,22 @@
     <section id="historySection" class="history-section card hidden" aria-label="Saved analysis history">
       <h2>Saved History</h2>
       <p class="hint" id="historyHint">Your saved analysis runs appear here.</p>
+      <div class="history-toolbar hidden" id="historyToolbar">
+        <input
+          type="search"
+          id="historySearch"
+          class="history-search"
+          placeholder="Search by filename&hellip;"
+          aria-label="Search history by filename"
+        />
+        <select id="historySort" class="history-sort" aria-label="Sort runs">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="name">Name A→Z</option>
+          <option value="parts-desc">Most parts</option>
+        </select>
+      </div>
+      <p id="historyCount" class="history-count hidden"></p>
       <ul id="historyList" class="history-list"></ul>
       <p id="historyEmpty" class="history-empty hidden">No saved runs yet.</p>
       <p id="historySignIn" class="history-sign-in hidden">Sign in to save and view your analysis history.</p>

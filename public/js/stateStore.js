@@ -102,6 +102,10 @@
     historyEmpty:    $('historyEmpty'),
     historySignIn:   $('historySignIn'),
     historyUpgrade:  $('historyUpgrade'),
+    historyToolbar:  $('historyToolbar'),
+    historySearch:   $('historySearch'),
+    historySort:     $('historySort'),
+    historyCount:    $('historyCount'),
 
     // Comparison panel
     comparisonSection:        $('comparisonSection'),
