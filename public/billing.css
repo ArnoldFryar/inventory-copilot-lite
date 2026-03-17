@@ -278,6 +278,20 @@
   background: var(--brand-600);
 }
 
+/* Inline price shown next to plan name in comparison column heading */
+.billing-plan-price-inline {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--brand-600);
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.billing-plan-price-period {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--brand-500);
+}
+
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 560px) {
   .billing-main {
