@@ -165,15 +165,17 @@
       if (dom.exportUpgrade) {
         while (dom.exportUpgrade.firstChild) dom.exportUpgrade.removeChild(dom.exportUpgrade.firstChild);
         dom.exportUpgrade.classList.remove('hidden');
+        var csvLabel = document.createElement('span');
+        csvLabel.className = 'upgrade-callout-label';
+        csvLabel.textContent = 'Pro feature';
+        dom.exportUpgrade.appendChild(csvLabel);
         if (state.billingConfigured) {
-          var btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'upgrade-link-btn';
-          btn.setAttribute('data-upgrade', '');
-          btn.textContent = 'Upgrade to Pro';
-          dom.exportUpgrade.appendChild(btn);
-        } else {
-          dom.exportUpgrade.textContent = 'Pro feature';
+          var csvBtn = document.createElement('button');
+          csvBtn.type = 'button';
+          csvBtn.className = 'upgrade-callout-btn';
+          csvBtn.setAttribute('data-upgrade', '');
+          csvBtn.textContent = 'Unlock CSV Export \u2192';
+          dom.exportUpgrade.appendChild(csvBtn);
         }
       }
     } else {
@@ -188,15 +190,17 @@
       if (dom.pdfUpgrade) {
         while (dom.pdfUpgrade.firstChild) dom.pdfUpgrade.removeChild(dom.pdfUpgrade.firstChild);
         dom.pdfUpgrade.classList.remove('hidden');
+        var pdfLabel = document.createElement('span');
+        pdfLabel.className = 'upgrade-callout-label';
+        pdfLabel.textContent = 'Pro feature';
+        dom.pdfUpgrade.appendChild(pdfLabel);
         if (state.billingConfigured) {
-          var btn2 = document.createElement('button');
-          btn2.type = 'button';
-          btn2.className = 'upgrade-link-btn';
-          btn2.setAttribute('data-upgrade', '');
-          btn2.textContent = 'Upgrade to Pro';
-          dom.pdfUpgrade.appendChild(btn2);
-        } else {
-          dom.pdfUpgrade.textContent = 'Pro feature';
+          var pdfBtn2 = document.createElement('button');
+          pdfBtn2.type = 'button';
+          pdfBtn2.className = 'upgrade-callout-btn';
+          pdfBtn2.setAttribute('data-upgrade', '');
+          pdfBtn2.textContent = 'Unlock PDF Export \u2192';
+          dom.pdfUpgrade.appendChild(pdfBtn2);
         }
       }
     } else {

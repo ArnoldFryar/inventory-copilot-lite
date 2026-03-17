@@ -9,11 +9,61 @@
 
   function showAiHelpersPanel() {
     if (!dom.aiHelpersSection) return;
+
+    var hasAnalysis = !!state.lastResponse;
     var isPro = state.currentPlan && state.currentPlan.plan === 'pro';
-    if (isPro && state.aiHelpersAvailable && state.lastResponse) {
-      dom.aiHelpersSection.classList.remove('hidden');
-    } else {
+
+    // ── No analysis yet: hide everything ───────────────────────────────────
+    if (!hasAnalysis) {
       dom.aiHelpersSection.classList.add('hidden');
+      if (dom.comparisonLockedCta) dom.comparisonLockedCta.classList.add('hidden');
+      return;
+    }
+
+    // ── Analysis loaded, Pro plan: show active panel ────────────────────────
+    if (isPro && state.aiHelpersAvailable) {
+      dom.aiHelpersSection.classList.remove('hidden');
+      if (dom.aiHelpersActions) dom.aiHelpersActions.classList.remove('hidden');
+      if (dom.aiHelpersLockedCta) dom.aiHelpersLockedCta.classList.add('hidden');
+      if (dom.comparisonLockedCta) dom.comparisonLockedCta.classList.add('hidden');
+      return;
+    }
+
+    // ── Analysis loaded, NOT Pro: show locked CTA states ───────────────────
+    // AI Helpers section — hide buttons, show upgrade CTA
+    dom.aiHelpersSection.classList.remove('hidden');
+    if (dom.aiHelpersActions) dom.aiHelpersActions.classList.add('hidden');
+    if (dom.aiHelperResult) dom.aiHelperResult.classList.add('hidden');
+
+    if (dom.aiHelpersLockedCta) {
+      dom.aiHelpersLockedCta.classList.remove('hidden');
+      while (dom.aiHelpersLockedCta.firstChild) {
+        dom.aiHelpersLockedCta.removeChild(dom.aiHelpersLockedCta.firstChild);
+      }
+      var aiCta = App.buildUpsellCta({
+        icon: '\u2728',
+        headline: 'AI Draft Helpers \u2014 Pro Feature',
+        description: 'Turn your triage data into ready-to-send drafts in seconds. Grounded in the current analysis and reviewed by you before use.',
+        features: ['Expedite email', 'Escalation summary', 'Meeting talking points'],
+        showBtn: state.billingConfigured !== false,
+      });
+      dom.aiHelpersLockedCta.appendChild(aiCta);
+    }
+
+    // Comparison locked CTA — teaser for run-to-run comparison
+    if (dom.comparisonLockedCta) {
+      dom.comparisonLockedCta.classList.remove('hidden');
+      while (dom.comparisonLockedCta.firstChild) {
+        dom.comparisonLockedCta.removeChild(dom.comparisonLockedCta.firstChild);
+      }
+      var cmpCta = App.buildUpsellCta({
+        icon: '\uD83D\uDCC8',
+        headline: 'Trend Comparison \u2014 Pro Feature',
+        description: 'See exactly what changed since your last upload \u2014 new urgent items, resolved risks, and status shifts over time.',
+        features: ['New urgent items', 'Resolved risks', 'Status change tracking', 'Trend deltas'],
+        showBtn: state.billingConfigured !== false,
+      });
+      dom.comparisonLockedCta.appendChild(cmpCta);
     }
   }
 

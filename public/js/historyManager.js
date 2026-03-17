@@ -147,7 +147,18 @@
       dom.historyEmpty.classList.add('hidden');
       if (dom.historyToolbar) dom.historyToolbar.classList.add('hidden');
       if (dom.historyCount)   dom.historyCount.classList.add('hidden');
-      if (dom.historyUpgrade) dom.historyUpgrade.classList.remove('hidden');
+      if (dom.historyUpgrade) {
+        dom.historyUpgrade.classList.remove('hidden');
+        while (dom.historyUpgrade.firstChild) dom.historyUpgrade.removeChild(dom.historyUpgrade.firstChild);
+        var cta = App.buildUpsellCta({
+          icon: '\uD83D\uDDC2\uFE0F',
+          headline: 'Run History \u2014 Pro Feature',
+          description: 'Save your analysis runs and access them from any device. Compare successive uploads to track how your inventory health changes over time.',
+          features: ['Save unlimited runs', 'Compare uploads side-by-side', 'Search & filter history', 'Load past results instantly'],
+          showBtn: state.billingConfigured !== false,
+        });
+        dom.historyUpgrade.appendChild(cta);
+      }
       return;
     }
     if (dom.historyUpgrade) dom.historyUpgrade.classList.add('hidden');

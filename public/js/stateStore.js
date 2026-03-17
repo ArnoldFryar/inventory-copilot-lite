@@ -155,6 +155,9 @@
 
     // AI helpers panel
     aiHelpersSection:    $('aiHelpersSection'),
+    aiHelpersActions:    $('aiHelpersActions'),
+    aiHelpersLockedCta:  $('aiHelpersLockedCta'),
+    comparisonLockedCta: $('comparisonLockedCta'),
     aiHelperResult:      $('aiHelperResult'),
     aiHelperResultLabel: $('aiHelperResultLabel'),
     aiHelperResultText:  $('aiHelperResultText'),
@@ -175,6 +178,60 @@
       case 'Invalid':              return 'status-invalid';
       default:                     return '';
     }
+  };
+
+  /**
+   * Builds a contextual upgrade CTA DOM node.
+   * config: { icon, headline, description, features[], showBtn, btnText }
+   * Call only after state.billingConfigured is known.
+   */
+  App.buildUpsellCta = function (config) {
+    var wrap = document.createElement('div');
+    wrap.className = 'upsell-cta';
+
+    var iconEl = document.createElement('span');
+    iconEl.className = 'upsell-cta-icon';
+    iconEl.textContent = config.icon || '\uD83D\uDD12';
+    wrap.appendChild(iconEl);
+
+    var body = document.createElement('div');
+    body.className = 'upsell-cta-body';
+
+    var h = document.createElement('p');
+    h.className = 'upsell-cta-headline';
+    h.textContent = config.headline;
+    body.appendChild(h);
+
+    if (config.description) {
+      var d = document.createElement('p');
+      d.className = 'upsell-cta-desc';
+      d.textContent = config.description;
+      body.appendChild(d);
+    }
+
+    if (config.features && config.features.length) {
+      var ul = document.createElement('ul');
+      ul.className = 'upsell-cta-features';
+      config.features.forEach(function (f) {
+        var li = document.createElement('li');
+        li.textContent = f;
+        ul.appendChild(li);
+      });
+      body.appendChild(ul);
+    }
+
+    wrap.appendChild(body);
+
+    if (config.showBtn !== false) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'upsell-cta-btn';
+      btn.setAttribute('data-upgrade', '');
+      btn.textContent = config.btnText || 'Upgrade to Pro \u2192';
+      wrap.appendChild(btn);
+    }
+
+    return wrap;
   };
 
   App.formatNumber = function (value) {

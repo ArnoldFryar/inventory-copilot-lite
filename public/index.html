@@ -292,6 +292,10 @@
       </details>
     </section>
 
+    <!-- ── Comparison locked CTA (free-plan teaser) ────────────────────── -->
+    <!-- JS-populated; shown when analysis is loaded and plan is free. -->
+    <section id="comparisonLockedCta" class="card hidden" aria-label="Compare runs — Pro feature"></section>
+
     <!-- ── Top priority panel ───────────────────────────────────────────── -->
     <!--
       Shows the most urgent non-Low items (High then Medium).
@@ -325,7 +329,7 @@
         These are AI-generated drafts for human review. Verify all details before sending or acting on this content.
         AI never changes the deterministic classification above.
       </p>
-      <div class="ai-helpers-actions">
+      <div class="ai-helpers-actions" id="aiHelpersActions">
         <button class="ai-helper-btn" type="button" data-helper="expedite_email">
           <span class="ai-helper-btn-icon">&#9993;</span>
           <span class="ai-helper-btn-label">Draft Expedite Email</span>
@@ -342,6 +346,8 @@
           <span class="ai-helper-btn-desc">S&amp;OP / materials review prep</span>
         </button>
       </div>
+      <!-- Upgrade CTA shown when analysis is loaded but plan is free -->
+      <div id="aiHelpersLockedCta" class="hidden"></div>
       <div id="aiHelperResult" class="ai-helper-result hidden">
         <div class="ai-helper-result-header">
           <strong id="aiHelperResultLabel"></strong>
@@ -441,7 +447,7 @@
       <ul id="historyList" class="history-list"></ul>
       <p id="historyEmpty" class="history-empty hidden">No saved runs yet.</p>
       <p id="historySignIn" class="history-sign-in hidden">Sign in to save and view your analysis history.</p>
-      <p id="historyUpgrade" class="history-upgrade hidden">Saved history is available on the Pro plan. <button class="upgrade-link-btn" type="button" data-upgrade>Upgrade to Pro</button></p>
+      <div id="historyUpgrade" class="history-upgrade hidden"></div>
     </section>
 
   </main>
