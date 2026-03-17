@@ -288,8 +288,28 @@ function analyzeRow(row, fieldMap) {
 }
 
 // ---------------------------------------------------------------------------
+// priorityTierOf
+// Returns the sort tier for a row so active stockouts always surface above
+// imminent risks, and imminent risks always surface above everything else.
+//
+//   Tier 1 — ACTIVE STOCKOUT : coverage ≤ 0 (on hand depleted)
+//   Tier 2 — IMMINENT RISK   : coverage positive but below lead time
+//   Tier 3 — all other rows  (excess, dead stock, healthy, no-usage, invalid)
+//
+// Null coverage (Invalid / No Usage Data rows) falls through to Tier 3.
+// ---------------------------------------------------------------------------
+function priorityTierOf(row) {
+  const cov = row.coverage;
+  const lt  = row.lead_time;
+  if (cov !== null && cov !== undefined && cov <= 0) return 1;
+  if (cov !== null && cov !== undefined &&
+      lt  !== null && lt  !== undefined && cov < lt)  return 2;
+  return 3;
+}
+
+// ---------------------------------------------------------------------------
 // analyzeRows
-// Maps raw CSV rows → RowResult[], sorts by severity + coverage, builds
+// Maps raw CSV rows → RowResult[], sorts by priority tier + coverage, builds
 // summary counts, and selects the top-priority items for the priority panel.
 //
 // Returns:
@@ -337,13 +357,14 @@ function analyzeRows(rows, preResolved) {
     console.warn(`[analyzeRows] duplicate part numbers detected: ${duplicateWarnings.join(', ')}`);
   }
 
-  // Sort: High before Medium before Low.
-  // Tie-break within the same severity: ascending coverage (nulls last),
-  // so the most at-risk part within a tier floats to the top.
+  // Sort: Tier 1 (active stockouts) before Tier 2 (imminent risks) before
+  // Tier 3 (everything else).  Within the same tier, ascending coverage so
+  // the most at-risk row surfaces first.  Null coverage sorts to the bottom
+  // of its tier (treated as Infinity).
   results.sort((a, b) => {
-    const sA = SEVERITY_ORDER[a.severity] ?? 3;
-    const sB = SEVERITY_ORDER[b.severity] ?? 3;
-    if (sA !== sB) return sA - sB;
+    const tA = priorityTierOf(a);
+    const tB = priorityTierOf(b);
+    if (tA !== tB) return tA - tB;
     const cA = (a.coverage !== null && a.coverage !== undefined) ? a.coverage : Infinity;
     const cB = (b.coverage !== null && b.coverage !== undefined) ? b.coverage : Infinity;
     return cA - cB;

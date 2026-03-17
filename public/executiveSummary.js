@@ -65,7 +65,16 @@ var buildExecutiveSummary = (function () {
     });
     if (candidates.length === 0) return null;
 
-    candidates.sort(function (a, b) {
+    // Tier 1 — active stockouts (coverage at or below zero: on hand is depleted).
+    // Tier 2 — imminent risks  (coverage positive but below lead time).
+    // Always prefer a Tier 1 item; fall back to the full candidate pool only
+    // when no active stockout exists.
+    var tier1 = candidates.filter(function (r) {
+      return r.coverage !== null && r.coverage !== undefined && r.coverage <= 0;
+    });
+    var pool = tier1.length > 0 ? tier1 : candidates;
+
+    pool.sort(function (a, b) {
       var usageA = (a.daily_usage != null) ? a.daily_usage : 0;
       var usageB = (b.daily_usage != null) ? b.daily_usage : 0;
       if (usageB !== usageA) return usageB - usageA;          // higher usage first
@@ -74,7 +83,7 @@ var buildExecutiveSummary = (function () {
       return covA - covB;                                      // lower coverage first
     });
 
-    var r = candidates[0];
+    var r = pool[0];
     return {
       part:    r.part_number,
       status:  r.status,
