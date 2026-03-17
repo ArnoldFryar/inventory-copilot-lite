@@ -228,6 +228,41 @@
       <button id="pdfBtn" class="pdf-btn" type="button">Print / Save as PDF</button>
     </div>
 
+    <!-- ── Top priority panel ───────────────────────────────────────────── -->
+    <!--
+      Shows the most urgent non-Low items (High then Medium).
+      Hidden when empty. Populated by script.js via textContent.
+    -->
+    <section id="prioritySection" class="priority-section card hidden" aria-label="Top priority items">
+      <p class="section-label" id="prioritySectionLabel">Action Required</p>
+      <h2>Needs Attention Now</h2>
+      <p class="hint" id="priorityHint"></p>
+      <div id="priorityAllClear" class="priority-all-clear hidden">
+        All parts are adequately stocked against their lead times &mdash; nothing requires immediate action.
+      </div>
+      <ol id="priorityList" class="priority-list">
+        <!-- Items injected by script.js -->
+      </ol>
+    </section>
+
+    <!-- ── Leadership summary ───────────────────────────────────────────── -->
+    <!--
+      Plain-language executive digest of the analysis results.
+      Intended for forwarding to plant or supply chain leadership.
+      Generated deterministically by script.js — no AI inference.
+    -->
+    <section id="leadershipSection" class="leadership-section card hidden" aria-label="Leadership summary">
+      <div class="leadership-header">
+        <h2>Triage Summary</h2>
+        <span class="audit-tag">Deterministic rules &mdash; no AI inference</span>
+      </div>
+      <p id="leadershipNarrative" class="leadership-narrative"></p>
+      <div class="audit-note">
+        <strong>Classification basis:</strong>
+        <span id="auditThresholds"></span>
+      </div>
+    </section>
+
     <!-- ── Summary metrics ──────────────────────────────────────────────── -->
     <section id="summarySection" class="summary-section card hidden" aria-label="Analysis summary">
       <p class="section-label section-label-neutral">Analysis Results</p>
@@ -268,24 +303,6 @@
       </ul>
     </section>
 
-    <!-- ── Leadership summary ───────────────────────────────────────────── -->
-    <!--
-      Plain-language executive digest of the analysis results.
-      Intended for forwarding to plant or supply chain leadership.
-      Generated deterministically by script.js — no AI inference.
-    -->
-    <section id="leadershipSection" class="leadership-section card hidden" aria-label="Leadership summary">
-      <div class="leadership-header">
-        <h2>Triage Summary</h2>
-        <span class="audit-tag">Deterministic rules &mdash; no AI inference</span>
-      </div>
-      <p id="leadershipNarrative" class="leadership-narrative"></p>
-      <div class="audit-note">
-        <strong>Classification basis:</strong>
-        <span id="auditThresholds"></span>
-      </div>
-    </section>
-
     <!-- ── Changes Since Last Upload ─────────────────────────────────────── -->
     <!--
       Compact comparison panel shown when a prior saved run exists.
@@ -309,23 +326,6 @@
     <!-- ── Comparison locked CTA (free-plan teaser) ────────────────────── -->
     <!-- JS-populated; shown when analysis is loaded and plan is free. -->
     <section id="comparisonLockedCta" class="card hidden" aria-label="Compare runs — Pro feature"></section>
-
-    <!-- ── Top priority panel ───────────────────────────────────────────── -->
-    <!--
-      Shows the most urgent non-Low items (High then Medium).
-      Hidden when empty. Populated by script.js via textContent.
-    -->
-    <section id="prioritySection" class="priority-section card hidden" aria-label="Top priority items">
-      <p class="section-label" id="prioritySectionLabel">Action Required</p>
-      <h2>Needs Attention Now</h2>
-      <p class="hint" id="priorityHint"></p>
-      <div id="priorityAllClear" class="priority-all-clear hidden">
-        All parts are adequately stocked against their lead times &mdash; nothing requires immediate action.
-      </div>
-      <ol id="priorityList" class="priority-list">
-        <!-- Items injected by script.js -->
-      </ol>
-    </section>
 
     <!-- ── AI Helpers panel (Pro only) ───────────────────────────────────── -->
     <!--
