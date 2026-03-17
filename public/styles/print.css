@@ -1,0 +1,181 @@
+/* =========================================================
+   print.css — @media print rules and print-only elements
+   ======================================================= */
+
+/* Elements that only appear in print output — hidden on screen */
+.print-only { display: none; }
+
+@page {
+  margin: 0.75in 0.6in;
+  size: letter;
+}
+
+@media print {
+  /* Hide everything that isn't part of the report */
+  .app-header .subtitle,
+  .app-header .header-tagline,
+  .header-method-pill,
+  .plan-badge,
+  .upload-section,
+  .error-banner,
+  .action-bar,
+  .filter-bar,
+  .filter-count,
+  .export-btn,
+  .upgrade-callout,
+  .plan-limit-notice,
+  .app-footer,
+  .demo-hint,
+  .account-menu,
+  .sign-in-btn,
+  .auth-modal-backdrop,
+  .save-run-btn,
+  .history-section,
+  .ai-helpers-section {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    font-size: 11pt;
+    color: #000;
+  }
+
+  .app-header {
+    background: #0f172a !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    padding: 14px 24px;
+    margin-bottom: 16pt;
+  }
+
+  .app-header::before { display: none; }
+
+  .app-header-inner {
+    max-width: 100%;
+  }
+
+  .app-main {
+    max-width: 100%;
+    padding: 0 24px;
+    gap: 14pt;
+  }
+
+  .card {
+    border: 1px solid #cbd5e1;
+    border-radius: 0;
+    padding: 14pt 16pt;
+    break-inside: avoid;
+    box-shadow: none;
+  }
+
+  .priority-section {
+    background: #0f172a !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* Show print-only report header */
+  .print-only { display: block; }
+
+  /* ── Report header ─────────────────────────────────────────── */
+  .print-report-header {
+    padding-bottom: 12pt;
+    margin-bottom: 4pt;
+    border-bottom: 2px solid #0f172a;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-title {
+    font-size: 18pt;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .print-meta {
+    font-size: 9pt;
+    color: #475569;
+    margin-top: 3pt;
+  }
+
+  .print-method {
+    font-size: 8pt;
+    color: #64748b;
+    margin-top: 2pt;
+    font-style: italic;
+  }
+
+  /* Keep coloured summary cards and priority items readable in print */
+  .summary-card,
+  .priority-item,
+  tbody tr {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Prevent table rows from splitting across pages */
+  tbody tr { break-inside: avoid; }
+
+  table {
+    font-size: 8.5pt;
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  thead th, tbody td {
+    padding: 4pt 6pt;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  thead th:nth-child(1) { width: 11%; }
+  thead th:nth-child(2) { width:  7%; }
+  thead th:nth-child(3) { width: 12%; }
+  thead th:nth-child(4) { width:  6%; }
+  thead th:nth-child(5) { width:  6%; }
+  thead th:nth-child(6) { width:  7%; }
+  thead th:nth-child(7) { width:  7%; }
+  thead th:nth-child(8) { width: 22%; }
+  thead th:nth-child(9) { width: 22%; }
+
+  .results-section {
+    page-break-before: always;
+    break-before: always;
+  }
+
+  .priority-item { break-inside: avoid; }
+
+  /* Leadership left-border: remove for print */
+  .leadership-section { border-left: none; }
+
+  /* Warning banner — keep visible but drop colour */
+  .warning-banner {
+    background: #fff !important;
+    border: 1px solid #64748b;
+    border-left: 3px solid #64748b;
+    color: #1e293b;
+  }
+
+  /* Repeat table header on every printed page */
+  thead { display: table-header-group; }
+
+  .print-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 5pt 16pt;
+    border-top: 1px solid #cbd5e1;
+    font-size: 7.5pt;
+    color: #475569;
+    background: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

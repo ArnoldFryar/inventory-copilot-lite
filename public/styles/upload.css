@@ -1,0 +1,318 @@
+/* =========================================================
+   upload.css — Upload form, hero, file requirements, banners
+   ======================================================= */
+
+/* ── Upload section ──────────────────────────────────────── */
+.upload-section {
+  position: relative;
+}
+
+.context-block {
+  margin-bottom: 18px;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--ink-500);
+  line-height: 1.6;
+}
+
+.hint code {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 12px;
+  color: var(--ink-700);
+  font-family: 'Courier New', monospace;
+}
+
+/* ── Upload form ─────────────────────────────────────────── */
+#uploadForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.file-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border: 2px dashed var(--border-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--tx), background var(--tx);
+  background: var(--surface-2);
+  color: var(--ink-600);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.file-label:hover {
+  border-color: var(--brand-600);
+  background: var(--brand-50);
+  color: var(--brand-700);
+}
+
+.file-label-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+#uploadForm input[type="file"] {
+  display: none;
+}
+
+button[type="submit"] {
+  padding: 11px 28px;
+  background: var(--brand-600);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--tx), box-shadow var(--tx), transform var(--tx);
+  letter-spacing: -0.2px;
+  align-self: flex-start;
+}
+
+button[type="submit"]:hover {
+  background: var(--brand-700);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+button[type="submit"]:active {
+  transform: none;
+  box-shadow: none;
+}
+
+button[type="submit"]:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Error / warning banners ─────────────────────────────── */
+.error-banner {
+  background: var(--red-50);
+  border: 1px solid var(--red-200);
+  border-left: 4px solid var(--red-500);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--red-700);
+  font-weight: 500;
+}
+
+.warning-banner {
+  background: var(--amber-50);
+  border: 1px solid var(--amber-400);
+  border-left: 4px solid var(--amber-500);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--amber-700);
+}
+
+.warning-banner ul.warning-list {
+  margin: 6px 0 0 0;
+  padding-left: 18px;
+}
+
+.warning-banner ul.warning-list li {
+  margin-bottom: 3px;
+}
+
+/* ── Hero headline ────────────────────────────────────────── */
+.hero-headline {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.hero-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink-900);
+  margin: 0 0 6px;
+}
+.hero-subtext {
+  font-size: 14px;
+  color: var(--ink-500);
+  margin: 0;
+}
+
+/* ── Demo button ──────────────────────────────────────────── */
+.demo-btn {
+  display: inline-block;
+  background: var(--brand-600);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: background 0.15s;
+  vertical-align: middle;
+}
+.demo-btn:hover { background: var(--brand-700); }
+.demo-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Demo badge ───────────────────────────────────────────── */
+.demo-badge {
+  background: var(--brand-50);
+  border: 1px solid var(--brand-100);
+  border-left: 4px solid var(--brand-600);
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--ink-700);
+  margin-bottom: 12px;
+}
+.demo-badge strong {
+  color: var(--brand-700);
+}
+
+/* ── Demo hint ────────────────────────────────────────────── */
+.demo-hint {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--ink-500);
+}
+
+/* ── File requirements disclosure ─────────────────────────── */
+details.file-requirements {
+  margin-bottom: 16px;
+}
+
+details.file-requirements > summary {
+  color: var(--brand-600);
+  cursor: pointer;
+  font-size: 13px;
+  list-style: none;
+  user-select: none;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+details.file-requirements > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.file-requirements > summary::before {
+  content: '\25b8  ';
+  text-decoration: none;
+  display: inline-block;
+}
+
+details[open].file-requirements > summary::before {
+  content: '\25be  ';
+}
+
+.file-req-body {
+  margin-top: 10px;
+  padding: 14px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--ink-600);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.file-req-body p {
+  margin: 0 0 6px;
+}
+
+.file-req-body ul {
+  margin: 0 0 10px;
+  padding-left: 1.25rem;
+}
+
+.file-req-body li {
+  margin-bottom: 3px;
+}
+
+p.file-req-not-supported {
+  margin: 4px 0 0 !important;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--ink-400);
+}
+
+/* ── FAQ disclosures ─────────────────────────────────────── */
+details.faq-block {
+  margin-bottom: 16px;
+}
+
+details.faq-block > summary {
+  color: var(--brand-600);
+  cursor: pointer;
+  font-size: 13px;
+  list-style: none;
+  user-select: none;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+details.faq-block > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.faq-block > summary::before {
+  content: '\25b8  ';
+  text-decoration: none;
+  display: inline-block;
+}
+
+details[open].faq-block > summary::before {
+  content: '\25be  ';
+}
+
+.faq-q {
+  font-weight: 600;
+  margin: 10px 0 2px;
+  color: var(--ink-800);
+}
+
+.faq-q:first-child { margin-top: 0; }
+
+.faq-a {
+  margin: 0 0 0;
+  color: var(--ink-600);
+}
+
+/* ── Loading state on submit button ──────────────────────── */
+#submitBtn.is-loading {
+  position: relative;
+  color: transparent;
+  pointer-events: none;
+}
+
+#submitBtn.is-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.65s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

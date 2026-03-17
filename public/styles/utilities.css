@@ -1,0 +1,21 @@
+/* =========================================================
+   utilities.css — Hidden helper, link-btn, responsive
+   ======================================================= */
+
+.hidden { display: none !important; }
+
+/* ── Link button ─────────────────────────────────────────── */
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--brand-600);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: var(--font-sans);
+  padding: 0;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.link-btn:hover { color: var(--brand-700); }

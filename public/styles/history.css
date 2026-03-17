@@ -1,0 +1,89 @@
+/* =========================================================
+   history.css — Run history panel
+   ======================================================= */
+
+.history-section {
+  margin-top: 24px;
+}
+
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ink-100);
+}
+.history-item:last-child { border-bottom: none; }
+
+.history-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.history-item-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-item-meta {
+  font-size: 12px;
+  color: var(--ink-500);
+}
+
+.history-item-counts {
+  display: block;
+  font-size: 11px;
+  color: var(--ink-400);
+  margin-top: 2px;
+}
+
+.history-item-actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.history-delete-btn { color: var(--red-600); }
+.history-delete-btn:hover { color: var(--red-700); }
+
+.history-empty,
+.history-sign-in {
+  font-size: 13px;
+  color: var(--ink-500);
+  padding: 12px 0;
+}
+
+.history-upgrade {
+  font-size: 13px;
+  color: var(--brand-600);
+  background: var(--brand-50);
+  border: 1px solid var(--brand-100);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-weight: 500;
+}
+
+.history-source-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--ink-100);
+  color: var(--ink-500);
+  border-radius: var(--radius-pill);
+  padding: 1px 7px;
+  vertical-align: middle;
+}
