@@ -52,6 +52,25 @@ app.use((_req, res, next) => {
 });
 
 // ---------------------------------------------------------------------------
+// Hostname-based root routing
+// Intercepts GET / before express.static can apply its index.html fallback.
+//   myopscopilot.com         → ops.html  (marketing landing page)
+//   www.myopscopilot.com     → 301 redirect → myopscopilot.com
+//   app.myopscopilot.com     → index.html (the app)
+//   localhost / anything else → index.html (the app — safe for local dev)
+// ---------------------------------------------------------------------------
+app.get('/', (req, res) => {
+  const host = (req.hostname || '').toLowerCase();
+  if (host === 'www.myopscopilot.com') {
+    return res.redirect(301, 'https://myopscopilot.com/');
+  }
+  if (host === 'myopscopilot.com') {
+    return res.sendFile(path.join(__dirname, 'public', 'ops.html'));
+  }
+  return res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// ---------------------------------------------------------------------------
 // Static files
 // ---------------------------------------------------------------------------
 app.use(express.static(path.join(__dirname, 'public')));
