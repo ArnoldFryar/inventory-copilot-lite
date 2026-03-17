@@ -51,16 +51,20 @@
     <!-- ── Upload form ──────────────────────────────────────────────────── -->
     <section class="upload-section card">
       <div class="hero-headline">
-        <h2 class="hero-title">Analyze your inventory risk in 30&nbsp;seconds</h2>
-        <p class="hero-subtext">Upload a CSV from your ERP or try the live demo &mdash; no signup required.</p>
+        <h2 class="hero-title">Turn raw inventory data into a prioritized risk&nbsp;report</h2>
+        <p class="hero-subtext">Upload your ERP export. Get stockout risks, excess flags, and actionable triage &mdash; in&nbsp;seconds, not&nbsp;hours.</p>
         <div class="trust-strip">
-          <span class="trust-item">&#x2713; 7 risk categories</span>
-          <span class="trust-item">&#x2713; AI-powered insights</span>
-          <span class="trust-item">&#x2713; Instant PDF export</span>
+          <span class="trust-item"><span class="trust-icon" aria-hidden="true">&#x2713;</span> 7 risk categories</span>
+          <span class="trust-item"><span class="trust-icon" aria-hidden="true">&#x2713;</span> Deterministic rules</span>
+          <span class="trust-item"><span class="trust-icon" aria-hidden="true">&#x2713;</span> Instant PDF export</span>
         </div>
       </div>
-      <p class="section-label section-label-upload">Step 1</p>
-      <h2>Upload your inventory CSV</h2>
+
+      <div class="upload-engine-wrapper">
+        <div class="upload-engine-header">
+          <span class="upload-step-badge">Step 1</span>
+          <h2>Upload your inventory CSV</h2>
+        </div>
       <p class="context-block">
         Each part receives a coverage score &mdash; days of stock on hand divided by daily usage &mdash;
         and is classified against its supplier lead time.
@@ -101,6 +105,7 @@
         <label class="file-label" for="csvfile">
           <span class="file-label-icon" aria-hidden="true">&#8593;</span>
           <span id="fileLabel">Choose a CSV file&hellip;</span>
+          <span class="file-label-hint">or drag and drop &mdash; .csv up to 5 MB</span>
           <input type="file" id="csvfile" name="csvfile" accept=".csv" />
         </label>
         <button type="submit" id="submitBtn" disabled>
@@ -117,6 +122,7 @@
         <a href="/sample-data" id="sampleDownloadLink" class="link-btn" download="sample_inventory.csv">download the sample CSV</a>
         as a format reference.
       </p>
+      </div><!-- /.upload-engine-wrapper -->
 
       <details class="faq-block">
         <summary>Common upload errors and fixes</summary>

@@ -2,65 +2,173 @@
    upload.css - Hero, premium upload panel, banners, FAQ
    ======================================================= */
 
-/* -- Upload section -- premium card */
+/* -- Upload section wrapper -- */
 .upload-section {
   position: relative;
   overflow: hidden;
 }
 
-/* Subtle gradient accent on top edge */
+/* Top gradient accent bar */
 .upload-section::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   height: 3px;
   background: linear-gradient(90deg, var(--brand-500) 0%, var(--brand-400) 50%, #8b5cf6 100%);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
+/* ========================================================= */
+/*  Hero headline — outcome-driven, premium hierarchy        */
+/* ========================================================= */
+.hero-headline {
+  text-align: center;
+  padding: var(--space-8) 0 var(--space-6);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.hero-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--ink-900);
+  margin: 0 0 var(--space-3);
+  letter-spacing: -1px;
+  line-height: 1.15;
+}
+
+.hero-subtext {
+  font-size: 16px;
+  color: var(--ink-500);
+  margin: 0 0 var(--space-5);
+  font-weight: 400;
+  line-height: 1.55;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ========================================================= */
+/*  Trust strip — value reinforcement below hero             */
+/* ========================================================= */
+.trust-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  padding: var(--space-3) 0 0;
+}
+
+.trust-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ink-500);
+  font-weight: 500;
+  letter-spacing: -0.1px;
+}
+
+.trust-item .trust-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--green-50);
+  color: var(--green-600);
+  font-size: 11px;
+  flex-shrink: 0;
+  border: 1px solid var(--green-100);
+}
+
+/* ========================================================= */
+/*  Upload engine — the core interaction surface             */
+/* ========================================================= */
+.upload-engine-wrapper {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  margin-top: var(--space-2);
+}
+
+.upload-engine-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.upload-step-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: var(--brand-600);
+  color: #fff;
+  border-radius: var(--radius-pill);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.upload-engine-header h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-900);
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
 .context-block {
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-4);
   color: var(--ink-600);
+  font-size: 13px;
   line-height: 1.7;
 }
 
 .hint {
-  font-size: 13px;
-  color: var(--ink-500);
+  font-size: 12px;
+  color: var(--ink-400);
   line-height: 1.7;
+  margin-bottom: var(--space-3);
 }
 
 .hint code {
-  background: var(--surface-3);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-xs);
-  padding: 1px 6px;
-  font-size: 12px;
+  padding: 1px 5px;
+  font-size: 11px;
   color: var(--ink-700);
   font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
 }
 
-/* -- Upload form -- premium treatment */
+/* ========================================================= */
+/*  Upload form — premium file picker + analyze button       */
+/* ========================================================= */
 #uploadForm {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .file-label {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   padding: var(--space-8) var(--space-6);
   border: 2px dashed var(--border-2);
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all var(--tx-slow);
-  background: var(--surface-2);
-  color: var(--ink-500);
+  background: var(--surface);
+  color: var(--ink-400);
   font-size: 14px;
   font-weight: 500;
   text-align: center;
@@ -69,24 +177,32 @@
 .file-label:hover {
   border-color: var(--brand-400);
   background: var(--brand-50);
-  color: var(--brand-700);
-  box-shadow: var(--shadow-glow);
+  color: var(--brand-600);
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.06);
 }
 
 .file-label-icon {
-  font-size: 24px;
-  flex-shrink: 0;
-  opacity: 0.6;
+  font-size: 28px;
+  opacity: 0.4;
+  transition: all var(--tx);
 }
 
 .file-label:hover .file-label-icon {
-  opacity: 1;
+  opacity: 0.8;
+  transform: translateY(-2px);
+}
+
+.file-label-hint {
+  font-size: 12px;
+  color: var(--ink-400);
+  font-weight: 400;
 }
 
 #uploadForm input[type="file"] {
   display: none;
 }
 
+/* -- Analyze button -- prominent CTA */
 button[type="submit"] {
   padding: var(--space-3) var(--space-8);
   background: var(--brand-600);
@@ -105,7 +221,7 @@ button[type="submit"] {
 
 button[type="submit"]:hover {
   background: var(--brand-700);
-  box-shadow: 0 4px 12px rgba(79,70,229,0.3);
+  box-shadow: 0 4px 12px rgba(79,70,229,0.25);
   transform: translateY(-1px);
 }
 
@@ -115,13 +231,15 @@ button[type="submit"]:active {
 }
 
 button[type="submit"]:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
-/* -- Error / warning banners -- */
+/* ========================================================= */
+/*  Banners — error / warning                                */
+/* ========================================================= */
 .error-banner {
   background: var(--red-50);
   border: 1px solid var(--red-200);
@@ -152,57 +270,9 @@ button[type="submit"]:disabled {
   margin-bottom: 3px;
 }
 
-/* -- Hero headline -- premium centered hero */
-.hero-headline {
-  text-align: center;
-  margin-bottom: var(--space-8);
-  padding: var(--space-6) 0 var(--space-4);
-}
-
-.hero-title {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--ink-900);
-  margin: 0 0 var(--space-2);
-  letter-spacing: -0.8px;
-  line-height: 1.2;
-}
-
-.hero-subtext {
-  font-size: 16px;
-  color: var(--ink-500);
-  margin: 0;
-  font-weight: 400;
-  line-height: 1.5;
-}
-
-/* -- Trust strip below hero -- */
-.trust-strip {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-6);
-  padding: var(--space-4) 0;
-  margin-bottom: var(--space-4);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-
-.trust-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: 12px;
-  color: var(--ink-500);
-  font-weight: 500;
-}
-
-.trust-icon {
-  font-size: 14px;
-  opacity: 0.7;
-}
-
-/* -- Demo button -- premium */
+/* ========================================================= */
+/*  Demo area                                                */
+/* ========================================================= */
 .demo-btn {
   display: inline-flex;
   align-items: center;
@@ -217,11 +287,11 @@ button[type="submit"]:disabled {
   font-family: var(--font-sans);
   cursor: pointer;
   transition: all var(--tx);
-  box-shadow: 0 1px 3px rgba(79,70,229,0.25);
+  box-shadow: 0 1px 3px rgba(79,70,229,0.2);
 }
 .demo-btn:hover {
   background: var(--brand-700);
-  box-shadow: 0 2px 8px rgba(79,70,229,0.3);
+  box-shadow: 0 2px 8px rgba(79,70,229,0.25);
   transform: translateY(-1px);
 }
 .demo-btn:disabled {
@@ -230,7 +300,6 @@ button[type="submit"]:disabled {
   transform: none;
 }
 
-/* -- Demo badge -- */
 .demo-badge {
   background: var(--brand-50);
   border: 1px solid var(--brand-100);
@@ -245,17 +314,18 @@ button[type="submit"]:disabled {
   color: var(--brand-700);
 }
 
-/* -- Demo hint -- */
 .demo-hint {
-  margin-top: var(--space-5);
+  margin-top: var(--space-4);
   font-size: 13px;
-  color: var(--ink-500);
+  color: var(--ink-400);
   line-height: 1.8;
 }
 
-/* -- File requirements disclosure -- */
+/* ========================================================= */
+/*  File requirements + FAQ disclosures                      */
+/* ========================================================= */
 details.file-requirements {
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-3);
 }
 
 details.file-requirements > summary {
@@ -269,24 +339,14 @@ details.file-requirements > summary {
   text-underline-offset: 2px;
 }
 
-details.file-requirements > summary::-webkit-details-marker {
-  display: none;
-}
-
-details.file-requirements > summary::before {
-  content: '\25b8  ';
-  text-decoration: none;
-  display: inline-block;
-}
-
-details[open].file-requirements > summary::before {
-  content: '\25be  ';
-}
+details.file-requirements > summary::-webkit-details-marker { display: none; }
+details.file-requirements > summary::before { content: '\25b8  '; text-decoration: none; display: inline-block; }
+details[open].file-requirements > summary::before { content: '\25be  '; }
 
 .file-req-body {
   margin-top: var(--space-3);
   padding: var(--space-4);
-  background: var(--surface-2);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--ink-600);
@@ -294,18 +354,9 @@ details[open].file-requirements > summary::before {
   line-height: 1.7;
 }
 
-.file-req-body p {
-  margin: 0 0 6px;
-}
-
-.file-req-body ul {
-  margin: 0 0 10px;
-  padding-left: 1.25rem;
-}
-
-.file-req-body li {
-  margin-bottom: 3px;
-}
+.file-req-body p { margin: 0 0 6px; }
+.file-req-body ul { margin: 0 0 10px; padding-left: 1.25rem; }
+.file-req-body li { margin-bottom: 3px; }
 
 p.file-req-not-supported {
   margin: 4px 0 0 !important;
@@ -315,10 +366,7 @@ p.file-req-not-supported {
   color: var(--ink-400);
 }
 
-/* -- FAQ disclosures -- */
-details.faq-block {
-  margin-bottom: var(--space-4);
-}
+details.faq-block { margin-bottom: var(--space-3); }
 
 details.faq-block > summary {
   color: var(--brand-600);
@@ -331,34 +379,17 @@ details.faq-block > summary {
   text-underline-offset: 2px;
 }
 
-details.faq-block > summary::-webkit-details-marker {
-  display: none;
-}
+details.faq-block > summary::-webkit-details-marker { display: none; }
+details.faq-block > summary::before { content: '\25b8  '; text-decoration: none; display: inline-block; }
+details[open].faq-block > summary::before { content: '\25be  '; }
 
-details.faq-block > summary::before {
-  content: '\25b8  ';
-  text-decoration: none;
-  display: inline-block;
-}
-
-details[open].faq-block > summary::before {
-  content: '\25be  ';
-}
-
-.faq-q {
-  font-weight: 600;
-  margin: 10px 0 2px;
-  color: var(--ink-800);
-}
-
+.faq-q { font-weight: 600; margin: 10px 0 2px; color: var(--ink-800); }
 .faq-q:first-child { margin-top: 0; }
+.faq-a { margin: 0; color: var(--ink-600); }
 
-.faq-a {
-  margin: 0 0 0;
-  color: var(--ink-600);
-}
-
-/* -- Loading state on submit button -- */
+/* ========================================================= */
+/*  Loading spinner on submit                                */
+/* ========================================================= */
 #submitBtn.is-loading {
   position: relative;
   color: transparent;
@@ -368,10 +399,8 @@ details[open].faq-block > summary::before {
 #submitBtn.is-loading::after {
   content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 16px;
-  height: 16px;
+  top: 50%; left: 50%;
+  width: 16px; height: 16px;
   margin: -8px 0 0 -8px;
   border: 2px solid rgba(255,255,255,0.4);
   border-top-color: #fff;
@@ -379,11 +408,11 @@ details[open].faq-block > summary::before {
   animation: spin 0.65s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* -- Section label -- moved here for upload usage */
+/* ========================================================= */
+/*  Section labels (reused across sections)                  */
+/* ========================================================= */
 .section-label {
   font-size: 10px;
   font-weight: 700;
@@ -397,9 +426,14 @@ details[open].faq-block > summary::before {
 .section-label-neutral { color: var(--ink-400); }
 .section-label-upload  { color: var(--brand-600); }
 
+/* ========================================================= */
+/*  Responsive                                               */
+/* ========================================================= */
 @media (max-width: 640px) {
-  .hero-title { font-size: 22px; }
+  .hero-headline { padding: var(--space-5) 0 var(--space-4); }
+  .hero-title { font-size: 24px; letter-spacing: -0.6px; }
   .hero-subtext { font-size: 14px; }
-  .file-label { padding: var(--space-5) var(--space-4); }
-  .trust-strip { flex-wrap: wrap; gap: var(--space-3); }
+  .file-label { padding: var(--space-6) var(--space-4); }
+  .trust-strip { flex-wrap: wrap; gap: var(--space-3); justify-content: center; }
+  .upload-engine-wrapper { padding: var(--space-4); }
 }
