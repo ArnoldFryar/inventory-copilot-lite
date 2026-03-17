@@ -321,12 +321,32 @@
     var filtered = getFilteredResults();
     renderTable(filtered);
 
-    var isFiltered = dom.filterPart.value || dom.filterStatus.value || dom.filterSeverity.value;
+    var partVal     = dom.filterPart.value.trim();
+    var statusVal   = dom.filterStatus.value;
+    var severityVal = dom.filterSeverity.value;
+    var isFiltered  = partVal || statusVal || severityVal;
+
     if (isFiltered) {
       dom.filterCount.textContent = 'Showing ' + filtered.length + ' of ' + state.allResults.length + ' rows';
       dom.filterCount.classList.remove('hidden');
     } else {
       dom.filterCount.classList.add('hidden');
+    }
+
+    // Reflect active filters in the print/PDF header so exported PDFs are
+    // self-documenting when a subset of rows is being printed.
+    if (dom.printFilterContext) {
+      if (isFiltered) {
+        var parts = [];
+        if (partVal)     parts.push('Part: \u201c' + partVal + '\u201d');
+        if (statusVal)   parts.push('Status: ' + statusVal);
+        if (severityVal) parts.push('Severity: ' + severityVal);
+        dom.printFilterContext.textContent =
+          'Table filtered to: ' + parts.join(' \u00b7 ') +
+          ' \u2014 ' + filtered.length + ' of ' + state.allResults.length + ' rows shown.';
+      } else {
+        dom.printFilterContext.textContent = '';
+      }
     }
   }
 

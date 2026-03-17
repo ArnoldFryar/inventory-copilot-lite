@@ -37,6 +37,7 @@
   App.state = {
     allResults:         [],
     lastResponse:       null,
+    lastComparison:     null,
     inFlight:           false,
     currentPlan:        null,
     aiHelpersAvailable: false,
@@ -111,6 +112,7 @@
     comparisonSection:        $('comparisonSection'),
     comparisonTitle:          $('comparisonTitle'),
     comparisonPrior:          $('comparisonPrior'),
+    comparisonExportBtn:      $('comparisonExportBtn'),
     comparisonSentence:       $('comparisonSentence'),
     comparisonGrid:           $('comparisonGrid'),
     comparisonDetails:        $('comparisonDetails'),
@@ -152,6 +154,7 @@
     tableLimitNotice: $('tableLimitNotice'),
     planBadge:        $('planBadge'),
     manageBillingBtn: $('manageBillingBtn'),
+    printFilterContext: $('printFilterContext'),
 
     // AI helpers panel
     aiHelpersSection:    $('aiHelpersSection'),

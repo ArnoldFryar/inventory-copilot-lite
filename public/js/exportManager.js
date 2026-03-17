@@ -7,6 +7,71 @@
   var state = App.state;
   var track = App.track;
 
+  // ── Comparison CSV export ──────────────────────────────────────────────
+
+  var COMPARISON_SECTIONS = [
+    { key: 'newUrgent',      label: 'New Urgent',      showPrev: false },
+    { key: 'resolvedUrgent', label: 'Resolved Urgent', showPrev: true  },
+    { key: 'worsened',       label: 'Worsened',        showPrev: true  },
+    { key: 'improved',       label: 'Improved',        showPrev: true  },
+    { key: 'added',          label: 'New Parts',       showPrev: false },
+    { key: 'removed',        label: 'Removed Parts',   showPrev: false },
+  ];
+
+  function downloadComparisonCSV(cmp) {
+    var escape = function (val) {
+      var s = (val === null || val === undefined) ? '' : String(val);
+      return /[,"\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    };
+
+    var header = 'category,part_number,prev_status,curr_status,coverage_days';
+    var lines  = [];
+
+    COMPARISON_SECTIONS.forEach(function (sec) {
+      var items = cmp[sec.key] || [];
+      items.forEach(function (item) {
+        lines.push([
+          escape(sec.label),
+          escape(item.part_number),
+          escape(sec.showPrev ? (item.prev_status || '') : ''),
+          escape(item.status || ''),
+          escape(item.coverage !== null && item.coverage !== undefined ? item.coverage : ''),
+        ].join(','));
+      });
+    });
+
+    var csv  = [header].concat(lines).join('\r\n');
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href     = url;
+    var dateStr = state.lastResponse && state.lastResponse.analyzedAt
+      ? (function () {
+          var d = new Date(state.lastResponse.analyzedAt);
+          return d.getFullYear() + '-' +
+            String(d.getMonth() + 1).padStart(2, '0') + '-' +
+            String(d.getDate()).padStart(2, '0');
+        })()
+      : new Date().toISOString().slice(0, 10);
+    a.download = 'inventory_comparison_' + dateStr + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  if (dom.comparisonExportBtn) {
+    dom.comparisonExportBtn.addEventListener('click', function () {
+      var cmp = state.lastComparison;
+      if (!cmp) return;
+      track('export_comparison_csv_clicked', {
+        new_urgent: (cmp.newUrgent || []).length,
+        worsened:   (cmp.worsened  || []).length,
+      });
+      downloadComparisonCSV(cmp);
+    });
+  }
+
   // ── CSV export ────────────────────────────────────────────────────────────
 
   var EXPORT_COLUMNS = [

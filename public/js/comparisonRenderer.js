@@ -33,6 +33,8 @@
     if (!dom.comparisonSection) return;
     if (!cmp || !cmp.hasPrior) {
       dom.comparisonSection.classList.add('hidden');
+      if (dom.comparisonExportBtn) dom.comparisonExportBtn.classList.add('hidden');
+      App.state.lastComparison = null;
       return;
     }
 
@@ -157,6 +159,8 @@
     }
 
     dom.comparisonSection.classList.remove('hidden');
+    App.state.lastComparison = cmp;
+    if (dom.comparisonExportBtn) dom.comparisonExportBtn.classList.remove('hidden');
     track('comparison_shown', {
       new_urgent: cmp.newUrgent?.length || 0,
       worsened: cmp.worsened?.length || 0,

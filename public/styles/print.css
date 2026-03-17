@@ -31,7 +31,11 @@
   .auth-modal-backdrop,
   .save-run-btn,
   .history-section,
-  .ai-helpers-section {
+  .ai-helpers-section,
+  .upsell-cta,
+  #comparisonLockedCta,
+  #aiHelpersLockedCta,
+  .comparison-export-btn {
     display: none !important;
   }
 
@@ -162,6 +166,44 @@
   /* Repeat table header on every printed page */
   thead { display: table-header-group; }
 
+  /* ── Table improvements ────────────────────────────────────────────── */
+  table {
+    border-collapse: collapse;
+    border: 1.5pt solid #64748b;
+  }
+
+  thead th {
+    background: #0f172a !important;
+    color: #fff !important;
+    font-size: 8pt;
+    font-weight: 700;
+    border: 1pt solid #334155;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  tbody td {
+    border: 0.5pt solid #e2e8f0;
+  }
+
+  tbody tr:nth-child(even) {
+    background: #f8fafc !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Right-align numeric columns: coverage(2), on-hand(5), daily-usage(6), lead-time(7) */
+  thead th:nth-child(2),
+  thead th:nth-child(5),
+  thead th:nth-child(6),
+  thead th:nth-child(7),
+  tbody td:nth-child(2),
+  tbody td:nth-child(5),
+  tbody td:nth-child(6),
+  tbody td:nth-child(7) {
+    text-align: right;
+  }
+
   .print-footer {
     position: fixed;
     bottom: 0;
@@ -177,5 +219,95 @@
     align-items: center;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  /* ── Executive summary print page ──────────────────────────────────── */
+  #execSummarySection {
+    page-break-after: always;
+    break-after: always;
+    border-left: none;
+    border-top: 3pt solid #0f172a;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  #execSummarySection .section-label-exec {
+    background: none;
+    color: #475569;
+    font-size: 7pt;
+    letter-spacing: 0.1em;
+  }
+
+  .exec-summary-grid {
+    grid-template-columns: auto 1fr 1fr;
+    gap: 10pt 14pt;
+    margin-bottom: 12pt;
+  }
+
+  .exec-score-ring {
+    width: 80pt;
+    height: 80pt;
+    border-width: 4pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .exec-score-value { font-size: 22pt; }
+  .exec-score-label { font-size: 7.5pt; }
+
+  .exec-kpis { gap: 8pt; }
+
+  .exec-kpi {
+    padding: 5pt 8pt;
+    min-width: 70pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .exec-kpi-value { font-size: 16pt; }
+  .exec-kpi-label { font-size: 7pt; }
+
+  .exec-callout {
+    padding: 6pt 10pt;
+    break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .exec-callout-heading { font-size: 7pt; }
+  .exec-callout-detail  { font-size: 10pt; }
+
+  .exec-narrative {
+    font-size: 10pt;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    color: #1e293b;
+    margin-top: 10pt;
+  }
+
+  /* ── Comparison section print ───────────────────────────────────────── */
+  #comparisonDetails {
+    display: block !important;
+  }
+
+  #comparisonDetails > summary {
+    display: none !important;
+  }
+
+  .cmp-card {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── Filter context in print header ───────────────────────────────── */
+  .print-filter-context {
+    font-size: 8.5pt;
+    color: #475569;
+    font-style: italic;
+    margin-top: 3pt;
+  }
+
+  .print-filter-context:empty {
+    display: none;
   }
 }

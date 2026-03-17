@@ -667,6 +667,25 @@ tbody tr:hover { background: var(--surface-2) !important; }
 
 .comparison-header h2 { margin-bottom: 0; }
 
+.comparison-export-btn {
+  margin-left: auto;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink-700);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.comparison-export-btn:hover {
+  background: var(--surface-2);
+  border-color: var(--brand-400);
+  color: var(--brand-700);
+}
+
 .comparison-prior {
   font-size: 12px;
   color: var(--ink-500);
