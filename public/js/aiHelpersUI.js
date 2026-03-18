@@ -539,6 +539,7 @@
       var btn = e.target.closest('[data-helper]');
       if (btn && !btn.disabled) {
         if (dom.aiHelpersSection.classList.contains('ai-helpers-locked')) {
+          track('helper_access_attempt', { helper_type: btn.getAttribute('data-helper') });
           App.openUpgradeModal();
           return;
         }

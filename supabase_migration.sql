@@ -60,6 +60,40 @@ CREATE POLICY "Users can delete own runs"
   ON analysis_runs FOR DELETE
   USING (auth.uid() = user_id);
 
+-- ── events ──────────────────────────────────────────────────────────────────
+-- Lightweight product event log.
+-- Rows are written by the server-side /api/events endpoint (service-role key).
+-- Regular users have no SELECT access — all reads happen via service-role only.
+-- user_id is nullable so anonymous events (pre-sign-in) can still be captured.
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS events (
+  id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id     uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  event_name  text NOT NULL,
+  properties  jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_events_user_created
+  ON events (user_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_events_name_created
+  ON events (event_name, created_at DESC);
+
+ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+
+-- Block direct client reads — analysis is done via service-role only.
+DROP POLICY IF EXISTS "No client reads on events" ON events;
+CREATE POLICY "No client reads on events"
+  ON events FOR SELECT
+  USING (false);
+
+-- Authenticated users may insert only their own rows.
+DROP POLICY IF EXISTS "Users can insert own events" ON events;
+CREATE POLICY "Users can insert own events"
+  ON events FOR INSERT
+  WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
+
 -- ── Notes ───────────────────────────────────────────────────────────────────
 -- • results_json stores the full array of RowResult objects.  For the data
 --   volumes this app handles (≤ 50k rows, each ~200 bytes) a single JSONB

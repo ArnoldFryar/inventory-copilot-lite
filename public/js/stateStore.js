@@ -13,8 +13,28 @@
   var App = window.App = window.App || {};
 
   // ── Analytics ─────────────────────────────────────────────────────────────
-  // Falls back to a no-op if analytics.js fails to load.
-  App.track = window.track || function () {};
+  // Fire-and-forget POST to /api/events.
+  // Fails silently — never blocks the UI or surfaces errors to users.
+  App.track = function (eventName, properties) {
+    try {
+      var body = JSON.stringify({ event: eventName, properties: properties || {} });
+      var headers = { 'Content-Type': 'application/json' };
+      // Attach auth token when the user is signed in
+      if (window.authModule && typeof window.authModule.getToken === 'function') {
+        Promise.resolve(window.authModule.getToken()).then(function (token) {
+          if (token) headers['Authorization'] = 'Bearer ' + token;
+          fetch('/api/events', { method: 'POST', headers: headers, body: body })
+            .catch(function () {});
+        }).catch(function () {
+          fetch('/api/events', { method: 'POST', headers: headers, body: body })
+            .catch(function () {});
+        });
+      } else {
+        fetch('/api/events', { method: 'POST', headers: headers, body: body })
+          .catch(function () {});
+      }
+    } catch (_) {}
+  };
 
   // Converts a failed upload HTTP status + error message into a short,
   // non-PII error category for telemetry.  Never sends raw error text

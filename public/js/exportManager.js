@@ -208,6 +208,7 @@
   document.addEventListener('click', function (e) {
     if (e.target.closest('[data-upgrade]')) {
       e.preventDefault();
+      track('upgrade_btn_clicked');
       startCheckout();
     }
   });

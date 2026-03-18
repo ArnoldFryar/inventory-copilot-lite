@@ -189,8 +189,19 @@ async function stripeWebhookHandler(req, res) {
               updated_at:             new Date().toISOString()
             }, { onConflict: 'user_id' });
 
-          if (error) console.error('[Stripe webhook] checkout upsert error:', error.message);
-          else       console.log(`[Stripe webhook] checkout.session.completed: user ${userId} → pro/active`);
+          if (error) {
+            console.error('[Stripe webhook] checkout upsert error:', error.message);
+          } else {
+            console.log(`[Stripe webhook] checkout.session.completed: user ${userId} → pro/active`);
+            // Log upgrade_completed event
+            supabaseAdmin.from('events').insert({
+              user_id:    userId,
+              event_name: 'upgrade_completed',
+              properties: { plan: 'pro', source: 'stripe_checkout' },
+            }).then(({ error: evErr }) => {
+              if (evErr) console.error('[Stripe webhook] event insert error:', evErr.message);
+            });
+          }
         }
       } else {
         // customer.subscription.created / .updated / .deleted

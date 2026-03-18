@@ -125,6 +125,7 @@ app.use(require('./server/routes/billing'));
 app.use(require('./server/routes/history'));
 app.use(require('./server/routes/ai'));
 app.use(require('./server/routes/upload'));
+app.use(require('./server/routes/events'));
 
 // ---------------------------------------------------------------------------
 // Global error handler â€” catches unhandled throws in async routes.
