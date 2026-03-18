@@ -3,24 +3,20 @@
    ======================================================= */
 
 .app-header {
-  background: linear-gradient(135deg, #0c0f1d 0%, #141937 40%, #1a1344 70%, #0f172a 100%);
-  padding: 0 var(--space-8);
-  position: relative;
+  background: rgba(10,13,26,0.95);
+  padding: 0 var(--space-6);
+  position: sticky;
+  top: 0;
+  z-index: 30;
   overflow: visible;
-  border-bottom: 1px solid rgba(99,102,241,0.12);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-/* Centered ambient glow */
+/* Topbar: ambient glow removed — sidebar carries the brand context */
 .app-header::before {
-  content: '';
-  position: absolute;
-  top: -80px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 700px;
-  height: 350px;
-  background: radial-gradient(ellipse, rgba(20,184,166,0.07) 0%, transparent 70%);
-  pointer-events: none;
+  display: none;
 }
 
 /* Bottom accent line */
@@ -35,14 +31,12 @@
 }
 
 .app-header-inner {
-  max-width: 1140px;
-  margin: 0 auto;
   display: flex;
   align-items: center;
   gap: var(--space-3);
   position: relative;
-  min-height: 52px;
-  padding: var(--space-1) 0;
+  min-height: 46px;
+  padding: 0;
 }
 
 /* -- Left group: product name + badge -- */
@@ -53,11 +47,12 @@
   min-width: 0;
 }
 
+/* H1 = page title in topbar context (brand is in sidebar) */
 .app-header h1 {
-  font-size: 15px;
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: -0.3px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.70);
+  letter-spacing: 0.1px;
   line-height: 1;
   margin: 0;
   white-space: nowrap;
@@ -314,8 +309,8 @@
 /* -- Responsive -- */
 @media (max-width: 640px) {
   .app-header { padding: 0 var(--space-4); }
-  .app-header-inner { min-height: 44px; gap: var(--space-2); }
-  .app-header h1 { font-size: 13px; }
+  .app-header-inner { min-height: 40px; gap: var(--space-2); }
+  .app-header h1 { font-size: 12px; }
   .header-badge { font-size: 8px; padding: 2px 6px; }
   .header-method-pill { display: none; }
   .plan-badge { padding: 2px 6px; font-size: 8px; }

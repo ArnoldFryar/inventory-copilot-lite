@@ -23,7 +23,7 @@
 /* ========================================================= */
 .hero-headline {
   text-align: center;
-  padding: var(--space-12) 0 var(--space-8);
+  padding: var(--space-10) 0 var(--space-6);
   max-width: 660px;
   margin: 0 auto;
 }
@@ -424,14 +424,19 @@ details[open].faq-block > summary::before { content: '\25be  '; }
 
 /* ========================================================= */
 /*  Section labels (reused across sections)                  */
-/* ========================================================= */
+   Left-border accent reinforces the color coding visually
+   ======================================================= */
 .section-label {
+  display: inline-block;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--red-500);
-  margin-bottom: 4px;
+  margin-bottom: var(--space-3);
+  padding-left: var(--space-2);
+  border-left: 2px solid currentColor;
+  line-height: 1.4;
 }
 
 .section-label-ok      { color: var(--green-400) !important; }

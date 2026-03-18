@@ -12,6 +12,7 @@
 
 @media print {
   /* Hide everything that isn't part of the report */
+  .app-sidebar,
   .app-header .subtitle,
   .app-header .header-tagline,
   .header-method-pill,
@@ -45,6 +46,12 @@
     background: #fff;
     font-size: 11pt;
     color: #000;
+  }
+
+  /* Collapse layout wrappers to block flow for print */
+  .app-layout,
+  .app-body {
+    display: block;
   }
 
   .app-header {
