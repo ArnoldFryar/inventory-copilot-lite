@@ -658,6 +658,117 @@
   margin-top: var(--space-1);
 }
 
+/* ─── Insight components — trustworthy AI presentation ─────────────────────
+   "Why this matters" framing, structured action blocks, and signal chips
+   used across the executive summary callouts and priority panel items.
+   ─────────────────────────────────────────────────────────────────────── */
+
+/* "Why this matters" framing — sits beneath callout detail or KPI value */
+.insight-why {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.38);
+  line-height: 1.5;
+  margin-top: 5px;
+}
+
+.insight-why-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--brand-500);
+  margin-right: 5px;
+}
+
+/* Structured recommended-action block — replaces .priority-action trailing span */
+.insight-action-block {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  flex-shrink: 0;
+  max-width: 260px;
+}
+
+.insight-action-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--brand-500);
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
+.insight-action-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.78);
+  text-align: right;
+  line-height: 1.4;
+}
+
+/* Signal chips — concise evidence context (e.g. "11d gap") */
+.insight-signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.insight-signal-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.24);
+  color: #fca5a5;
+  letter-spacing: 0.1px;
+  white-space: nowrap;
+}
+
+.insight-signal-chip.chip-risk {
+  background: rgba(245,158,11,0.10);
+  border-color: rgba(245,158,11,0.22);
+  color: #fcd34d;
+}
+
+/* Hero item — action block expands to full width panel */
+.priority-list > .priority-item:first-child .insight-action-block {
+  width: 100%;
+  max-width: unset;
+  margin-left: 0;
+  align-items: flex-start;
+  background: rgba(20,184,166,0.07);
+  border: 1px solid rgba(20,184,166,0.18);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  gap: 4px;
+}
+
+.priority-list > .priority-item:first-child .insight-action-label {
+  font-size: 10px;
+  opacity: 0.9;
+}
+
+.priority-list > .priority-item:first-child .insight-action-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-heading);
+  text-align: left;
+}
+
+/* Hero item — signal chips take full row */
+.priority-list > .priority-item:first-child .insight-signals {
+  width: 100%;
+}
+
 /* ========================================================= */
 /*  5 · LEADERSHIP SUMMARY  –  executive-friendly narrative  */
 /* ========================================================= */

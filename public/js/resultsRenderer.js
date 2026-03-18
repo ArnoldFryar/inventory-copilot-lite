@@ -29,10 +29,24 @@
     dom.execExcessCount.textContent = brief.excess;
 
     // Top Risk
-    dom.execTopRisk.textContent = brief.topRisk ? brief.topRisk.detail : 'None identified';
+    var riskWhy = document.getElementById('execRiskWhy');
+    if (brief.topRisk) {
+      dom.execTopRisk.textContent = brief.topRisk.detail;
+      if (riskWhy) riskWhy.textContent = 'Replenishment lead time exceeded \u2014 immediate action required.';
+    } else {
+      dom.execTopRisk.textContent = 'None identified';
+      if (riskWhy) riskWhy.textContent = '';
+    }
 
     // Top Opportunity
-    dom.execTopOpp.textContent = brief.topOpp ? brief.topOpp.detail : 'None identified';
+    var oppWhy = document.getElementById('execOppWhy');
+    if (brief.topOpp) {
+      dom.execTopOpp.textContent = brief.topOpp.detail;
+      if (oppWhy) oppWhy.textContent = 'Releasing tied-up capital improves working capital efficiency.';
+    } else {
+      dom.execTopOpp.textContent = 'None identified';
+      if (oppWhy) oppWhy.textContent = '';
+    }
 
     // Narrative
     dom.execNarrative.textContent = brief.narrative;
@@ -286,11 +300,33 @@
       }
       li.appendChild(blurb);
 
-      // Action
-      var action = document.createElement('span');
-      action.className   = 'priority-action';
-      action.textContent = row.recommended_action;
-      li.appendChild(action);
+      // Signal chip — gap indicator when coverage falls short of lead time
+      if (row.coverage !== null && row.lead_time !== null && row.lead_time > row.coverage) {
+        var gap = row.lead_time - row.coverage;
+        var signals = document.createElement('span');
+        signals.className = 'insight-signals';
+        var chip = document.createElement('span');
+        chip.className = 'insight-signal-chip' + (row.severity === 'High' ? '' : ' chip-risk');
+        chip.textContent = gap + 'd gap';
+        signals.appendChild(chip);
+        li.appendChild(signals);
+      }
+
+      // Structured action block (replaces flat .priority-action trailing span)
+      var actionBlock = document.createElement('div');
+      actionBlock.className = 'insight-action-block';
+
+      var actionLabel = document.createElement('span');
+      actionLabel.className = 'insight-action-label';
+      actionLabel.textContent = 'Recommended action';
+      actionBlock.appendChild(actionLabel);
+
+      var actionText = document.createElement('span');
+      actionText.className = 'insight-action-text';
+      actionText.textContent = row.recommended_action;
+      actionBlock.appendChild(actionText);
+
+      li.appendChild(actionBlock);
 
       dom.priorityList.appendChild(li);
     });

@@ -670,3 +670,87 @@
     margin-left: 0;
   }
 }
+
+/* ─── AI Insight presentation — confidence, grounding, outcome ─────────────
+   Adds trustworthy signal indicators and evidence context to AI-generated
+   drafts without overpowering the content.
+   ─────────────────────────────────────────────────────────────────────── */
+
+/* Confidence indicator — compact dot-triplet + label */
+.ai-confidence {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: var(--radius-pill);
+  margin-bottom: var(--space-3);
+}
+
+.ai-confidence-dots {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ai-confidence-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--brand-500);
+  opacity: 0.18;
+  transition: opacity var(--dur) var(--ease);
+}
+
+/* Filled segments per level */
+.ai-confidence[data-level="high"]   .ai-confidence-dot                 { opacity: 1; }
+.ai-confidence[data-level="medium"] .ai-confidence-dot:nth-child(-n+2) { opacity: 1; }
+.ai-confidence[data-level="low"]    .ai-confidence-dot:nth-child(1)    { opacity: 1; }
+
+.ai-confidence-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.40);
+  letter-spacing: 0.1px;
+}
+
+.ai-confidence[data-level="high"]   .ai-confidence-label { color: var(--brand-400); }
+.ai-confidence[data-level="medium"] .ai-confidence-label { color: #fcd34d; }
+.ai-confidence[data-level="low"]    .ai-confidence-label { color: rgba(255,255,255,0.35); }
+
+/* Evidence grounding — "Based on X items from this analysis" */
+.ai-result-grounding {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.38);
+  margin: 0 0 var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.ai-result-grounding::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--brand-500);
+  opacity: 0.65;
+  flex-shrink: 0;
+}
+
+/* Outcome line on AI helper buttons */
+.ai-helper-btn-outcome {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--brand-500);
+  opacity: 0.70;
+  margin-top: 4px;
+  letter-spacing: 0.1px;
+  line-height: 1.4;
+}

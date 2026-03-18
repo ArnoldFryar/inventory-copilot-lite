@@ -260,11 +260,13 @@
         <div class="exec-callout exec-callout-risk">
           <span class="exec-callout-heading">Top Risk</span>
           <span class="exec-callout-detail" id="execTopRisk">None identified</span>
+          <span class="insight-why" id="execRiskWhy"></span>
         </div>
         <!-- Top Opportunity -->
         <div class="exec-callout exec-callout-opp">
           <span class="exec-callout-heading">Top Opportunity</span>
           <span class="exec-callout-detail" id="execTopOpp">None identified</span>
+          <span class="insight-why" id="execOppWhy"></span>
         </div>
       </div>
       <p class="exec-narrative" id="execNarrative"></p>
@@ -405,16 +407,19 @@
           <span class="ai-helper-btn-icon">&#9993;</span>
           <span class="ai-helper-btn-label">Draft Expedite Email</span>
           <span class="ai-helper-btn-desc">Supplier email for urgent parts</span>
+          <span class="ai-helper-btn-outcome">Ready-to-send supplier escalation</span>
         </button>
         <button class="ai-helper-btn" type="button" data-helper="escalation_summary">
           <span class="ai-helper-btn-icon">&#9888;</span>
           <span class="ai-helper-btn-label">Escalation Summary</span>
           <span class="ai-helper-btn-desc">Internal summary for leadership</span>
+          <span class="ai-helper-btn-outcome">Executive-ready risk brief</span>
         </button>
         <button class="ai-helper-btn" type="button" data-helper="meeting_talking_points">
           <span class="ai-helper-btn-icon">&#128172;</span>
           <span class="ai-helper-btn-label">Meeting Talking Points</span>
           <span class="ai-helper-btn-desc">S&amp;OP / materials review prep</span>
+          <span class="ai-helper-btn-outcome">Structured S&amp;OP talking points</span>
         </button>
       </div>
       <!-- Upgrade CTA shown when analysis is loaded but plan is free -->
@@ -424,6 +429,15 @@
           <strong id="aiHelperResultLabel"></strong>
           <button id="aiHelperCopyBtn" class="ai-helper-copy-btn" type="button">Copy to clipboard</button>
         </div>
+        <div class="ai-confidence hidden" id="aiConfidence" data-level="high">
+          <span class="ai-confidence-dots">
+            <span class="ai-confidence-dot"></span>
+            <span class="ai-confidence-dot"></span>
+            <span class="ai-confidence-dot"></span>
+          </span>
+          <span class="ai-confidence-label" id="aiConfidenceLabel">High confidence</span>
+        </div>
+        <p class="ai-result-grounding hidden" id="aiResultGrounding"></p>
         <pre id="aiHelperResultText" class="ai-helper-result-text"></pre>
         <p class="ai-helper-result-meta">
           <span id="aiHelperResultModel" class="ai-helper-meta-tag"></span>

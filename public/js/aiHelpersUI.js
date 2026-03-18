@@ -106,11 +106,55 @@
 
       var data = await res.json();
 
+      // Derive confidence level and evidence grounding from the analysis data
+      var summary = state.lastResponse.summary || {};
+      var urgentCount = summary.urgent_stockout || 0;
+      var riskCount   = summary.stockout_risk   || 0;
+      var totalCount  = summary.total           || 0;
+
+      var confidenceLevel, confidenceText, groundingText;
+
+      if (helperType === 'expedite_email') {
+        confidenceLevel = urgentCount > 0 ? 'high' : 'medium';
+        confidenceText  = urgentCount > 0 ? 'High confidence' : 'Medium confidence';
+        groundingText   = urgentCount > 0
+          ? 'Based on ' + urgentCount + ' urgent part' + (urgentCount === 1 ? '' : 's') + ' from this analysis'
+          : 'No urgent parts detected \u2014 draft may be precautionary';
+      } else if (helperType === 'escalation_summary') {
+        var atRisk = urgentCount + riskCount;
+        confidenceLevel = atRisk > 0 ? 'high' : 'medium';
+        confidenceText  = atRisk > 0 ? 'High confidence' : 'Medium confidence';
+        groundingText   = atRisk > 0
+          ? 'Based on ' + atRisk + ' at-risk part' + (atRisk === 1 ? '' : 's') + ' (' + urgentCount + ' urgent, ' + riskCount + ' risk)'
+          : 'No at-risk parts detected \u2014 summary reflects healthy inventory';
+      } else {
+        confidenceLevel = 'medium';
+        confidenceText  = 'Medium confidence';
+        groundingText   = 'Based on ' + totalCount + ' part' + (totalCount === 1 ? '' : 's') + ' from this analysis';
+      }
+
       // Show result
       if (dom.aiHelperResultLabel) dom.aiHelperResultLabel.textContent = data.label || helperType;
       if (dom.aiHelperResultText)  dom.aiHelperResultText.textContent  = data.text;
       if (dom.aiHelperResultModel) dom.aiHelperResultModel.textContent = 'Model: ' + (data.model || 'unknown');
-      if (dom.aiHelperResult)      dom.aiHelperResult.classList.remove('hidden');
+
+      // Confidence indicator
+      var confidenceEl = document.getElementById('aiConfidence');
+      var confidenceLabelEl = document.getElementById('aiConfidenceLabel');
+      if (confidenceEl) {
+        confidenceEl.setAttribute('data-level', confidenceLevel);
+        confidenceEl.classList.remove('hidden');
+      }
+      if (confidenceLabelEl) confidenceLabelEl.textContent = confidenceText;
+
+      // Grounding line
+      var groundingEl = document.getElementById('aiResultGrounding');
+      if (groundingEl) {
+        groundingEl.textContent = groundingText;
+        groundingEl.classList.remove('hidden');
+      }
+
+      if (dom.aiHelperResult) dom.aiHelperResult.classList.remove('hidden');
 
       // Telemetry
       track('ai_helper_used', { helper_type: helperType });
