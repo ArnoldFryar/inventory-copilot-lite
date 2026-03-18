@@ -29,6 +29,8 @@ const AI_CONFIG = {
 
 const aiConfigured = Boolean(AI_CONFIG.apiKey);
 
+const { getSystemPrompt } = require('./server/ai/prompts');
+
 // ---------------------------------------------------------------------------
 // Helper-type registry — one entry per premium action.
 // Each entry defines how to shape the run data into a prompt.
@@ -116,14 +118,7 @@ function simplifyRow(r) {
 // ---------------------------------------------------------------------------
 
 function buildExpediteEmailPrompt(ctx) {
-  const system = [
-    'You are an operations assistant helping a manufacturing materials planner.',
-    'Draft a professional supplier email requesting expedited delivery.',
-    'Use ONLY the data provided — do not invent supplier names, contact details, or part details not present.',
-    'Keep the tone professional and concise.',
-    'Include a clear subject line.',
-    'End with a note that this is a draft for human review.',
-  ].join(' ');
+  const system = getSystemPrompt('expedite_email');
 
   const parts = ctx.urgentParts.length > 0 ? ctx.urgentParts : ctx.topPriority;
   const user = [
@@ -144,13 +139,7 @@ function buildExpediteEmailPrompt(ctx) {
 }
 
 function buildEscalationSummaryPrompt(ctx) {
-  const system = [
-    'You are an operations assistant writing an internal escalation summary.',
-    'The audience is plant leadership or supply chain management.',
-    'Use ONLY the data provided — do not fabricate statistics or part details.',
-    'Keep it to 200 words or fewer.',
-    'Structure: situation overview, key risk items, recommended next steps.',
-  ].join(' ');
+  const system = getSystemPrompt('escalation_summary');
 
   const user = [
     `Analysis date: ${ctx.analyzedAt}`,
@@ -173,14 +162,7 @@ function buildEscalationSummaryPrompt(ctx) {
 }
 
 function buildMeetingTalkingPointsPrompt(ctx) {
-  const system = [
-    'You are an operations assistant preparing meeting talking points.',
-    'The audience is a materials review or S&OP meeting.',
-    'Use ONLY the data provided — do not fabricate statistics or part details.',
-    'Structure as numbered bullet points grouped by topic.',
-    'Cover: supply risks, excess/dead stock, data quality, recommended actions.',
-    'Keep it under 300 words.',
-  ].join(' ');
+  const system = getSystemPrompt('meeting_talking_points');
 
   const allItems = [
     ...ctx.urgentParts,
