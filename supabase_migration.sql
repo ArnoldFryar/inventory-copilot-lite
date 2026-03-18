@@ -157,3 +157,8 @@ SELECT id, email
 FROM auth.users
 WHERE email = 'breeze0125@gmail.com'
 ON CONFLICT (id) DO NOTHING;
+
+-- Grant admin to the primary account.
+UPDATE profiles
+SET is_admin = true
+WHERE email = 'breeze0125@gmail.com';
