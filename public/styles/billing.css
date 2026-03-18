@@ -605,6 +605,120 @@
   margin-left: auto;
 }
 
+/* ── Refinement panel ───────────────────────────────────────────────── */
+.ai-refine-panel {
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.ai-refine-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+}
+
+.ai-refine-quick-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-400);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-right: var(--space-1);
+}
+
+.ai-refine-chip {
+  padding: 4px 12px;
+  background: var(--surface);
+  color: var(--ink-300);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.ai-refine-chip:hover {
+  background: rgba(20,184,166,0.07);
+  border-color: var(--brand-400);
+  color: var(--brand-300);
+}
+
+.ai-refine-chip:active {
+  transform: scale(0.97);
+  transition-duration: var(--dur-fast);
+}
+
+.ai-refine-chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ai-refine-form {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.ai-refine-input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 14px;
+  background: var(--surface);
+  color: var(--ink-200);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  outline: none;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.ai-refine-input::placeholder {
+  color: var(--ink-400);
+}
+
+.ai-refine-input:focus {
+  border-color: var(--brand-400);
+  box-shadow: 0 0 0 2px rgba(20,184,166,0.15);
+}
+
+.ai-refine-submit {
+  padding: 8px 18px;
+  background: var(--brand-500);
+  color: var(--surface);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--dur) var(--ease), transform var(--dur-fast) var(--ease-out);
+}
+
+.ai-refine-submit:hover {
+  background: var(--brand-400);
+}
+
+.ai-refine-submit:active {
+  transform: scale(0.97);
+}
+
+.ai-refine-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .ai-helper-meta-tag {
   display: inline-flex;
   align-items: center;
@@ -920,6 +1034,14 @@
     width: 100%;
     margin-top: var(--space-1);
   }
+
+  .ai-refine-panel {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .ai-refine-form {
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 480px) {
@@ -928,6 +1050,8 @@
 
   .ai-action-btn span { display: none; }
   .ai-action-btn { padding: 6px 8px; }
+
+  .ai-refine-chip { font-size: 11px; padding: 3px 10px; }
 }
 
 /* ─── AI Insight presentation — confidence, grounding, outcome ─────────────

@@ -498,6 +498,19 @@
           </button>
           <span id="aiHelperResultModel" class="ai-helper-meta-tag"></span>
         </div>
+        <!-- Refinement panel -->
+        <div id="aiRefinePanel" class="ai-refine-panel hidden">
+          <div class="ai-refine-quick-actions">
+            <span class="ai-refine-quick-label">Quick:</span>
+            <button class="ai-refine-chip" type="button" data-refine="Make the tone more direct and assertive">Make more direct</button>
+            <button class="ai-refine-chip" type="button" data-refine="Shorten this significantly — cut filler, keep only essential points">Shorten</button>
+            <button class="ai-refine-chip" type="button" data-refine="Increase the urgency — emphasize time-sensitivity and consequences of delay">Add urgency</button>
+          </div>
+          <form id="aiRefineForm" class="ai-refine-form" autocomplete="off">
+            <input id="aiRefineInput" class="ai-refine-input" type="text" placeholder="Adjust tone, urgency, or details\u2026" maxlength="500" />
+            <button id="aiRefineSubmit" class="ai-refine-submit" type="submit">Refine</button>
+          </form>
+        </div>
       </div>
     </section>
 

@@ -230,7 +230,7 @@ const PROMPT_BUILDERS = {
  * @param {object} [opts.context] — optional business context { company, supplier, urgency, notes }
  * @returns {Promise<{text: string, model: string, usage: object}>}
  */
-async function generateHelper(helperType, runData, { model: modelOverride, context } = {}) {
+async function generateHelper(helperType, runData, { model: modelOverride, context, refinement } = {}) {
   if (!VALID_HELPER_TYPES.has(helperType)) {
     throw new Error(`Unknown helper type: ${helperType}`);
   }
@@ -244,12 +244,24 @@ async function generateHelper(helperType, runData, { model: modelOverride, conte
   // Model priority: env-var override → route selection (MODEL_MAP) → fallback.
   const resolvedModel = AI_CONFIG.model || modelOverride || 'gpt-4.1';
 
+  // Build messages array — if refinement is provided, append the previous
+  // assistant output and the user's refinement instruction so the model can
+  // iterate on its own output without losing the original request context.
+  const messages = [
+    { role: 'system', content: prompt.system },
+    { role: 'user',   content: prompt.user },
+  ];
+
+  if (refinement && refinement.previousOutput && refinement.instruction) {
+    messages.push(
+      { role: 'assistant', content: String(refinement.previousOutput).slice(0, 4000) },
+      { role: 'user',      content: 'Revise the draft above. ' + String(refinement.instruction).slice(0, 500) },
+    );
+  }
+
   const body = {
     model:       resolvedModel,
-    messages: [
-      { role: 'system', content: prompt.system },
-      { role: 'user',   content: prompt.user },
-    ],
+    messages,
     max_tokens:  1024,
     temperature: 0.3,   // low temperature for factual, grounded output
   };

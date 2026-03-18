@@ -183,6 +183,10 @@
     aiResultTimestamp:   $('aiResultTimestamp'),
     aiResultActions:     $('aiResultActions'),
     aiHelperResultBody:  $('aiHelperResultBody'),
+    aiRefinePanel:       $('aiRefinePanel'),
+    aiRefineForm:        $('aiRefineForm'),
+    aiRefineInput:       $('aiRefineInput'),
+    aiRefineSubmit:      $('aiRefineSubmit'),
   };
 
   // ── CSS class helpers ─────────────────────────────────────────────────────

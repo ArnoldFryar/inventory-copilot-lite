@@ -86,6 +86,8 @@
   /* ── Internal helpers ─────────────────────────────────────────────── */
   var _progressTimer = null;
   var _lastHelperType = null;
+  var _lastRunData = null;
+  var _lastContext = null;
 
   function setAllButtons(disabled) {
     if (!dom.aiHelpersActions) return;
@@ -121,7 +123,7 @@
   }
 
   function hideContent() {
-    var ids = ['aiConfidence', 'aiResultGrounding', 'aiHelperResultBody', 'aiResultActions'];
+    var ids = ['aiConfidence', 'aiResultGrounding', 'aiHelperResultBody', 'aiResultActions', 'aiRefinePanel'];
     for (var i = 0; i < ids.length; i++) {
       var el = document.getElementById(ids[i]);
       if (el) el.classList.add('hidden');
@@ -134,7 +136,7 @@
   }
 
   function showContent() {
-    var ids = ['aiConfidence', 'aiResultGrounding', 'aiHelperResultBody', 'aiResultActions'];
+    var ids = ['aiConfidence', 'aiResultGrounding', 'aiHelperResultBody', 'aiResultActions', 'aiRefinePanel'];
     for (var i = 0; i < ids.length; i++) {
       var el = document.getElementById(ids[i]);
       if (el) el.classList.remove('hidden');
@@ -143,6 +145,8 @@
     if (hdr) hdr.classList.remove('hidden');
     var strip = dom.aiHelperResult ? dom.aiHelperResult.querySelector('.ai-result-card-meta-strip') : null;
     if (strip) strip.classList.remove('hidden');
+    // Clear refine input for next iteration
+    if (dom.aiRefineInput) dom.aiRefineInput.value = '';
   }
 
   /** Format plain-text AI output into cleaner HTML. Preserves line breaks,
@@ -216,7 +220,7 @@
     if (dom.aiHelperError) dom.aiHelperError.classList.add('hidden');
   }
 
-  async function requestAiHelper(helperType) {
+  async function requestAiHelper(helperType, refinement) {
     if (!state.lastResponse || !state.currentUser || !window.authModule) return;
 
     // Build the run data payload from the current analysis
@@ -232,16 +236,33 @@
     var summary = state.lastResponse.summary || {};
     var urgentCount = summary.urgent_stockout || 0;
     var context = {
-      urgency: urgentCount > 0 ? 'High — ' + urgentCount + ' urgent stockout(s)' : 'Standard',
+      urgency: urgentCount > 0 ? 'High \u2014 ' + urgentCount + ' urgent stockout(s)' : 'Standard',
     };
+
+    // Persist for refinement iterations
+    _lastRunData = runData;
+    _lastContext = context;
 
     // Mark the clicked button loading & disable all buttons
     var btn = dom.aiHelpersSection.querySelector('[data-helper="' + helperType + '"]');
     if (btn) { btn.classList.add('is-loading'); btn.querySelector('.ai-helper-btn-label').textContent = 'Generating\u2026'; }
     setAllButtons(true);
+    setRefineControls(true);
 
     // Show skeleton loading
     showLoading(helperType);
+    // Tweak staged messages for refinement
+    if (refinement) {
+      if (dom.aiHelperLoadingText) dom.aiHelperLoadingText.textContent = 'Refining draft\u2026';
+      clearTimeout(_progressTimer);
+      _progressTimer = setTimeout(function () {
+        if (dom.aiHelperLoadingText) dom.aiHelperLoadingText.textContent = 'Generating improved version\u2026';
+      }, 3000);
+    }
+
+    // Build request body
+    var reqBody = { helperType: helperType, runData: runData, context: context };
+    if (refinement) reqBody.refinement = refinement;
 
     try {
       var token = await window.authModule.getToken();
@@ -251,7 +272,7 @@
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token,
         },
-        body: JSON.stringify({ helperType: helperType, runData: runData, context: context }),
+        body: JSON.stringify(reqBody),
       });
 
       if (!res.ok) {
@@ -328,15 +349,16 @@
       }
 
       // Telemetry
-      track('ai_helper_used', { helper_type: helperType });
+      track('ai_helper_used', { helper_type: helperType, refined: !!refinement });
     } catch (err) {
       hideLoading();
       hideContent();
       showError(err.message || 'AI helper failed. Please try again.', helperType);
-      track('ai_helper_error', { helper_type: helperType });
+      track('ai_helper_error', { helper_type: helperType, refined: !!refinement });
     } finally {
       // Re-enable buttons
       setAllButtons(false);
+      setRefineControls(false);
       if (btn) {
         btn.classList.remove('is-loading');
         btn.querySelector('.ai-helper-btn-label').textContent = LABELS[helperType] || helperType;
@@ -388,6 +410,43 @@
   if (dom.aiHelperRegenerateBtn) {
     dom.aiHelperRegenerateBtn.addEventListener('click', function () {
       if (_lastHelperType) requestAiHelper(_lastHelperType);
+    });
+  }
+
+  /* ── Refinement controls ──────────────────────────────────────────── */
+  function setRefineControls(disabled) {
+    if (dom.aiRefineInput) dom.aiRefineInput.disabled = disabled;
+    if (dom.aiRefineSubmit) dom.aiRefineSubmit.disabled = disabled;
+    var chips = dom.aiRefinePanel ? dom.aiRefinePanel.querySelectorAll('.ai-refine-chip') : [];
+    for (var i = 0; i < chips.length; i++) chips[i].disabled = disabled;
+  }
+
+  function submitRefinement(instruction) {
+    if (!_lastHelperType || !instruction) return;
+    var previousOutput = dom.aiHelperResult ? dom.aiHelperResult._rawText : '';
+    if (!previousOutput) return;
+    requestAiHelper(_lastHelperType, {
+      previousOutput: previousOutput,
+      instruction: instruction,
+    });
+  }
+
+  // Refine form submit
+  if (dom.aiRefineForm) {
+    dom.aiRefineForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var val = (dom.aiRefineInput.value || '').trim();
+      if (val) submitRefinement(val);
+    });
+  }
+
+  // Quick-action chips (event delegation on the refine panel)
+  if (dom.aiRefinePanel) {
+    dom.aiRefinePanel.addEventListener('click', function (e) {
+      var chip = e.target.closest('[data-refine]');
+      if (chip && !chip.disabled) {
+        submitRefinement(chip.getAttribute('data-refine'));
+      }
     });
   }
 
