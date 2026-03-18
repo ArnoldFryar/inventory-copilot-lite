@@ -53,27 +53,55 @@ app.use((_req, res, next) => {
 
 // ---------------------------------------------------------------------------
 // Hostname-based root routing
-// Intercepts GET / before express.static can apply its index.html fallback.
+// Registered BEFORE express.static so this handler wins for GET /.
+//
+// Uses req.headers.host directly (strips port) instead of req.hostname so
+// the result is proxy-safe on Railway without needing trust proxy config.
+//
 //   myopscopilot.com         → ops.html  (marketing landing page)
-//   www.myopscopilot.com     → 301 redirect → myopscopilot.com
+//   www.myopscopilot.com     → 301 redirect → https://myopscopilot.com/
 //   app.myopscopilot.com     → index.html (the app)
-//   localhost / anything else → index.html (the app — safe for local dev)
+//   localhost / anything else → index.html (safe local dev fallback)
 // ---------------------------------------------------------------------------
+const PUBLIC_DIR  = path.join(__dirname, 'public');
+const APP_HTML    = path.join(PUBLIC_DIR, 'index.html');
+const LANDING_HTML = path.join(PUBLIC_DIR, 'ops.html');
+
 app.get('/', (req, res) => {
-  const host = (req.hostname || '').toLowerCase();
+  const rawHost = req.headers.host || '';
+  const host = rawHost.replace(/:\d+$/, '').toLowerCase();
+
   if (host === 'www.myopscopilot.com') {
+    console.log('[route:root] REDIRECT www ->', host);
     return res.redirect(301, 'https://myopscopilot.com/');
   }
   if (host === 'myopscopilot.com') {
-    return res.sendFile(path.join(__dirname, 'public', 'ops.html'));
+    console.log('[route:root] LANDING', host);
+    return res.sendFile(LANDING_HTML);
   }
-  return res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  if (host === 'app.myopscopilot.com') {
+    console.log('[route:root] APP', host);
+    return res.sendFile(APP_HTML);
+  }
+  console.log('[route:root] FALLBACK', host);
+  return res.sendFile(APP_HTML);
+});
+
+// ---------------------------------------------------------------------------
+// Diagnostic endpoint — confirm hostname resolution in production
+// Remove or gate behind an env flag once DNS is verified.
+// ---------------------------------------------------------------------------
+app.get('/health/host', (req, res) => {
+  res.json({
+    hostname:   req.hostname,
+    hostHeader: req.headers.host,
+  });
 });
 
 // ---------------------------------------------------------------------------
 // Static files
 // ---------------------------------------------------------------------------
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(PUBLIC_DIR));
 
 // ---------------------------------------------------------------------------
 // Stripe webhook â€” MUST be registered BEFORE express.json() because Stripe
@@ -115,6 +143,14 @@ const UPLOAD_DIR = path.join(__dirname, 'uploads');
 if (!fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }
+
+// Fail fast if either root-served HTML file is missing.
+[APP_HTML, LANDING_HTML].forEach((f) => {
+  if (!fs.existsSync(f)) {
+    console.error(`[startup] FATAL: required file not found: ${f}`);
+    process.exit(1);
+  }
+});
 
 if (!SUPABASE_URL) {
   console.warn('[startup] SUPABASE_URL is not set — auth and database features will be unavailable.');
