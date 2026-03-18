@@ -442,7 +442,24 @@
       <div id="aiHelperResult" class="ai-helper-result hidden">
         <div class="ai-helper-result-header">
           <strong id="aiHelperResultLabel"></strong>
-          <button id="aiHelperCopyBtn" class="ai-helper-copy-btn" type="button">Copy to clipboard</button>
+          <button id="aiHelperCopyBtn" class="ai-helper-copy-btn hidden" type="button">Copy to clipboard</button>
+        </div>
+        <!-- Loading skeleton (shown during request) -->
+        <div id="aiHelperLoading" class="ai-helper-loading hidden">
+          <div class="ai-helper-loading-bar"></div>
+          <div class="ai-helper-loading-bar"></div>
+          <div class="ai-helper-loading-bar"></div>
+          <div class="ai-helper-loading-bar"></div>
+          <p class="ai-helper-loading-status">
+            <span class="ai-helper-btn-spinner" style="display:inline-block"></span>
+            <span id="aiHelperLoadingText">Analyzing data…</span>
+          </p>
+        </div>
+        <!-- Error state with retry (shown on failure) -->
+        <div id="aiHelperError" class="ai-helper-error hidden">
+          <span class="ai-helper-error-icon">⚠️</span>
+          <span id="aiHelperErrorMsg">Something went wrong.</span>
+          <button id="aiHelperRetryBtn" class="ai-helper-retry-btn" type="button">Retry</button>
         </div>
         <div class="ai-confidence hidden" id="aiConfidence" data-level="high">
           <span class="ai-confidence-dots">

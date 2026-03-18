@@ -70,6 +70,86 @@
     }
   }
 
+  /* ── Label map ─────────────────────────────────────────────────────── */
+  var LABELS = {
+    expedite_email:        'Draft Expedite Email',
+    escalation_summary:    'Escalation Summary',
+    meeting_talking_points: 'Meeting Talking Points',
+  };
+
+  /* ── Internal helpers ─────────────────────────────────────────────── */
+  var _progressTimer = null;
+
+  function setAllButtons(disabled) {
+    if (!dom.aiHelpersActions) return;
+    var btns = dom.aiHelpersActions.querySelectorAll('.ai-helper-btn');
+    for (var i = 0; i < btns.length; i++) btns[i].disabled = disabled;
+  }
+
+  function showLoading(helperType) {
+    // Show the result container with only the skeleton visible
+    if (dom.aiHelperResult) {
+      dom.aiHelperResult.classList.remove('hidden', 'ai-fade-in');
+    }
+    if (dom.aiHelperLoading) dom.aiHelperLoading.classList.remove('hidden');
+
+    // Hide result content and error
+    hideContent();
+    hideError();
+
+    // Label
+    if (dom.aiHelperResultLabel) dom.aiHelperResultLabel.textContent = LABELS[helperType] || helperType;
+    if (dom.aiHelperCopyBtn) dom.aiHelperCopyBtn.classList.add('hidden');
+
+    // Staged messages
+    if (dom.aiHelperLoadingText) dom.aiHelperLoadingText.textContent = 'Analyzing data\u2026';
+    clearTimeout(_progressTimer);
+    _progressTimer = setTimeout(function () {
+      if (dom.aiHelperLoadingText) dom.aiHelperLoadingText.textContent = 'Generating response\u2026';
+    }, 3000);
+  }
+
+  function hideLoading() {
+    clearTimeout(_progressTimer);
+    if (dom.aiHelperLoading) dom.aiHelperLoading.classList.add('hidden');
+  }
+
+  function hideContent() {
+    // Hide the actual result text elements (confidence, grounding, pre, meta)
+    var els = dom.aiHelperResult
+      ? dom.aiHelperResult.querySelectorAll('#aiConfidence, #aiResultGrounding, #aiHelperResultText, #aiHelperResultModel')
+      : [];
+    for (var i = 0; i < els.length; i++) els[i].classList.add('hidden');
+  }
+
+  function showContent() {
+    var ids = ['aiConfidence', 'aiResultGrounding', 'aiHelperResultText', 'aiHelperResultModel'];
+    for (var i = 0; i < ids.length; i++) {
+      var el = document.getElementById(ids[i]);
+      if (el) el.classList.remove('hidden');
+    }
+  }
+
+  function showError(msg, helperType) {
+    if (dom.aiHelperError) {
+      dom.aiHelperErrorMsg.textContent = msg || 'Something went wrong.';
+      dom.aiHelperError.classList.remove('hidden');
+    }
+    // Wire one-shot retry listener
+    if (dom.aiHelperRetryBtn) {
+      var handler = function () {
+        dom.aiHelperRetryBtn.removeEventListener('click', handler);
+        requestAiHelper(helperType);
+      };
+      dom.aiHelperRetryBtn.addEventListener('click', handler);
+    }
+    if (dom.aiHelperResult) dom.aiHelperResult.classList.remove('hidden');
+  }
+
+  function hideError() {
+    if (dom.aiHelperError) dom.aiHelperError.classList.add('hidden');
+  }
+
   async function requestAiHelper(helperType) {
     if (!state.lastResponse || !state.currentUser || !window.authModule) return;
 
@@ -82,21 +162,20 @@
       thresholds:  state.lastResponse.thresholds,
     };
 
-    // Optional business context — enhances prompt personalisation.
-    // Urgency is derived from the analysis; company/supplier/notes can be
-    // extended later when those fields exist in the UI.
+    // Optional business context
     var summary = state.lastResponse.summary || {};
     var urgentCount = summary.urgent_stockout || 0;
     var context = {
       urgency: urgentCount > 0 ? 'High — ' + urgentCount + ' urgent stockout(s)' : 'Standard',
     };
 
-    // Find and disable the clicked button
+    // Mark the clicked button loading & disable all buttons
     var btn = dom.aiHelpersSection.querySelector('[data-helper="' + helperType + '"]');
-    if (btn) { btn.disabled = true; btn.querySelector('.ai-helper-btn-label').textContent = 'Generating\u2026'; }
+    if (btn) { btn.classList.add('is-loading'); btn.querySelector('.ai-helper-btn-label').textContent = 'Generating\u2026'; }
+    setAllButtons(true);
 
-    // Hide previous result
-    if (dom.aiHelperResult) dom.aiHelperResult.classList.add('hidden');
+    // Show skeleton loading
+    showLoading(helperType);
 
     try {
       var token = await window.authModule.getToken();
@@ -117,25 +196,25 @@
       var data = await res.json();
 
       // Derive confidence level and evidence grounding from the analysis data
-      var summary = state.lastResponse.summary || {};
-      var urgentCount = summary.urgent_stockout || 0;
-      var riskCount   = summary.stockout_risk   || 0;
-      var totalCount  = summary.total           || 0;
+      var summaryData = state.lastResponse.summary || {};
+      var uCount  = summaryData.urgent_stockout || 0;
+      var riskCount   = summaryData.stockout_risk   || 0;
+      var totalCount  = summaryData.total           || 0;
 
       var confidenceLevel, confidenceText, groundingText;
 
       if (helperType === 'expedite_email') {
-        confidenceLevel = urgentCount > 0 ? 'high' : 'medium';
-        confidenceText  = urgentCount > 0 ? 'High confidence' : 'Medium confidence';
-        groundingText   = urgentCount > 0
-          ? 'Based on ' + urgentCount + ' urgent part' + (urgentCount === 1 ? '' : 's') + ' from this analysis'
+        confidenceLevel = uCount > 0 ? 'high' : 'medium';
+        confidenceText  = uCount > 0 ? 'High confidence' : 'Medium confidence';
+        groundingText   = uCount > 0
+          ? 'Based on ' + uCount + ' urgent part' + (uCount === 1 ? '' : 's') + ' from this analysis'
           : 'No urgent parts detected \u2014 draft may be precautionary';
       } else if (helperType === 'escalation_summary') {
-        var atRisk = urgentCount + riskCount;
+        var atRisk = uCount + riskCount;
         confidenceLevel = atRisk > 0 ? 'high' : 'medium';
         confidenceText  = atRisk > 0 ? 'High confidence' : 'Medium confidence';
         groundingText   = atRisk > 0
-          ? 'Based on ' + atRisk + ' at-risk part' + (atRisk === 1 ? '' : 's') + ' (' + urgentCount + ' urgent, ' + riskCount + ' risk)'
+          ? 'Based on ' + atRisk + ' at-risk part' + (atRisk === 1 ? '' : 's') + ' (' + uCount + ' urgent, ' + riskCount + ' risk)'
           : 'No at-risk parts detected \u2014 summary reflects healthy inventory';
       } else {
         confidenceLevel = 'medium';
@@ -143,7 +222,7 @@
         groundingText   = 'Based on ' + totalCount + ' part' + (totalCount === 1 ? '' : 's') + ' from this analysis';
       }
 
-      // Show result
+      // Populate result elements
       if (dom.aiHelperResultLabel) dom.aiHelperResultLabel.textContent = data.label || helperType;
       if (dom.aiHelperResultText)  dom.aiHelperResultText.textContent  = data.text;
       if (dom.aiHelperResultModel) dom.aiHelperResultModel.textContent = 'Model: ' + (data.model || 'unknown');
@@ -153,30 +232,37 @@
       var confidenceLabelEl = document.getElementById('aiConfidenceLabel');
       if (confidenceEl) {
         confidenceEl.setAttribute('data-level', confidenceLevel);
-        confidenceEl.classList.remove('hidden');
       }
       if (confidenceLabelEl) confidenceLabelEl.textContent = confidenceText;
 
       // Grounding line
       var groundingEl = document.getElementById('aiResultGrounding');
-      if (groundingEl) {
-        groundingEl.textContent = groundingText;
-        groundingEl.classList.remove('hidden');
-      }
+      if (groundingEl) groundingEl.textContent = groundingText;
 
-      if (dom.aiHelperResult) dom.aiHelperResult.classList.remove('hidden');
+      // Swap skeleton → result with fade-in
+      hideLoading();
+      showContent();
+      if (dom.aiHelperCopyBtn) dom.aiHelperCopyBtn.classList.remove('hidden');
+      if (dom.aiHelperResult) {
+        dom.aiHelperResult.classList.remove('ai-fade-in');
+        // Force reflow for animation restart
+        void dom.aiHelperResult.offsetWidth;
+        dom.aiHelperResult.classList.add('ai-fade-in');
+      }
 
       // Telemetry
       track('ai_helper_used', { helper_type: helperType });
     } catch (err) {
-      App.showError(err.message || 'AI helper failed. Please try again.');
+      hideLoading();
+      hideContent();
+      showError(err.message || 'AI helper failed. Please try again.', helperType);
       track('ai_helper_error', { helper_type: helperType });
     } finally {
-      // Re-enable button
+      // Re-enable buttons
+      setAllButtons(false);
       if (btn) {
-        btn.disabled = false;
-        var labels = { expedite_email: 'Draft Expedite Email', escalation_summary: 'Escalation Summary', meeting_talking_points: 'Meeting Talking Points' };
-        btn.querySelector('.ai-helper-btn-label').textContent = labels[helperType] || helperType;
+        btn.classList.remove('is-loading');
+        btn.querySelector('.ai-helper-btn-label').textContent = LABELS[helperType] || helperType;
       }
     }
   }

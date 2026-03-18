@@ -172,6 +172,11 @@
     aiHelperResultText:  $('aiHelperResultText'),
     aiHelperResultModel: $('aiHelperResultModel'),
     aiHelperCopyBtn:     $('aiHelperCopyBtn'),
+    aiHelperLoading:     $('aiHelperLoading'),
+    aiHelperLoadingText: $('aiHelperLoadingText'),
+    aiHelperError:       $('aiHelperError'),
+    aiHelperErrorMsg:    $('aiHelperErrorMsg'),
+    aiHelperRetryBtn:    $('aiHelperRetryBtn'),
   };
 
   // ── CSS class helpers ─────────────────────────────────────────────────────
