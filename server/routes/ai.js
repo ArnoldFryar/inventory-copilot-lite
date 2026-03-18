@@ -27,6 +27,12 @@ const {
 router.post('/api/ai-helper', requireAuth, async (req, res) => {
   const plan = await getPlanForUser(req.user.id, supabaseAdmin);
   if (plan.key !== 'pro') {
+    console.warn('[ACCESS_DENIED] POST /api/ai-helper', {
+      user_id:    req.user.id,
+      sub_status: plan._debug?.sub_status ?? 'unknown',
+      is_admin:   plan._debug?.is_admin   ?? false,
+      reason:     'plan_not_pro',
+    });
     return res.status(403).json({ error: 'AI helpers are a Pro plan feature.' });
   }
 

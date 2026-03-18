@@ -11,6 +11,16 @@ const { getPlanForUser } = require('../../plans');
 const { supabaseAdmin }  = require('../../supabaseClient');
 const { compareRuns }    = require('../../comparator');
 
+// Temporary debug helper — logs whenever a Pro-gated route denies a request.
+function logAccessDenied(route, userId, plan) {
+  console.warn('[ACCESS_DENIED]', route, {
+    user_id:    userId,
+    sub_status: plan._debug?.sub_status ?? 'unknown',
+    is_admin:   plan._debug?.is_admin   ?? false,
+    reason:     'plan_not_pro',
+  });
+}
+
 // POST /api/runs — save an analysis run
 async function createRun(req, res) {
   if (!supabaseAdmin) {
@@ -19,6 +29,7 @@ async function createRun(req, res) {
 
   const plan = await getPlanForUser(req.user.id, supabaseAdmin);
   if (!plan.savedHistory) {
+    logAccessDenied('POST /api/runs', req.user.id, plan);
     return res.status(403).json({ error: 'Saved history is a Pro plan feature.' });
   }
 
@@ -60,6 +71,7 @@ async function listRuns(req, res) {
 
   const plan = await getPlanForUser(req.user.id, supabaseAdmin);
   if (!plan.savedHistory) {
+    logAccessDenied('GET /api/runs', req.user.id, plan);
     return res.status(403).json({ error: 'Saved history is a Pro plan feature.' });
   }
 
@@ -87,6 +99,7 @@ async function compareRun(req, res) {
 
   const plan = await getPlanForUser(req.user.id, supabaseAdmin);
   if (!plan.savedHistory) {
+    logAccessDenied('GET /api/runs/:id/compare', req.user.id, plan);
     return res.status(403).json({ error: 'Saved history is a Pro plan feature.' });
   }
 
@@ -140,6 +153,7 @@ async function getRun(req, res) {
 
   const plan = await getPlanForUser(req.user.id, supabaseAdmin);
   if (!plan.savedHistory) {
+    logAccessDenied('GET /api/runs/:id', req.user.id, plan);
     return res.status(403).json({ error: 'Saved history is a Pro plan feature.' });
   }
 
@@ -165,6 +179,7 @@ async function deleteRun(req, res) {
 
   const plan = await getPlanForUser(req.user.id, supabaseAdmin);
   if (!plan.savedHistory) {
+    logAccessDenied('DELETE /api/runs/:id', req.user.id, plan);
     return res.status(403).json({ error: 'Saved history is a Pro plan feature.' });
   }
 

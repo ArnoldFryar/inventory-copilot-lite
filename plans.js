@@ -96,19 +96,37 @@ async function getPlanForUser(userId, supabaseAdmin) {
   if (!userId || !supabaseAdmin) return PLANS.free;
 
   try {
-    const { data, error } = await supabaseAdmin
-      .from('user_subscriptions')
-      .select('plan, subscription_status')
-      .eq('user_id', userId)
-      .single();
+    // Fetch subscription state and admin flag in parallel.
+    const [subResult, profileResult] = await Promise.all([
+      supabaseAdmin
+        .from('user_subscriptions')
+        .select('plan, subscription_status')
+        .eq('user_id', userId)
+        .single(),
+      supabaseAdmin
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', userId)
+        .single(),
+    ]);
 
-    if (error || !data) return PLANS.free;
+    const sub     = subResult.data;
+    const isAdmin = profileResult.data?.is_admin === true;
 
-    // Only grant Pro when the subscription is in an active state
-    if (hasProAccess({ plan: data.plan, status: data.subscription_status })) {
-      return PLANS.pro;
+    // Admin override — grants Pro access regardless of subscription state.
+    // Normal users must still have an active paid subscription.
+    if (isAdmin) {
+      return Object.assign({}, PLANS.pro, {
+        _debug: { sub_status: sub?.subscription_status || 'none', is_admin: true, source: 'admin_override' },
+      });
     }
-    return PLANS.free;
+
+    const subActive = !subResult.error && sub &&
+      hasProAccess({ plan: sub.plan, status: sub.subscription_status });
+
+    return Object.assign({}, subActive ? PLANS.pro : PLANS.free, {
+      _debug: { sub_status: sub?.subscription_status || 'none', is_admin: false, source: subActive ? 'subscription' : 'free' },
+    });
   } catch (_) {
     return PLANS.free;
   }
