@@ -122,6 +122,57 @@
   background: radial-gradient(ellipse, rgba(99,102,241,0.14) 0%, transparent 70%);
   pointer-events: none;
 }
+/* Second ambient glow — teal, lower right */
+.lp-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -80px;
+  right: 8%;
+  width: 560px;
+  height: 320px;
+  background: radial-gradient(ellipse, rgba(20,184,166,0.09) 0%, transparent 65%);
+  pointer-events: none;
+}
+/* Subtle grid overlay */
+.lp-hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(99,102,241,0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none;
+  z-index: 0;
+}
+.lp-hero .lp-container {
+  position: relative;
+  z-index: 1;
+}
+/* Brand mark anchor above eyebrow */
+.lp-hero-mark {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-6);
+  position: relative;
+}
+.lp-hero-mark img {
+  display: block;
+  filter: drop-shadow(0 0 22px rgba(0,184,186,0.30));
+}
+/* Eyebrow pill badge */
+.lp-eyebrow-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(20,184,166,0.08);
+  border: 1px solid rgba(20,184,166,0.22);
+  border-radius: var(--radius-pill);
+  padding: 5px 14px 5px 10px;
+}
+.lp-eyebrow-icon {
+  display: block;
+  flex-shrink: 0;
+}
 
 .lp-eyebrow {
   display: inline-block;
