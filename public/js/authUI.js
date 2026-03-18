@@ -115,6 +115,7 @@
     if (state.currentUser) {
       window.authModule.fetchProfile(state.currentUser.id).then(function (profile) {
         state.currentProfile = profile;
+        if (App.startYourDay) App.startYourDay.refresh();
       });
     } else {
       state.currentProfile = null;

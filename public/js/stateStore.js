@@ -188,6 +188,10 @@
     aiRefineInput:       $('aiRefineInput'),
     aiRefineSubmit:      $('aiRefineSubmit'),
 
+    // Start Your Day
+    startYourDay:        $('startYourDay'),
+    sydLastRun:          $('sydLastRun'),
+
     // AI history panel
     aiHistoryPanel:      $('aiHistoryPanel'),
     aiHistoryToggle:     $('aiHistoryToggle'),

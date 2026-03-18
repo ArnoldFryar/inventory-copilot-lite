@@ -226,6 +226,37 @@
       </details>
     </section>
 
+    <!-- ── Start Your Day ────────────────────────────────────────────── -->
+    <section id="startYourDay" class="syd-card card hidden" aria-label="Start your day">
+      <div class="syd-header">
+        <div class="syd-header-text">
+          <h2 class="syd-title">
+            <span class="syd-title-icon" aria-hidden="true">☀️</span>
+            Start Your Day
+          </h2>
+          <p class="syd-subtitle">Identify risks and priorities in 60 seconds</p>
+        </div>
+        <span id="sydLastRun" class="syd-last-run"></span>
+      </div>
+      <div class="syd-actions">
+        <button class="syd-action-btn" type="button" data-syd-helper="escalation_summary">
+          <span class="syd-action-icon" aria-hidden="true">🚨</span>
+          <span class="syd-action-label">Generate Executive Summary</span>
+          <span class="syd-action-sub">Risk overview for leadership</span>
+        </button>
+        <button class="syd-action-btn" type="button" data-syd-helper="meeting_talking_points">
+          <span class="syd-action-icon" aria-hidden="true">📋</span>
+          <span class="syd-action-label">Create Talking Points</span>
+          <span class="syd-action-sub">S&amp;OP / materials review prep</span>
+        </button>
+        <button class="syd-action-btn" type="button" data-syd-helper="expedite_email">
+          <span class="syd-action-icon" aria-hidden="true">✉️</span>
+          <span class="syd-action-label">Draft Expedite Email</span>
+          <span class="syd-action-sub">Ready-to-send supplier message</span>
+        </button>
+      </div>
+    </section>
+
     <!-- ── Demo mode badge ─────────────────────────────────────────────── -->
     <div id="demoBadge" class="demo-badge hidden" role="status">
       <strong>Demo Mode</strong>: Sample data only. Upload your own CSV for live results.
@@ -686,6 +717,7 @@
   <script src="js/comparisonRenderer.js"></script>
   <script src="js/aiHistoryStore.js"></script>
   <script src="js/aiHelpersUI.js"></script>
+  <script src="js/startYourDay.js"></script>
   <script src="js/historyManager.js"></script>
   <script src="js/exportManager.js"></script>
   <script src="js/authUI.js"></script>

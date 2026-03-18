@@ -296,6 +296,8 @@
 
     // Re-evaluate AI helpers visibility when plan changes
     App.aiHelpersUI.showAiHelpersPanel();
+    // Refresh Start Your Day card
+    if (App.startYourDay) App.startYourDay.refresh();
   }
 
   // Fetches the plan from the server, optionally with auth token for per-user plans.

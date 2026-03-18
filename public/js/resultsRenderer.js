@@ -208,6 +208,8 @@
 
     // Show AI helpers panel if Pro + AI configured + analysis loaded
     App.aiHelpersUI.showAiHelpersPanel();
+    // Refresh Start Your Day card
+    if (App.startYourDay) App.startYourDay.refresh();
     // Hide any previous AI helper result when new data is loaded
     if (dom.aiHelperResult) dom.aiHelperResult.classList.add('hidden');
   }
