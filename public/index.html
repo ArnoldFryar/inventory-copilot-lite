@@ -50,6 +50,14 @@
       </div>
 
       <div class="sidebar-foot">
+        <!-- Command bar trigger -->
+        <button id="cmdTriggerBtn" class="cmd-trigger-btn" type="button" aria-label="Open command bar">
+          <span class="cmd-trigger-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Quick actions
+          </span>
+          <span class="cmd-trigger-shortcut">Ctrl K</span>
+        </button>
         <div class="sidebar-status-row">
           <span class="sidebar-status-dot" aria-hidden="true"></span>
           <span class="sidebar-status-text">System online</span>
@@ -566,6 +574,35 @@
     </div>
   </div>
 
+  <!-- Command bar overlay — lives outside the app layout so it layers above everything -->
+  <div id="cmdOverlay" class="cmd-overlay" role="dialog" aria-modal="true" aria-label="Command bar" aria-hidden="true">
+    <div id="cmdPanel" class="cmd-panel">
+      <div class="cmd-search-row">
+        <span class="cmd-search-icon" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input
+          id="cmdInput"
+          class="cmd-input"
+          type="text"
+          placeholder="Search actions&hellip;"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Search commands"
+          aria-autocomplete="list"
+          aria-controls="cmdResults"
+        />
+        <span class="cmd-esc-hint" aria-hidden="true">Esc</span>
+      </div>
+      <div id="cmdResults" class="cmd-results" role="listbox" aria-label="Available actions"></div>
+      <div class="cmd-footer" aria-hidden="true">
+        <span class="cmd-footer-hint"><kbd>&uarr;</kbd><kbd>&darr;</kbd> Navigate</span>
+        <span class="cmd-footer-hint"><kbd>&crarr;</kbd> Run</span>
+        <span class="cmd-footer-hint"><kbd>Esc</kbd> Close</span>
+      </div>
+    </div>
+  </div>
+
   <script src="analytics.js"></script>
   <script src="auth.js"></script>
   <script src="executiveSummary.js"></script>
@@ -579,5 +616,6 @@
   <script src="js/authUI.js"></script>
   <script src="js/uploadController.js"></script>
   <script src="script.js"></script>
+  <script src="js/commandBar.js"></script>
 </body>
 </html>
