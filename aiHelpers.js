@@ -242,8 +242,8 @@ async function generateHelper(helperType, runData, { model: modelOverride } = {}
   const ctx    = shapeInput(runData);
   const prompt = PROMPT_BUILDERS[helperType](ctx);
 
-  // Model priority: env-var override → route selection → hardcoded fallback.
-  const resolvedModel = AI_CONFIG.model || modelOverride || 'gpt-4.1-mini';
+  // Model priority: env-var override → route selection (MODEL_MAP) → fallback.
+  const resolvedModel = AI_CONFIG.model || modelOverride || 'gpt-4.1';
 
   const body = {
     model:       resolvedModel,
