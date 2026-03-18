@@ -23,7 +23,7 @@
 
     // ── Analysis loaded, Pro plan: show active panel ────────────────────────
     if (isPro && state.aiHelpersAvailable) {
-      dom.aiHelpersSection.classList.remove('hidden');
+      dom.aiHelpersSection.classList.remove('hidden', 'ai-helpers-locked');
       if (dom.aiHelpersActions) dom.aiHelpersActions.classList.remove('hidden');
       if (dom.aiHelpersLockedCta) dom.aiHelpersLockedCta.classList.add('hidden');
       if (dom.comparisonLockedCta) dom.comparisonLockedCta.classList.add('hidden');
@@ -31,27 +31,12 @@
       return;
     }
 
-    // ── Analysis loaded, NOT Pro: show locked CTA states ───────────────────
-    // AI Helpers section — hide buttons, show upgrade CTA
+    // ── Analysis loaded, NOT Pro: show buttons in locked state + upgrade modal on click
     dom.aiHelpersSection.classList.remove('hidden');
-    if (dom.aiHelpersActions) dom.aiHelpersActions.classList.add('hidden');
+    dom.aiHelpersSection.classList.add('ai-helpers-locked');
+    if (dom.aiHelpersActions) dom.aiHelpersActions.classList.remove('hidden');
     if (dom.aiHelperResult) dom.aiHelperResult.classList.add('hidden');
-
-    if (dom.aiHelpersLockedCta) {
-      dom.aiHelpersLockedCta.classList.remove('hidden');
-      while (dom.aiHelpersLockedCta.firstChild) {
-        dom.aiHelpersLockedCta.removeChild(dom.aiHelpersLockedCta.firstChild);
-      }
-      var aiCta = App.buildUpsellCta({
-        icon: '\u2728',
-        headline: 'Turn Triage Into Action in Seconds',
-        description: 'Generate ready-to-send expedite emails, leadership escalation briefs, and S&OP meeting prep \u2014 grounded in this analysis, not generic templates.',
-        features: ['Supplier expedite emails', 'Escalation briefs for leadership', 'S&OP / materials review prep'],
-        showBtn: state.billingConfigured !== false,
-        btnText: 'Unlock AI Helpers \u2014 $49/mo \u2192',
-      });
-      dom.aiHelpersLockedCta.appendChild(aiCta);
-    }
+    if (dom.aiHelpersLockedCta) dom.aiHelpersLockedCta.classList.add('hidden');
 
     // Comparison locked CTA — teaser for run-to-run comparison
     if (dom.comparisonLockedCta) {
@@ -553,6 +538,10 @@
     dom.aiHelpersSection.addEventListener('click', function (e) {
       var btn = e.target.closest('[data-helper]');
       if (btn && !btn.disabled) {
+        if (dom.aiHelpersSection.classList.contains('ai-helpers-locked')) {
+          App.openUpgradeModal();
+          return;
+        }
         showContextPanel(btn.getAttribute('data-helper'));
       }
     });

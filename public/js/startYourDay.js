@@ -89,6 +89,14 @@
       var helperType = btn.getAttribute('data-syd-helper');
       if (!helperType) return;
 
+      // Non-Pro users: show upgrade modal instead
+      var isAdmin = state.currentProfile && state.currentProfile.is_admin === true;
+      var isPro   = (state.currentPlan && state.currentPlan.plan === 'pro') || isAdmin;
+      if (!isPro) {
+        App.openUpgradeModal();
+        return;
+      }
+
       // Scroll to AI helpers section
       var aiSection = dom.aiHelpersSection;
       if (aiSection) {

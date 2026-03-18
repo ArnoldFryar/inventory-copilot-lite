@@ -101,6 +101,8 @@
     authModalTitle:  $('authModalTitle'),
     authToggleText:  $('authToggleText'),
     authToggleBtn:   $('authToggleBtn'),
+    upgradeModal:      $('upgradeModal'),
+    upgradeModalClose: $('upgradeModalClose'),
 
     // History panel
     historySection:  $('historySection'),
@@ -233,6 +235,24 @@
       default:                     return '';
     }
   };
+
+  // ── Upgrade modal helpers ─────────────────────────────────────────────────
+  App.openUpgradeModal = function () {
+    if (App.dom.upgradeModal) App.dom.upgradeModal.classList.remove('hidden');
+  };
+  App.closeUpgradeModal = function () {
+    if (App.dom.upgradeModal) App.dom.upgradeModal.classList.add('hidden');
+  };
+
+  // Wire close button + backdrop click
+  if (App.dom.upgradeModalClose) {
+    App.dom.upgradeModalClose.addEventListener('click', App.closeUpgradeModal);
+  }
+  if (App.dom.upgradeModal) {
+    App.dom.upgradeModal.addEventListener('click', function (e) {
+      if (e.target === App.dom.upgradeModal) App.closeUpgradeModal();
+    });
+  }
 
   /**
    * Builds a contextual upgrade CTA DOM node.
