@@ -554,14 +554,66 @@
     });
   }
 
+  /* ── Toast helper ─────────────────────────────────────────────────── */
+  var _toastContainer = document.getElementById('toastContainer');
+
+  function showToast(msg, sub) {
+    if (!_toastContainer) return;
+    var el = document.createElement('div');
+    el.className = 'toast';
+    el.innerHTML =
+      '<span class="toast-icon">\u2705</span>' +
+      '<span class="toast-msg">' + escHtml(msg) + '</span>' +
+      (sub ? '<span class="toast-sub">\u00B7 ' + escHtml(sub) + '</span>' : '');
+    _toastContainer.appendChild(el);
+    // Auto-remove
+    setTimeout(function () {
+      el.classList.add('is-leaving');
+      setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 200);
+    }, 2400);
+  }
+
+  /* ── Daily copy counter (localStorage) ────────────────────────────── */
+  var COPY_COUNT_KEY = 'opscopilot_copy_count';
+
+  function getCopyCount() {
+    try {
+      var raw = localStorage.getItem(COPY_COUNT_KEY);
+      if (!raw) return { date: '', count: 0 };
+      var obj = JSON.parse(raw);
+      var today = new Date().toISOString().slice(0, 10);
+      if (obj.date !== today) return { date: today, count: 0 };
+      return obj;
+    } catch (_) { return { date: '', count: 0 }; }
+  }
+
+  function incrementCopyCount() {
+    var today = new Date().toISOString().slice(0, 10);
+    var data = getCopyCount();
+    data.date = today;
+    data.count = (data.count || 0) + 1;
+    try { localStorage.setItem(COPY_COUNT_KEY, JSON.stringify(data)); } catch (_) {}
+    return data.count;
+  }
+
   // Copy to clipboard
   if (dom.aiHelperCopyBtn) {
     dom.aiHelperCopyBtn.addEventListener('click', function () {
       var raw = dom.aiHelperResult ? dom.aiHelperResult._rawText : '';
       if (raw && navigator.clipboard) {
         navigator.clipboard.writeText(raw).then(function () {
+          // Button label feedback
           var lbl = dom.aiHelperCopyBtn.querySelector('span');
           if (lbl) { lbl.textContent = 'Copied \u2713'; setTimeout(function () { lbl.textContent = 'Copy'; }, 2000); }
+
+          // Pulse animation on button
+          dom.aiHelperCopyBtn.classList.add('copy-pulse');
+          setTimeout(function () { dom.aiHelperCopyBtn.classList.remove('copy-pulse'); }, 400);
+
+          // Increment daily counter & show toast
+          var count = incrementCopyCount();
+          var sub = count > 1 ? 'Copied ' + count + ' times today' : '';
+          showToast('Copied \u2014 ready to send', sub);
         });
       }
     });
