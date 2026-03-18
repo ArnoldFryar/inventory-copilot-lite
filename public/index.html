@@ -247,36 +247,40 @@
     <!-- ── Executive Summary ─────────────────────────────────────────────── -->
     <section id="execSummarySection" class="exec-summary-section card hidden" aria-label="Executive summary">
       <p class="section-label section-label-exec">Executive Summary</p>
-      <div class="exec-summary-grid">
-        <!-- Health Score -->
-        <div class="exec-score-ring" id="execScoreRing">
-          <span class="exec-score-value" id="execScoreValue">—</span>
-          <span class="exec-score-label" id="execScoreLabel">Health Score</span>
-        </div>
-        <!-- KPI metrics -->
-        <div class="exec-kpis">
-          <div class="exec-kpi exec-kpi-urgent">
-            <span class="exec-kpi-value" id="execUrgentCount">0</span>
-            <span class="exec-kpi-label">Urgent Items</span>
+      <!-- Row 1: left = score ring + KPIs  |  right = stacked callout cards -->
+      <div class="exec-body-grid">
+        <!-- Left column: health score ring + KPI mini-cards -->
+        <div class="exec-left-col">
+          <div class="exec-score-ring" id="execScoreRing">
+            <span class="exec-score-value" id="execScoreValue">—</span>
+            <span class="exec-score-label" id="execScoreLabel">Health Score</span>
           </div>
-          <div class="exec-kpi exec-kpi-excess">
-            <span class="exec-kpi-value" id="execExcessCount">0</span>
-            <span class="exec-kpi-label">Excess / Dead Stock</span>
+          <div class="exec-kpis">
+            <div class="exec-kpi exec-kpi-urgent">
+              <span class="exec-kpi-value" id="execUrgentCount">0</span>
+              <span class="exec-kpi-label">Urgent Items</span>
+            </div>
+            <div class="exec-kpi exec-kpi-excess">
+              <span class="exec-kpi-value" id="execExcessCount">0</span>
+              <span class="exec-kpi-label">Excess / Dead Stock</span>
+            </div>
           </div>
         </div>
-        <!-- Top Risk -->
-        <div class="exec-callout exec-callout-risk">
-          <span class="exec-callout-heading">Top Risk</span>
-          <span class="exec-callout-detail" id="execTopRisk">None identified</span>
-          <span class="insight-why" id="execRiskWhy"></span>
-        </div>
-        <!-- Top Opportunity -->
-        <div class="exec-callout exec-callout-opp">
-          <span class="exec-callout-heading">Top Opportunity</span>
-          <span class="exec-callout-detail" id="execTopOpp">None identified</span>
-          <span class="insight-why" id="execOppWhy"></span>
+        <!-- Right column: stacked Top Risk + Top Opportunity -->
+        <div class="exec-right-col">
+          <div class="exec-callout exec-callout-risk">
+            <span class="exec-callout-heading">Top Risk</span>
+            <span class="exec-callout-detail" id="execTopRisk">None identified</span>
+            <span class="insight-why" id="execRiskWhy"></span>
+          </div>
+          <div class="exec-callout exec-callout-opp">
+            <span class="exec-callout-heading">Top Opportunity</span>
+            <span class="exec-callout-detail" id="execTopOpp">None identified</span>
+            <span class="insight-why" id="execOppWhy"></span>
+          </div>
         </div>
       </div>
+      <!-- Row 2: full-width narrative -->
       <p class="exec-narrative" id="execNarrative"></p>
     </section>
 

@@ -256,11 +256,15 @@
     letter-spacing: 0.1em;
   }
 
-  .exec-summary-grid {
-    grid-template-columns: auto 1fr 1fr;
+  .exec-body-grid {
+    grid-template-columns: auto 1fr;
     gap: 10pt 14pt;
     margin-bottom: 12pt;
   }
+
+  .exec-left-col { gap: 8pt; }
+  .exec-kpis     { gap: 6pt; grid-template-columns: 1fr 1fr; }
+  .exec-right-col { gap: 8pt; }
 
   .exec-score-ring {
     width: 80pt;

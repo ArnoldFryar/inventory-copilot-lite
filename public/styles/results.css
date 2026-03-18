@@ -151,13 +151,71 @@
   margin-top: 6px;
 }
 
-/* Callouts row — two-column side by side */
-.exec-callouts-row {
+/* ── Exec body layout: two-column top row ─────────────────────────────── */
+.exec-body-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-8);
+  align-items: start;
+  margin-bottom: var(--space-7);
+}
+
+/* Left col: score ring + KPI pair */
+.exec-left-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+/* KPI mini-cards side by side below the ring */
+.exec-kpis {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-5);
-  margin-bottom: var(--space-6);
+  gap: var(--space-3);
+  width: 100%;
 }
+
+.exec-kpi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  text-align: center;
+}
+.exec-kpi-urgent { border-top: 2px solid var(--red-400); }
+.exec-kpi-excess  { border-top: 2px solid var(--amber-400); }
+
+.exec-kpi-value {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1;
+  color: var(--color-heading);
+}
+.exec-kpi-urgent .exec-kpi-value { color: var(--red-400); }
+.exec-kpi-excess  .exec-kpi-value { color: var(--amber-400); }
+
+.exec-kpi-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ink-500);
+  margin-top: 5px;
+  line-height: 1.4;
+}
+
+/* Right col: stacked callout cards filling available height */
+.exec-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.exec-right-col .exec-callout { flex: 1; }
 
 /* Callout cards — risk + opportunity */
 .exec-callout {
@@ -204,15 +262,14 @@
   font-weight: 600;
 }
 
-/* Narrative */
+/* Narrative — full width below the two-column grid */
 .exec-narrative {
   font-size: 14px;
   line-height: 1.9;
   color: var(--ink-400);
   margin: 0;
-  padding-top: var(--space-8);
+  padding-top: var(--space-6);
   border-top: 1px solid rgba(20,184,166,0.10);
-  max-width: 620px;
 }
 
 /* Exec section padding — card already provides container */
@@ -1288,8 +1345,10 @@ tbody tr:hover {
   .exec-summary-section  { padding: var(--space-6) var(--space-5) var(--space-5); }
   /* 3-card row stacks to single column on tablet/mobile */
   .command-metric-row    { grid-template-columns: 1fr; gap: var(--space-3); }
-  /* Callouts stack */
-  .exec-callouts-row     { grid-template-columns: 1fr; gap: var(--space-3); }
+  /* Exec grid stacks vertically on tablet/mobile */
+  .exec-body-grid        { grid-template-columns: 1fr; gap: var(--space-5); }
+  .exec-left-col         { flex-direction: row; align-items: flex-start; flex-wrap: wrap; justify-content: center; gap: var(--space-4); }
+  .exec-kpis             { min-width: 200px; }
   .exec-score-ring       { width: 120px; height: 120px; border-width: 6px; }
   .exec-score-value      { font-size: 36px; }
   .cmd-metric-value      { font-size: 44px; letter-spacing: -2px; }
