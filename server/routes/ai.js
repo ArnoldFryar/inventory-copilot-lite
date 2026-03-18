@@ -13,6 +13,7 @@ const router   = express.Router();
 const requireAuth  = require('../middleware/requireAuth');
 const { getPlanForUser }                              = require('../../plans');
 const { supabaseAdmin }                               = require('../../supabaseClient');
+const { MODEL_MAP }                                   = require('../ai/config');
 const {
   generateHelper,
   aiConfigured,
@@ -52,8 +53,17 @@ router.post('/api/ai-helper', requireAuth, async (req, res) => {
     return res.status(400).json({ error: 'runData with summary and results is required.' });
   }
 
+  // Model selection — Pro/admin users get the full model for their helper type;
+  // all others fall back to the default (free) model.
+  const isPro  = plan.key === 'pro';
+  const model  = isPro
+    ? (MODEL_MAP[helperType] || MODEL_MAP.default)
+    : MODEL_MAP.default;
+
+  console.log('[AI ROUTE]', { helperType, model, isPro });
+
   try {
-    const result = await generateHelper(helperType, runData);
+    const result = await generateHelper(helperType, runData, { model });
 
     // Telemetry — log which helper was used (no PII, no content)
     const safe = {

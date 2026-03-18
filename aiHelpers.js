@@ -21,7 +21,9 @@
  */
 const AI_CONFIG = {
   apiKey:  (process.env.OPENAI_API_KEY || '').trim(),
-  model:   (process.env.AI_MODEL       || 'gpt-4o-mini').trim(),
+  // AI_MODEL env var overrides the route-selected model (useful in dev/demo).
+  // In production the model is chosen per helper type via server/ai/config.js MODEL_MAP.
+  model:   (process.env.AI_MODEL       || '').trim(),
   baseUrl: (process.env.AI_BASE_URL    || 'https://api.openai.com/v1').trim(),
 };
 
@@ -223,11 +225,13 @@ const PROMPT_BUILDERS = {
 /**
  * Generate an AI helper draft.
  *
- * @param {string} helperType — one of VALID_HELPER_TYPES
- * @param {object} runData    — { summary, results, topPriority, analyzedAt, thresholds }
+ * @param {string} helperType    — one of VALID_HELPER_TYPES
+ * @param {object} runData       — { summary, results, topPriority, analyzedAt, thresholds }
+ * @param {object} [opts]
+ * @param {string} [opts.model]  — model override from route (MODEL_MAP selection)
  * @returns {Promise<{text: string, model: string, usage: object}>}
  */
-async function generateHelper(helperType, runData) {
+async function generateHelper(helperType, runData, { model: modelOverride } = {}) {
   if (!VALID_HELPER_TYPES.has(helperType)) {
     throw new Error(`Unknown helper type: ${helperType}`);
   }
@@ -238,8 +242,11 @@ async function generateHelper(helperType, runData) {
   const ctx    = shapeInput(runData);
   const prompt = PROMPT_BUILDERS[helperType](ctx);
 
+  // Model priority: env-var override → route selection → hardcoded fallback.
+  const resolvedModel = AI_CONFIG.model || modelOverride || 'gpt-4.1-mini';
+
   const body = {
-    model:       AI_CONFIG.model,
+    model:       resolvedModel,
     messages: [
       { role: 'system', content: prompt.system },
       { role: 'user',   content: prompt.user },
@@ -255,7 +262,7 @@ async function generateHelper(helperType, runData) {
   const timeoutId  = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
 
   const t0 = Date.now();
-  console.log('[AI_HELPER] start', { helperType, model: AI_CONFIG.model, ts: new Date(t0).toISOString() });
+  console.log('[AI_HELPER] start', { helperType, model: resolvedModel, ts: new Date(t0).toISOString() });
 
   let res;
   try {
