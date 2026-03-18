@@ -218,13 +218,15 @@
     state.currentPlan = planData;
     state.billingConfigured = !!planData.billingConfigured;
 
+    var isAdmin = state.currentProfile && state.currentProfile.is_admin === true;
+
     if (dom.planBadge) {
-      var isPro = planData.plan === 'pro';
+      var isPro = planData.plan === 'pro' || isAdmin;
       dom.planBadge.textContent = isPro ? 'Pro' : 'Free';
       dom.planBadge.className   = isPro ? 'plan-badge plan-badge-pro' : 'plan-badge plan-badge-free';
     }
 
-    if (!planData.entitlements.csvExport) {
+    if (!planData.entitlements.csvExport && !isAdmin) {
       dom.exportBtn.classList.add('locked');
       dom.exportBtn.setAttribute('title', 'Pro feature ($49/mo): full CSV export for every part');
       if (dom.exportUpgrade) {
@@ -249,7 +251,7 @@
       if (dom.exportUpgrade) dom.exportUpgrade.classList.add('hidden');
     }
 
-    if (!planData.entitlements.pdfExport) {
+    if (!planData.entitlements.pdfExport && !isAdmin) {
       dom.pdfBtn.classList.add('locked');
       dom.pdfBtn.setAttribute('title', 'Pro feature ($49/mo): print-ready PDF triage report');
       if (dom.pdfUpgrade) {
@@ -274,9 +276,9 @@
       if (dom.pdfUpgrade) dom.pdfUpgrade.classList.add('hidden');
     }
 
-    // Show/hide upgrade button (free plan only, when billing is configured)
+    // Show/hide upgrade button (free plan only, when billing is configured; hidden for admins)
     if (dom.upgradeToProBtn) {
-      if (state.billingConfigured && planData.plan !== 'pro') {
+      if (state.billingConfigured && planData.plan !== 'pro' && !isAdmin) {
         dom.upgradeToProBtn.classList.remove('hidden');
       } else {
         dom.upgradeToProBtn.classList.add('hidden');

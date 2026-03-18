@@ -153,8 +153,9 @@
     dom.actionBar.classList.remove('hidden');
 
     // Plan-aware truncation notice
+    var isAdmin = state.currentProfile && state.currentProfile.is_admin === true;
     if (dom.tableLimitNotice) {
-      if (data.resultsTruncated && data.plan) {
+      if (data.resultsTruncated && data.plan && !isAdmin) {
         var shown = data.results.length;
         var beforeTrunc = data.totalBeforeTruncation;
         dom.tableLimitNotice.textContent =

@@ -11,7 +11,8 @@
     if (!dom.aiHelpersSection) return;
 
     var hasAnalysis = !!state.lastResponse;
-    var isPro = state.currentPlan && state.currentPlan.plan === 'pro';
+    var isAdmin = state.currentProfile && state.currentProfile.is_admin === true;
+    var isPro = (state.currentPlan && state.currentPlan.plan === 'pro') || isAdmin;
 
     // ── No analysis yet: hide everything ───────────────────────────────────
     if (!hasAnalysis) {
