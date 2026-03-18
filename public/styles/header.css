@@ -19,7 +19,7 @@
   transform: translateX(-50%);
   width: 700px;
   height: 350px;
-  background: radial-gradient(ellipse, rgba(99,102,241,0.10) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(20,184,166,0.07) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -31,7 +31,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgba(99,102,241,0.25) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(20,184,166,0.20) 50%, transparent 100%);
 }
 
 .app-header-inner {
@@ -145,18 +145,18 @@
 }
 
 .plan-badge-pro {
-  background: linear-gradient(135deg, rgba(99,102,241,0.20), rgba(139,92,246,0.14));
+  background: linear-gradient(135deg, rgba(20,184,166,0.18), rgba(13,148,136,0.12));
   color: var(--brand-300);
-  border-color: rgba(99,102,241,0.35);
-  box-shadow: 0 0 8px rgba(99,102,241,0.08);
+  border-color: rgba(20,184,166,0.32);
+  box-shadow: 0 0 8px rgba(20,184,166,0.08);
 }
 
 /* -- Upgrade to Pro CTA -- visually primary, compact */
 .upgrade-to-pro-btn {
   padding: 5px 16px;
-  border: 1px solid rgba(99,102,241,0.40);
+  border: 1px solid rgba(20,184,166,0.40);
   border-radius: var(--radius-pill);
-  background: linear-gradient(135deg, rgba(99,102,241,0.25) 0%, rgba(139,92,246,0.18) 100%);
+  background: linear-gradient(135deg, rgba(20,184,166,0.22) 0%, rgba(13,148,136,0.15) 100%);
   color: #fff;
   font-size: 12px;
   font-weight: 700;
@@ -164,12 +164,12 @@
   transition: all var(--tx);
   white-space: nowrap;
   letter-spacing: 0.2px;
-  box-shadow: 0 0 12px rgba(99,102,241,0.10), inset 0 1px 0 rgba(255,255,255,0.06);
+  box-shadow: 0 0 12px rgba(20,184,166,0.10), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 .upgrade-to-pro-btn:hover {
-  background: linear-gradient(135deg, rgba(99,102,241,0.40) 0%, rgba(139,92,246,0.30) 100%);
-  border-color: rgba(99,102,241,0.65);
-  box-shadow: 0 0 24px rgba(99,102,241,0.20), inset 0 1px 0 rgba(255,255,255,0.08);
+  background: linear-gradient(135deg, rgba(20,184,166,0.36) 0%, rgba(13,148,136,0.26) 100%);
+  border-color: rgba(20,184,166,0.65);
+  box-shadow: 0 0 24px rgba(20,184,166,0.20), inset 0 1px 0 rgba(255,255,255,0.08);
   transform: translateY(-1px);
 }
 
@@ -199,7 +199,7 @@
   height: 32px;
   border-radius: 50%;
   border: 1.5px solid rgba(255,255,255,0.14);
-  background: rgba(99,102,241,0.18);
+  background: rgba(20,184,166,0.15);
   color: rgba(255,255,255,0.85);
   font-size: 12px;
   font-weight: 700;
@@ -210,14 +210,14 @@
   flex-shrink: 0;
 }
 .account-avatar-btn:hover {
-  border-color: rgba(99,102,241,0.45);
-  background: rgba(99,102,241,0.28);
+  border-color: rgba(20,184,166,0.45);
+  background: rgba(20,184,166,0.22);
   color: #fff;
-  box-shadow: 0 0 12px rgba(99,102,241,0.12);
+  box-shadow: 0 0 12px rgba(20,184,166,0.15);
 }
 .account-avatar-btn[aria-expanded="true"] {
-  border-color: rgba(99,102,241,0.50);
-  background: rgba(99,102,241,0.30);
+  border-color: rgba(20,184,166,0.50);
+  background: rgba(20,184,166,0.28);
   color: #fff;
 }
 
@@ -250,7 +250,7 @@
   display: block;
   padding: var(--space-2) var(--space-4);
   font-size: 12px;
-  color: var(--ink-500);
+  color: var(--ink-400);
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -271,15 +271,15 @@
   padding: var(--space-2) var(--space-4);
   font-size: 13px;
   font-weight: 500;
-  color: var(--ink-700);
+  color: var(--ink-200);
   background: transparent;
   border: none;
   cursor: pointer;
   transition: all var(--tx);
 }
 .account-dropdown-item:hover {
-  background: var(--surface-2);
-  color: var(--brand-600);
+  background: var(--surface-3);
+  color: var(--brand-400);
 }
 
 /* -- Sign in button -- ghost style */

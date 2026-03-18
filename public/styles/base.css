@@ -8,17 +8,17 @@
 :root {
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 
-  /* Brand - refined indigo palette */
-  --brand-50:  #eef2ff;
-  --brand-100: #e0e7ff;
-  --brand-200: #c7d2fe;
-  --brand-300: #a5b4fc;
-  --brand-400: #818cf8;
-  --brand-500: #6366f1;
-  --brand-600: #4f46e5;
-  --brand-700: #4338ca;
-  --brand-800: #3730a3;
-  --brand-900: #312e81;
+  /* Brand - teal accent + deep navy */
+  --brand-50:  rgba(20,184,166,0.10);
+  --brand-100: rgba(20,184,166,0.15);
+  --brand-200: rgba(20,184,166,0.22);
+  --brand-300: #5eead4;
+  --brand-400: #2dd4bf;
+  --brand-500: #14b8a6;
+  --brand-600: #0d9488;
+  --brand-700: #0f766e;
+  --brand-800: #115e59;
+  --brand-900: #134e4a;
 
   /* Ink (text) - refined hierarchy */
   --ink-50:  #f8fafc;
@@ -32,16 +32,16 @@
   --ink-800: #1e293b;
   --ink-900: #0f172a;
 
-  /* Surfaces - premium depth */
-  --bg:        #f8fafc;
-  --surface:   #ffffff;
-  --surface-2: #f8fafc;
-  --surface-3: #f1f5f9;
+  /* Surfaces - premium dark depth */
+  --bg:        #080c18;
+  --surface:   #0d1225;
+  --surface-2: #111827;
+  --surface-3: #1a2235;
 
-  /* Borders - subtle hierarchy */
-  --border:    #e2e8f0;
-  --border-2:  #cbd5e1;
-  --border-3:  #94a3b8;
+  /* Borders - subtle dark hierarchy */
+  --border:    rgba(255,255,255,0.07);
+  --border-2:  rgba(255,255,255,0.12);
+  --border-3:  rgba(255,255,255,0.22);
 
   /* Semantic */
   --danger:  #dc2626;
@@ -81,14 +81,14 @@
   --purple-400: #c084fc;
   --purple-500: #a855f7;
 
-  /* Shadows - premium depth system */
-  --shadow-xs:  0 1px 2px rgba(0,0,0,0.04);
-  --shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md:  0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
-  --shadow-lg:  0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.05);
-  --shadow-xl:  0 20px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.04);
-  --shadow-glow: 0 0 0 1px rgba(99,102,241,0.1), 0 4px 16px rgba(99,102,241,0.08);
-  --shadow-focus: 0 0 0 3px rgba(99,102,241,0.12);
+  /* Shadows - premium dark depth system */
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.40);
+  --shadow-sm:  0 2px 8px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.20);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.45), 0 2px 4px rgba(0,0,0,0.30);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,0.55), 0 4px 8px rgba(0,0,0,0.35);
+  --shadow-xl:  0 20px 48px rgba(0,0,0,0.65), 0 8px 16px rgba(0,0,0,0.40);
+  --shadow-glow: 0 0 0 1px rgba(20,184,166,0.15), 0 4px 16px rgba(20,184,166,0.10);
+  --shadow-focus: 0 0 0 3px rgba(20,184,166,0.22);
 
   /* Radii */
   --radius-xs:   6px;
@@ -115,6 +115,10 @@
   --tx:         0.15s ease;
   --tx-slow:    0.25s ease;
   --transition: 0.15s ease;
+
+  /* Semantic text hierarchy — dark mode */
+  --color-heading: #f1f5f9;
+  --color-body:    #8faab8;
 }
 
 *, *::before, *::after {
@@ -131,7 +135,7 @@ button, input, select, textarea {
 body {
   font-family: var(--font-sans);
   background: var(--bg);
-  color: var(--ink-800);
+  color: var(--color-body);
   min-height: 100vh;
   display: flex;
   flex-direction: column;

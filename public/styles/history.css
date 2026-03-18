@@ -48,9 +48,9 @@
 }
 
 .history-btn:hover {
-  background: var(--surface-2);
+  background: var(--surface-3);
   border-color: var(--brand-400);
-  color: var(--brand-700);
+  color: var(--brand-300);
 }
 
 .history-btn:disabled {
@@ -94,19 +94,19 @@
 
 .history-item:hover {
   background: var(--surface-2);
-  border-color: var(--brand-200);
+  border-color: rgba(20,184,166,0.22);
   box-shadow: var(--shadow-sm);
 }
 
 .history-item.selected {
   border-color: var(--brand-500);
-  background: var(--brand-50);
+  background: rgba(20,184,166,0.06);
 }
 
 .history-item-date {
   font-size: 13px;
   font-weight: 600;
-  color: var(--ink-800);
+  color: var(--color-heading);
   white-space: nowrap;
 }
 
@@ -157,15 +157,15 @@
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-sm);
-  background: var(--brand-50);
-  border: 1px solid var(--brand-100);
+  background: rgba(20,184,166,0.06);
+  border: 1px solid rgba(20,184,166,0.14);
   margin-bottom: var(--space-3);
 }
 
 .compare-controls .compare-label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--brand-700);
+  color: var(--brand-300);
 }
 
 .compare-btn {

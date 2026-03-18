@@ -36,7 +36,7 @@
 .card h2 {
   font-size: 18px;
   font-weight: 700;
-  color: var(--ink-900);
+  color: var(--color-heading);
   margin-bottom: var(--space-4);
   letter-spacing: -0.4px;
 }

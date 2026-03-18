@@ -7,7 +7,7 @@
 .link-btn {
   background: none;
   border: none;
-  color: var(--brand-600);
+  color: var(--brand-400);
   font-size: 13px;
   font-weight: 600;
   font-family: var(--font-sans);
@@ -17,7 +17,7 @@
   padding: 0;
   transition: color var(--tx);
 }
-.link-btn:hover { color: var(--brand-700); }
+.link-btn:hover { color: var(--brand-300); }
 
 /* Visually hidden but accessible */
 .sr-only {
