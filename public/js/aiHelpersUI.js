@@ -77,8 +77,15 @@
     meeting_talking_points: 'Meeting Talking Points',
   };
 
+  var ICONS = {
+    expedite_email:        '\u2709\uFE0F',
+    escalation_summary:    '\uD83D\uDEA8',
+    meeting_talking_points: '\uD83D\uDCCB',
+  };
+
   /* ── Internal helpers ─────────────────────────────────────────────── */
   var _progressTimer = null;
+  var _lastHelperType = null;
 
   function setAllButtons(disabled) {
     if (!dom.aiHelpersActions) return;
@@ -97,9 +104,8 @@
     hideContent();
     hideError();
 
-    // Label
+    // Label (visible during loading in the card header is hidden, but pre-set)
     if (dom.aiHelperResultLabel) dom.aiHelperResultLabel.textContent = LABELS[helperType] || helperType;
-    if (dom.aiHelperCopyBtn) dom.aiHelperCopyBtn.classList.add('hidden');
 
     // Staged messages
     if (dom.aiHelperLoadingText) dom.aiHelperLoadingText.textContent = 'Analyzing data\u2026';
@@ -115,19 +121,79 @@
   }
 
   function hideContent() {
-    // Hide the actual result text elements (confidence, grounding, pre, meta)
-    var els = dom.aiHelperResult
-      ? dom.aiHelperResult.querySelectorAll('#aiConfidence, #aiResultGrounding, #aiHelperResultText, #aiHelperResultModel')
-      : [];
-    for (var i = 0; i < els.length; i++) els[i].classList.add('hidden');
+    var ids = ['aiConfidence', 'aiResultGrounding', 'aiHelperResultBody', 'aiResultActions'];
+    for (var i = 0; i < ids.length; i++) {
+      var el = document.getElementById(ids[i]);
+      if (el) el.classList.add('hidden');
+    }
+    // Hide the card header's content-dependent parts
+    var hdr = dom.aiHelperResult ? dom.aiHelperResult.querySelector('.ai-result-card-header') : null;
+    if (hdr) hdr.classList.add('hidden');
+    var strip = dom.aiHelperResult ? dom.aiHelperResult.querySelector('.ai-result-card-meta-strip') : null;
+    if (strip) strip.classList.add('hidden');
   }
 
   function showContent() {
-    var ids = ['aiConfidence', 'aiResultGrounding', 'aiHelperResultText', 'aiHelperResultModel'];
+    var ids = ['aiConfidence', 'aiResultGrounding', 'aiHelperResultBody', 'aiResultActions'];
     for (var i = 0; i < ids.length; i++) {
       var el = document.getElementById(ids[i]);
       if (el) el.classList.remove('hidden');
     }
+    var hdr = dom.aiHelperResult ? dom.aiHelperResult.querySelector('.ai-result-card-header') : null;
+    if (hdr) hdr.classList.remove('hidden');
+    var strip = dom.aiHelperResult ? dom.aiHelperResult.querySelector('.ai-result-card-meta-strip') : null;
+    if (strip) strip.classList.remove('hidden');
+  }
+
+  /** Format plain-text AI output into cleaner HTML. Preserves line breaks,
+   *  bolds lines that look like headers (ALL-CAPS or ending with ':'),
+   *  and renders '- ' or '• ' as bullet items. */
+  function formatAiText(raw) {
+    if (!raw) return '';
+    var lines = raw.split('\n');
+    var html = [];
+    var inList = false;
+
+    for (var i = 0; i < lines.length; i++) {
+      var ln = lines[i];
+      var trimmed = ln.trim();
+
+      // Detect bullet lines
+      var bulletMatch = trimmed.match(/^[-•*]\s+(.*)$/);
+      if (bulletMatch) {
+        if (!inList) { html.push('<ul>'); inList = true; }
+        html.push('<li>' + escHtml(bulletMatch[1]) + '</li>');
+        continue;
+      }
+
+      // Close open list
+      if (inList) { html.push('</ul>'); inList = false; }
+
+      // Empty line → spacer
+      if (trimmed === '') { html.push('<br>'); continue; }
+
+      // Header-like lines: ALL-CAPS or ends with ':'
+      var isHeader = /^[A-Z][A-Z /&\-:]{3,}$/.test(trimmed) || /^[A-Z].*:$/.test(trimmed);
+      if (isHeader) {
+        html.push('<strong>' + escHtml(trimmed) + '</strong>');
+      } else {
+        html.push('<span>' + escHtml(trimmed) + '</span>');
+      }
+    }
+    if (inList) html.push('</ul>');
+    return html.join('\n');
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function formatTimestamp() {
+    var d = new Date();
+    var h = d.getHours(); var m = d.getMinutes();
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
   }
 
   function showError(msg, helperType) {
@@ -223,9 +289,22 @@
       }
 
       // Populate result elements
-      if (dom.aiHelperResultLabel) dom.aiHelperResultLabel.textContent = data.label || helperType;
-      if (dom.aiHelperResultText)  dom.aiHelperResultText.textContent  = data.text;
+      if (dom.aiHelperResultLabel) dom.aiHelperResultLabel.textContent = data.label || LABELS[helperType] || helperType;
+      if (dom.aiResultCardIcon) dom.aiResultCardIcon.textContent = ICONS[helperType] || '\u2728';
+
+      // Formatted text body
+      var resultTextEl = document.getElementById('aiHelperResultText');
+      if (resultTextEl) resultTextEl.innerHTML = formatAiText(data.text);
+      // Store raw text for copy/download
+      if (dom.aiHelperResult) dom.aiHelperResult._rawText = data.text || '';
+
       if (dom.aiHelperResultModel) dom.aiHelperResultModel.textContent = 'Model: ' + (data.model || 'unknown');
+
+      // Timestamp
+      if (dom.aiResultTimestamp) dom.aiResultTimestamp.textContent = formatTimestamp();
+
+      // Track last helper for regenerate
+      _lastHelperType = helperType;
 
       // Confidence indicator
       var confidenceEl = document.getElementById('aiConfidence');
@@ -242,10 +321,8 @@
       // Swap skeleton → result with fade-in
       hideLoading();
       showContent();
-      if (dom.aiHelperCopyBtn) dom.aiHelperCopyBtn.classList.remove('hidden');
       if (dom.aiHelperResult) {
         dom.aiHelperResult.classList.remove('ai-fade-in');
-        // Force reflow for animation restart
         void dom.aiHelperResult.offsetWidth;
         dom.aiHelperResult.classList.add('ai-fade-in');
       }
@@ -280,13 +357,37 @@
   // Copy to clipboard
   if (dom.aiHelperCopyBtn) {
     dom.aiHelperCopyBtn.addEventListener('click', function () {
-      var text = dom.aiHelperResultText ? dom.aiHelperResultText.textContent : '';
-      if (text && navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(function () {
-          dom.aiHelperCopyBtn.textContent = 'Copied \u2713';
-          setTimeout(function () { dom.aiHelperCopyBtn.textContent = 'Copy to clipboard'; }, 2000);
+      var raw = dom.aiHelperResult ? dom.aiHelperResult._rawText : '';
+      if (raw && navigator.clipboard) {
+        navigator.clipboard.writeText(raw).then(function () {
+          var lbl = dom.aiHelperCopyBtn.querySelector('span');
+          if (lbl) { lbl.textContent = 'Copied \u2713'; setTimeout(function () { lbl.textContent = 'Copy'; }, 2000); }
         });
       }
+    });
+  }
+
+  // Download as .txt
+  if (dom.aiHelperDownloadBtn) {
+    dom.aiHelperDownloadBtn.addEventListener('click', function () {
+      var raw = dom.aiHelperResult ? dom.aiHelperResult._rawText : '';
+      if (!raw) return;
+      var filename = (_lastHelperType || 'ai-output') + '.txt';
+      var blob = new Blob([raw], { type: 'text/plain' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  }
+
+  // Regenerate
+  if (dom.aiHelperRegenerateBtn) {
+    dom.aiHelperRegenerateBtn.addEventListener('click', function () {
+      if (_lastHelperType) requestAiHelper(_lastHelperType);
     });
   }
 

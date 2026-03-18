@@ -440,10 +440,6 @@
       <!-- Upgrade CTA shown when analysis is loaded but plan is free -->
       <div id="aiHelpersLockedCta" class="hidden"></div>
       <div id="aiHelperResult" class="ai-helper-result hidden">
-        <div class="ai-helper-result-header">
-          <strong id="aiHelperResultLabel"></strong>
-          <button id="aiHelperCopyBtn" class="ai-helper-copy-btn hidden" type="button">Copy to clipboard</button>
-        </div>
         <!-- Loading skeleton (shown during request) -->
         <div id="aiHelperLoading" class="ai-helper-loading hidden">
           <div class="ai-helper-loading-bar"></div>
@@ -461,20 +457,47 @@
           <span id="aiHelperErrorMsg">Something went wrong.</span>
           <button id="aiHelperRetryBtn" class="ai-helper-retry-btn" type="button">Retry</button>
         </div>
-        <div class="ai-confidence hidden" id="aiConfidence" data-level="high">
-          <span class="ai-confidence-dots">
-            <span class="ai-confidence-dot"></span>
-            <span class="ai-confidence-dot"></span>
-            <span class="ai-confidence-dot"></span>
-          </span>
-          <span class="ai-confidence-label" id="aiConfidenceLabel">High confidence</span>
+        <!-- Result card header -->
+        <div class="ai-result-card-header">
+          <div class="ai-result-card-title-row">
+            <span class="ai-result-card-icon" id="aiResultCardIcon">✉️</span>
+            <strong id="aiHelperResultLabel" class="ai-result-card-title"></strong>
+          </div>
+          <span class="ai-result-card-badge">Generated insight</span>
         </div>
-        <p class="ai-result-grounding hidden" id="aiResultGrounding"></p>
-        <pre id="aiHelperResultText" class="ai-helper-result-text"></pre>
-        <p class="ai-helper-result-meta">
+        <!-- Confidence + grounding strip -->
+        <div class="ai-result-card-meta-strip">
+          <div class="ai-confidence hidden" id="aiConfidence" data-level="high">
+            <span class="ai-confidence-dots">
+              <span class="ai-confidence-dot"></span>
+              <span class="ai-confidence-dot"></span>
+              <span class="ai-confidence-dot"></span>
+            </span>
+            <span class="ai-confidence-label" id="aiConfidenceLabel">High confidence</span>
+          </div>
+          <span class="ai-result-grounding hidden" id="aiResultGrounding"></span>
+          <span class="ai-result-timestamp" id="aiResultTimestamp"></span>
+        </div>
+        <!-- Formatted output body -->
+        <div id="aiHelperResultBody" class="ai-result-card-body">
+          <div id="aiHelperResultText" class="ai-result-card-text"></div>
+        </div>
+        <!-- Action bar -->
+        <div class="ai-result-card-actions" id="aiResultActions">
+          <button id="aiHelperCopyBtn" class="ai-action-btn" type="button" title="Copy to clipboard">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span>Copy</span>
+          </button>
+          <button id="aiHelperDownloadBtn" class="ai-action-btn" type="button" title="Download as text file">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download</span>
+          </button>
+          <button id="aiHelperRegenerateBtn" class="ai-action-btn" type="button" title="Regenerate this draft">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            <span>Regenerate</span>
+          </button>
           <span id="aiHelperResultModel" class="ai-helper-meta-tag"></span>
-          <span class="ai-helper-meta-tag">Draft · verify before use</span>
-        </p>
+        </div>
       </div>
     </section>
 

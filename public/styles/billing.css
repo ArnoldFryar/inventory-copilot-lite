@@ -445,33 +445,132 @@
   line-height: 1.4;
 }
 
-/* AI result panel */
+/* AI result panel — elevated card */
 .ai-helper-result {
   margin-top: var(--space-4);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(20,184,166,0.12);
   overflow: hidden;
+  background: var(--surface);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.03);
 }
 
-.ai-helper-result-header {
+/* ── Card header ────────────────────────────────────────────────────── */
+.ai-result-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-3) var(--space-4);
-  background: var(--surface-3);
+  padding: var(--space-4) var(--space-5);
+  background: linear-gradient(135deg, rgba(20,184,166,0.06) 0%, transparent 60%);
   border-bottom: 1px solid var(--border);
   gap: var(--space-3);
   flex-wrap: wrap;
 }
 
-.ai-helper-result-header strong {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-heading);
+.ai-result-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
 }
 
-.ai-helper-copy-btn {
-  padding: 4px 12px;
+.ai-result-card-icon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.ai-result-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-heading);
+  line-height: 1.3;
+}
+
+.ai-result-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  background: rgba(20,184,166,0.08);
+  color: var(--brand-300);
+  border: 1px solid rgba(20,184,166,0.15);
+  border-radius: var(--radius-pill);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ── Confidence + grounding strip ───────────────────────────────────── */
+.ai-result-card-meta-strip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  background: var(--surface-2);
+}
+
+.ai-result-timestamp {
+  font-size: 11px;
+  color: var(--ink-400);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* ── Formatted output body ──────────────────────────────────────────── */
+.ai-result-card-body {
+  padding: var(--space-5);
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.ai-result-card-text {
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--ink-200);
+  font-family: var(--font-sans);
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* Make AI output headers bold + larger */
+.ai-result-card-text b,
+.ai-result-card-text strong {
+  font-weight: 700;
+  color: var(--color-heading);
+  font-size: 14px;
+}
+
+/* Clean bullet rendering */
+.ai-result-card-text ul,
+.ai-result-card-text ol {
+  padding-left: var(--space-5);
+  margin: var(--space-2) 0;
+}
+.ai-result-card-text li {
+  margin-bottom: var(--space-1);
+}
+
+/* ── Action bar ─────────────────────────────────────────────────────── */
+.ai-result-card-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.ai-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
   background: var(--surface);
   color: var(--ink-300);
   border: 1px solid var(--border);
@@ -480,47 +579,30 @@
   font-weight: 600;
   font-family: var(--font-sans);
   cursor: pointer;
+  white-space: nowrap;
   transition:
     background var(--dur) var(--ease),
     border-color var(--dur) var(--ease),
     color var(--dur) var(--ease);
-  white-space: nowrap;
-  margin-left: auto;
 }
 
-.ai-helper-copy-btn:hover {
+.ai-action-btn:hover {
   background: rgba(20,184,166,0.07);
   border-color: var(--brand-400);
   color: var(--brand-300);
 }
 
-.ai-helper-copy-btn:active {
+.ai-action-btn:active {
   transform: translateY(0.5px) scale(0.985);
   transition-duration: var(--dur-fast);
 }
 
-.ai-helper-result-text {
-  display: block;
-  padding: var(--space-4) var(--space-5);
-  background: var(--surface-2);
-  font-size: 13px;
-  line-height: 1.75;
-  color: var(--ink-300);
-  white-space: pre-wrap;
-  font-family: var(--font-sans);
-  word-break: break-word;
-  max-height: 480px;
-  overflow-y: auto;
+.ai-action-btn svg {
+  flex-shrink: 0;
 }
 
-.ai-helper-result-meta {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-  padding: var(--space-2) var(--space-4);
-  border-top: 1px solid var(--border);
-  background: var(--surface);
+.ai-result-card-actions .ai-helper-meta-tag {
+  margin-left: auto;
 }
 
 .ai-helper-meta-tag {
@@ -808,14 +890,44 @@
     grid-template-columns: 1fr;
   }
 
-  .ai-helper-result-header {
-    flex-direction: column;
-    align-items: flex-start;
+  .ai-result-card-header {
+    padding: var(--space-3) var(--space-4);
   }
 
-  .ai-helper-copy-btn {
-    margin-left: 0;
+  .ai-result-card-meta-strip {
+    padding: var(--space-2) var(--space-4);
+    gap: var(--space-2);
   }
+
+  .ai-result-card-body {
+    padding: var(--space-4);
+  }
+
+  .ai-result-card-actions {
+    padding: var(--space-3) var(--space-4);
+    gap: var(--space-2);
+  }
+
+  .ai-result-timestamp {
+    margin-left: 0;
+    width: 100%;
+    order: 10;
+  }
+
+  .ai-result-card-actions .ai-helper-meta-tag {
+    margin-left: 0;
+    order: 10;
+    width: 100%;
+    margin-top: var(--space-1);
+  }
+}
+
+@media (max-width: 480px) {
+  .ai-result-card-title { font-size: 14px; }
+  .ai-result-card-text  { font-size: 13px; line-height: 1.7; }
+
+  .ai-action-btn span { display: none; }
+  .ai-action-btn { padding: 6px 8px; }
 }
 
 /* ─── AI Insight presentation — confidence, grounding, outcome ─────────────
@@ -832,7 +944,6 @@
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: var(--radius-pill);
-  margin-bottom: var(--space-3);
 }
 
 .ai-confidence-dots {
@@ -866,24 +977,21 @@
 .ai-confidence[data-level="medium"] .ai-confidence-label { color: #fcd34d; }
 .ai-confidence[data-level="low"]    .ai-confidence-label { color: rgba(255,255,255,0.35); }
 
-/* Evidence grounding — "Based on X items from this analysis" */
+/* Evidence grounding — inline in meta strip */
 .ai-result-grounding {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   color: rgba(255,255,255,0.38);
-  margin: 0 0 var(--space-3);
-  padding-bottom: var(--space-3);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
 }
 
 .ai-result-grounding::before {
   content: '';
   display: inline-block;
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: var(--brand-500);
   opacity: 0.65;

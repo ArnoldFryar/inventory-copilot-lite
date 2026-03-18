@@ -177,6 +177,12 @@
     aiHelperError:       $('aiHelperError'),
     aiHelperErrorMsg:    $('aiHelperErrorMsg'),
     aiHelperRetryBtn:    $('aiHelperRetryBtn'),
+    aiHelperDownloadBtn: $('aiHelperDownloadBtn'),
+    aiHelperRegenerateBtn: $('aiHelperRegenerateBtn'),
+    aiResultCardIcon:    $('aiResultCardIcon'),
+    aiResultTimestamp:   $('aiResultTimestamp'),
+    aiResultActions:     $('aiResultActions'),
+    aiHelperResultBody:  $('aiHelperResultBody'),
   };
 
   // ── CSS class helpers ─────────────────────────────────────────────────────
