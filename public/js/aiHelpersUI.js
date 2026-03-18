@@ -238,6 +238,7 @@
   }
 
   function showLoading(helperType) {
+    closeRegenMenu();
     // Show the result container with only the skeleton visible
     if (dom.aiHelperResult) {
       dom.aiHelperResult.classList.remove('hidden', 'ai-fade-in');
@@ -636,19 +637,43 @@
     });
   }
 
-  // Regenerate
-  if (dom.aiHelperRegenerateBtn) {
-    dom.aiHelperRegenerateBtn.addEventListener('click', function () {
-      if (_lastHelperType) requestAiHelper(_lastHelperType);
+  // Intent-based regenerate dropdown
+  var regenMenu = document.getElementById('aiRegenMenu');
+  var regenWrapper = dom.aiHelperRegenerateBtn ? dom.aiHelperRegenerateBtn.parentElement : null;
+
+  function closeRegenMenu() {
+    if (regenMenu) regenMenu.classList.add('hidden');
+    if (regenWrapper) regenWrapper.classList.remove('open');
+  }
+
+  if (dom.aiHelperRegenerateBtn && regenMenu) {
+    dom.aiHelperRegenerateBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var isOpen = !regenMenu.classList.contains('hidden');
+      if (isOpen) { closeRegenMenu(); return; }
+      regenMenu.classList.remove('hidden');
+      regenWrapper.classList.add('open');
     });
+
+    regenMenu.addEventListener('click', function (e) {
+      var opt = e.target.closest('[data-regen-intent]');
+      if (!opt || !_lastHelperType) return;
+      var intent = opt.getAttribute('data-regen-intent');
+      closeRegenMenu();
+      if (intent) {
+        submitRefinement(intent);
+      } else {
+        requestAiHelper(_lastHelperType);
+      }
+    });
+
+    document.addEventListener('click', function () { closeRegenMenu(); });
   }
 
   /* ── Refinement controls ──────────────────────────────────────────── */
   function setRefineControls(disabled) {
     if (dom.aiRefineInput) dom.aiRefineInput.disabled = disabled;
     if (dom.aiRefineSubmit) dom.aiRefineSubmit.disabled = disabled;
-    var chips = dom.aiRefinePanel ? dom.aiRefinePanel.querySelectorAll('.ai-refine-chip') : [];
-    for (var i = 0; i < chips.length; i++) chips[i].disabled = disabled;
   }
 
   function submitRefinement(instruction) {
@@ -667,16 +692,6 @@
       e.preventDefault();
       var val = (dom.aiRefineInput.value || '').trim();
       if (val) submitRefinement(val);
-    });
-  }
-
-  // Quick-action chips (event delegation on the refine panel)
-  if (dom.aiRefinePanel) {
-    dom.aiRefinePanel.addEventListener('click', function (e) {
-      var chip = e.target.closest('[data-refine]');
-      if (chip && !chip.disabled) {
-        submitRefinement(chip.getAttribute('data-refine'));
-      }
     });
   }
 

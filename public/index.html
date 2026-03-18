@@ -591,22 +591,42 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span>Download</span>
           </button>
-          <button id="aiHelperRegenerateBtn" class="ai-action-btn" type="button" title="Regenerate this draft">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-            <span>Regenerate</span>
-          </button>
+          <div class="ai-regen-wrapper">
+            <button id="aiHelperRegenerateBtn" class="ai-action-btn ai-regen-trigger" type="button" title="Regenerate with intent">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              <span>Regenerate</span>
+              <svg class="ai-regen-caret" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div id="aiRegenMenu" class="ai-regen-menu hidden">
+              <button class="ai-regen-option" type="button" data-regen-intent="Make the tone more direct and assertive">
+                <span class="ai-regen-option-icon">➔</span>
+                <span>Make more direct</span>
+              </button>
+              <button class="ai-regen-option" type="button" data-regen-intent="Shorten this significantly — cut filler, keep only essential points">
+                <span class="ai-regen-option-icon">✂️</span>
+                <span>Shorten</span>
+              </button>
+              <button class="ai-regen-option" type="button" data-regen-intent="Increase the urgency — emphasize time-sensitivity and consequences of delay">
+                <span class="ai-regen-option-icon">⚡</span>
+                <span>Add urgency</span>
+              </button>
+              <button class="ai-regen-option" type="button" data-regen-intent="Rewrite for an executive audience — concise, strategic, decision-oriented">
+                <span class="ai-regen-option-icon">🎯</span>
+                <span>Make more executive</span>
+              </button>
+              <div class="ai-regen-divider"></div>
+              <button class="ai-regen-option ai-regen-fresh" type="button" data-regen-intent="">
+                <span class="ai-regen-option-icon">🔄</span>
+                <span>Fresh start</span>
+              </button>
+            </div>
+          </div>
           <span id="aiHelperResultModel" class="ai-helper-meta-tag"></span>
         </div>
         <!-- Refinement panel -->
         <div id="aiRefinePanel" class="ai-refine-panel hidden">
-          <div class="ai-refine-quick-actions">
-            <span class="ai-refine-quick-label">Quick:</span>
-            <button class="ai-refine-chip" type="button" data-refine="Make the tone more direct and assertive">Make more direct</button>
-            <button class="ai-refine-chip" type="button" data-refine="Shorten this significantly — cut filler, keep only essential points">Shorten</button>
-            <button class="ai-refine-chip" type="button" data-refine="Increase the urgency — emphasize time-sensitivity and consequences of delay">Add urgency</button>
-          </div>
           <form id="aiRefineForm" class="ai-refine-form" autocomplete="off">
-            <input id="aiRefineInput" class="ai-refine-input" type="text" placeholder="Adjust tone, urgency, or details\u2026" maxlength="500" />
+            <input id="aiRefineInput" class="ai-refine-input" type="text" placeholder="Custom instruction… e.g. add specific part numbers, change format" maxlength="500" />
             <button id="aiRefineSubmit" class="ai-refine-submit" type="submit">Refine</button>
           </form>
         </div>

@@ -611,6 +611,73 @@
   100% { box-shadow: none; }
 }
 
+/* ── Regenerate intent dropdown ─────────────────────────────────────── */
+.ai-regen-wrapper {
+  position: relative;
+}
+.ai-regen-trigger .ai-regen-caret {
+  margin-left: 2px;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.ai-regen-wrapper.open .ai-regen-caret {
+  transform: rotate(180deg);
+}
+.ai-regen-menu {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 200px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 4px;
+  z-index: 60;
+  opacity: 1;
+  animation: regenMenuIn 150ms var(--ease-out);
+}
+.ai-regen-menu.hidden {
+  display: none;
+}
+@keyframes regenMenuIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.ai-regen-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-300);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.ai-regen-option:hover {
+  background: color-mix(in srgb, var(--brand-500) 8%, var(--surface));
+  color: var(--brand-400);
+}
+.ai-regen-option-icon {
+  font-size: 13px;
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.ai-regen-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 3px 6px;
+}
+
 .ai-result-card-actions .ai-helper-meta-tag {
   margin-left: auto;
 }
@@ -1060,6 +1127,12 @@
 
   .ai-action-btn span { display: none; }
   .ai-action-btn { padding: 6px 8px; }
+
+  .ai-regen-menu { left: auto; right: 0; transform: none; }
+  @keyframes regenMenuIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 
   .ai-refine-chip { font-size: 11px; padding: 3px 10px; }
 }
