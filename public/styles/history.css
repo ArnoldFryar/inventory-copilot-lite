@@ -44,13 +44,21 @@
   color: var(--ink-700);
   cursor: pointer;
   white-space: nowrap;
-  transition: all var(--tx);
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
 }
 
 .history-btn:hover {
   background: var(--surface-3);
   border-color: var(--brand-400);
   color: var(--brand-300);
+}
+
+.history-btn:active {
+  transform: translateY(0.5px) scale(0.985);
+  transition-duration: var(--dur-fast);
 }
 
 .history-btn:disabled {
@@ -89,7 +97,10 @@
   border-radius: var(--radius-md);
   background: var(--surface);
   cursor: pointer;
-  transition: all var(--tx);
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur-slow) var(--ease-out);
 }
 
 .history-item:hover {
@@ -178,12 +189,21 @@
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all var(--tx);
+  transition:
+    background var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    transform var(--dur-fast) var(--ease-out);
 }
 
 .compare-btn:hover {
   background: var(--brand-700);
   box-shadow: var(--shadow-sm);
+}
+
+.compare-btn:active {
+  transform: translateY(0.5px) scale(0.985);
+  box-shadow: none;
+  transition-duration: var(--dur-fast);
 }
 
 .compare-btn:disabled {

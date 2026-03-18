@@ -156,7 +156,11 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: all var(--tx);
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    transform var(--dur-fast) var(--ease-out);
   white-space: nowrap;
   letter-spacing: 0.2px;
   box-shadow: 0 0 12px rgba(20,184,166,0.10), inset 0 1px 0 rgba(255,255,255,0.06);
@@ -166,6 +170,11 @@
   border-color: rgba(20,184,166,0.65);
   box-shadow: 0 0 24px rgba(20,184,166,0.20), inset 0 1px 0 rgba(255,255,255,0.08);
   transform: translateY(-1px);
+}
+.upgrade-to-pro-btn:active {
+  transform: translateY(0.5px) scale(0.97);
+  box-shadow: 0 0 8px rgba(20,184,166,0.10);
+  transition-duration: var(--dur-fast);
 }
 
 /* -- Account menu wrapper -- positioned for dropdown */
@@ -199,7 +208,10 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: all var(--tx);
+  transition:
+    border-color var(--dur) var(--ease),
+    background var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
   padding: 0;
   line-height: 1;
   flex-shrink: 0;
@@ -209,6 +221,10 @@
   background: rgba(20,184,166,0.22);
   color: #fff;
   box-shadow: 0 0 12px rgba(20,184,166,0.15);
+}
+.account-avatar-btn:active {
+  transform: scale(0.93);
+  transition-duration: var(--dur-fast);
 }
 .account-avatar-btn[aria-expanded="true"] {
   border-color: rgba(20,184,166,0.50);
@@ -237,8 +253,8 @@
 }
 
 @keyframes dropdown-in {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .account-dropdown-email {
@@ -270,7 +286,9 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: all var(--tx);
+  transition:
+    background var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
 }
 .account-dropdown-item:hover {
   background: var(--surface-3);
@@ -287,13 +305,20 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--tx);
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
   white-space: nowrap;
 }
 .sign-in-btn:hover {
   background: rgba(255,255,255,0.10);
   border-color: rgba(255,255,255,0.22);
   color: #fff;
+}
+.sign-in-btn:active {
+  transform: translateY(0.5px) scale(0.97);
+  transition-duration: var(--dur-fast);
 }
 
 /* -- Legacy link-btn ghost (still used in dropdown) -- */

@@ -1,5 +1,5 @@
 ﻿/* =========================================================
-   utilities.css - Helper classes
+   utilities.css - Helper classes & motion utilities
    ======================================================= */
 
 .hidden { display: none !important; }
@@ -15,7 +15,7 @@
   text-underline-offset: 2px;
   cursor: pointer;
   padding: 0;
-  transition: color var(--tx);
+  transition: color var(--dur) var(--ease);
 }
 .link-btn:hover { color: var(--brand-300); }
 
@@ -28,4 +28,85 @@
   clip: rect(0,0,0,0);
   white-space: nowrap;
   border: 0;
+}
+
+/* ─── Content transition utilities ─────────────────────── */
+
+/* Subtle fade-up entrance — add to any element that appears */
+.fade-in {
+  animation: u-fade-in var(--dur-enter) var(--ease-out) both;
+}
+
+/* Stagger children: set --i on each child via JS or nth-child */
+.stagger > * {
+  animation: u-fade-in var(--dur-enter) var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * var(--stagger));
+}
+
+@keyframes u-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Smooth content collapse/expand — pair with JS toggling max-height */
+.collapse-content {
+  overflow: hidden;
+  transition: max-height var(--dur-slow) var(--ease-out),
+              opacity var(--dur-slow) var(--ease);
+}
+
+/* ─── Skeleton loading states ──────────────────────────── */
+
+/* Apply to any element to show a pulsing placeholder */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 25%,
+    var(--surface-3) 50%,
+    var(--surface-2) 75%
+  );
+  background-size: 200% 100%;
+  animation: u-skeleton-pulse 1.8s var(--ease) infinite;
+  border-radius: var(--radius-sm);
+  color: transparent !important;
+  pointer-events: none;
+  user-select: none;
+  border-color: transparent !important;
+}
+
+/* Hide children inside skeleton containers */
+.skeleton * { visibility: hidden; }
+.skeleton::before,
+.skeleton::after { display: none; }
+
+@keyframes u-skeleton-pulse {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Pre-built skeleton shapes */
+.skeleton-line {
+  height: 14px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.skeleton-line.skeleton-line--lg { height: 20px; width: 60%; }
+.skeleton-line.skeleton-line--sm { height: 12px; width: 40%; }
+
+.skeleton-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.skeleton-card {
+  height: 120px;
+  border-radius: var(--radius-lg);
 }

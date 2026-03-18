@@ -111,10 +111,27 @@
   --space-14: 56px;
   --space-16: 64px;
 
-  /* Transitions */
-  --tx:         0.15s ease;
-  --tx-slow:    0.25s ease;
-  --transition: 0.15s ease;
+  /* ── Motion tokens ────────────────────────────────────── */
+  /* Durations */
+  --dur-fast:   120ms;
+  --dur:        180ms;
+  --dur-slow:   280ms;
+  --dur-enter:  220ms;
+  --dur-exit:   160ms;
+
+  /* Easing — productivity-app curves (never bouncy) */
+  --ease:       cubic-bezier(0.25, 0.1, 0.25, 1);    /* general */
+  --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);       /* entrances, hover lift */
+  --ease-in:    cubic-bezier(0.5, 0, 0.75, 0);       /* exits */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);  /* subtle overshoot for press */
+
+  /* Shorthand tokens (backward-compat) */
+  --tx:         var(--dur) var(--ease);
+  --tx-slow:    var(--dur-slow) var(--ease);
+  --transition: var(--dur) var(--ease);
+
+  /* Stagger for lists (used with --i custom property on children) */
+  --stagger: 35ms;
 
   /* Semantic text hierarchy — dark mode */
   --color-heading: #f1f5f9;
@@ -125,6 +142,28 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+/* ── Reduced-motion: kill cosmetic motion, keep functional opacity ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Focus-visible: consistent ring for keyboard users ── */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+/* Reset for inputs that already do their own focus styling */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  box-shadow: none;
 }
 
 /* Ensure form elements inherit font from body */

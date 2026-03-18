@@ -178,7 +178,11 @@
   border: 2px dashed var(--border-2);
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all var(--tx-slow);
+  transition:
+    border-color var(--dur-slow) var(--ease-out),
+    background var(--dur-slow) var(--ease-out),
+    box-shadow var(--dur-slow) var(--ease-out),
+    color var(--dur-slow) var(--ease-out);
   background: var(--surface);
   color: var(--ink-400);
   font-size: 14px;
@@ -190,13 +194,15 @@
   border-color: var(--brand-400);
   background: var(--brand-50);
   color: var(--brand-600);
-  box-shadow: 0 0 0 4px rgba(99,102,241,0.06);
+  box-shadow: 0 0 0 4px rgba(20,184,166,0.06);
 }
 
 .file-label-icon {
   font-size: 28px;
   opacity: 0.4;
-  transition: all var(--tx);
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
 }
 
 .file-label:hover .file-label-icon {
@@ -225,7 +231,10 @@ button[type="submit"] {
   font-family: var(--font-sans);
   font-weight: 700;
   cursor: pointer;
-  transition: all var(--tx);
+  transition:
+    background var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    transform var(--dur-fast) var(--ease-out);
   letter-spacing: -0.2px;
   align-self: flex-start;
   box-shadow: 0 1px 3px rgba(20,184,166,0.25);
@@ -238,8 +247,9 @@ button[type="submit"]:hover {
 }
 
 button[type="submit"]:active {
-  transform: none;
-  box-shadow: 0 1px 3px rgba(20,184,166,0.18);
+  transform: translateY(0.5px) scale(0.985);
+  box-shadow: 0 1px 2px rgba(20,184,166,0.12);
+  transition-duration: var(--dur-fast);
 }
 
 button[type="submit"]:disabled {
@@ -298,13 +308,21 @@ button[type="submit"]:disabled {
   font-weight: 600;
   font-family: var(--font-sans);
   cursor: pointer;
-  transition: all var(--tx);
+  transition:
+    background var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    transform var(--dur-fast) var(--ease-out);
   box-shadow: 0 1px 3px rgba(20,184,166,0.2);
 }
 .demo-btn:hover {
   background: var(--brand-700);
   box-shadow: 0 2px 8px rgba(20,184,166,0.25);
   transform: translateY(-1px);
+}
+.demo-btn:active {
+  transform: translateY(0.5px) scale(0.985);
+  box-shadow: 0 1px 2px rgba(20,184,166,0.12);
+  transition-duration: var(--dur-fast);
 }
 .demo-btn:disabled {
   opacity: 0.5;

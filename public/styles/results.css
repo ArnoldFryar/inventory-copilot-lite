@@ -60,12 +60,16 @@
   align-items: flex-start;
   position: relative;
   overflow: hidden;
-  transition: border-color var(--tx-slow), box-shadow var(--tx-slow);
+  transition:
+    border-color var(--dur-slow) var(--ease-out),
+    box-shadow var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
 }
 
 .cmd-metric-card:hover {
   border-color: var(--border-2);
   box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
 }
 
 /* Top accent stripe per card type */
@@ -122,7 +126,9 @@
   border: 7px solid var(--border-2);
   background: var(--surface);
   box-shadow: 0 12px 40px rgba(0,0,0,0.40);
-  transition: all var(--tx-slow);
+  transition:
+    border-color var(--dur-slow) var(--ease-out),
+    box-shadow var(--dur-slow) var(--ease-out);
 }
 .exec-score-ring.score-strong  { border-color: var(--green-400); box-shadow: 0 12px 40px rgba(34,197,94,0.20); }
 .exec-score-ring.score-fair    { border-color: var(--brand-500); box-shadow: 0 12px 40px rgba(20,184,166,0.22); }
@@ -161,9 +167,15 @@
   padding: var(--space-5) var(--space-6);
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
-  transition: all var(--tx);
+  transition:
+    box-shadow var(--dur-slow) var(--ease-out),
+    border-color var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
 }
-.exec-callout:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.exec-callout:hover {
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
+}
 
 .exec-callout-risk {
   background: rgba(239,68,68,0.06);
@@ -249,13 +261,20 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--tx);
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
   white-space: nowrap;
 }
 .save-run-btn:hover {
   background: var(--brand-50);
   border-color: var(--brand-400);
   color: var(--brand-300);
+}
+.save-run-btn:active {
+  transform: translateY(0.5px) scale(0.985);
+  transition-duration: var(--dur-fast);
 }
 .save-run-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
@@ -269,7 +288,11 @@
   font-family: var(--font-sans);
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--tx);
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    transform var(--dur-fast) var(--ease-out);
   white-space: nowrap;
 }
 .pdf-btn:hover {
@@ -277,6 +300,11 @@
   border-color: rgba(255,255,255,0.20);
   box-shadow: var(--shadow-sm);
   transform: translateY(-1px);
+}
+.pdf-btn:active {
+  transform: translateY(0.5px) scale(0.985);
+  box-shadow: none;
+  transition-duration: var(--dur-fast);
 }
 
 .export-btn.locked {
@@ -345,7 +373,10 @@
   padding: var(--space-4);
   position: relative;
   overflow: hidden;
-  transition: all var(--tx);
+  transition:
+    box-shadow var(--dur-slow) var(--ease-out),
+    border-color var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
 }
 
 /* Colored left accent instead of top bar — less visual noise */
@@ -361,6 +392,7 @@
 .summary-card:hover {
   box-shadow: var(--shadow-sm);
   border-color: var(--border-2);
+  transform: translateY(-2px);
 }
 
 .summary-value {
@@ -447,7 +479,9 @@
   border: 1px solid rgba(255,255,255,0.05);
   background: rgba(255,255,255,0.025);
   flex-wrap: wrap;
-  transition: all var(--tx);
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
   counter-increment: priority-counter;
 }
 
@@ -736,12 +770,19 @@
   color: var(--ink-300);
   cursor: pointer;
   white-space: nowrap;
-  transition: all var(--tx);
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
 }
 .comparison-export-btn:hover {
   background: var(--surface-2);
   border-color: var(--brand-400);
   color: var(--brand-300);
+}
+.comparison-export-btn:active {
+  transform: translateY(0.5px) scale(0.985);
+  transition-duration: var(--dur-fast);
 }
 
 .comparison-prior {
@@ -773,9 +814,15 @@
   border: 1px solid var(--border);
   background: var(--surface);
   min-width: 90px;
-  transition: all var(--tx);
+  transition:
+    box-shadow var(--dur-slow) var(--ease-out),
+    border-color var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
 }
-.cmp-card:hover { box-shadow: var(--shadow-sm); }
+.cmp-card:hover {
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
+}
 
 .cmp-card-value {
   font-size: 22px;
@@ -909,7 +956,7 @@ thead th:first-child {
 tbody tr {
   /* Inter-row separator: hairline only, not full border */
   border-bottom: 1px solid rgba(255,255,255,0.04);
-  transition: background 0.1s;
+  transition: background var(--dur-fast) var(--ease);
 }
 
 tbody tr:last-child { border-bottom: none; }
@@ -1030,7 +1077,10 @@ tbody tr:hover {
   font-family: var(--font-sans);
   color: var(--ink-200);
   background: var(--surface-2);
-  transition: border-color var(--tx), box-shadow var(--tx), background var(--tx);
+  transition:
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    background var(--dur) var(--ease);
   /* Normalize select appearance across browsers */
   -webkit-appearance: none;
   appearance: none;
@@ -1084,7 +1134,11 @@ tbody tr:hover {
   font-weight: 600;
   font-family: var(--font-sans);
   cursor: pointer;
-  transition: all var(--tx);
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
@@ -1096,29 +1150,9 @@ tbody tr:hover {
   color: var(--brand-300);
   box-shadow: var(--shadow-xs);
 }
-  border-color: var(--brand-300);
-}
-
-.export-btn {
-  padding: 7px 18px;
-  background: var(--surface);
-  color: var(--brand-600);
-  border: 1.5px solid var(--brand-200);
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  font-family: var(--font-sans);
-  font-weight: 600;
-  cursor: pointer;
-  height: 36px;
-  white-space: nowrap;
-  transition: all var(--tx);
-}
-
-.export-btn:hover {
-  background: var(--brand-600);
-  color: #fff;
-  border-color: var(--brand-600);
-  box-shadow: 0 2px 8px rgba(79,70,229,0.2);
+.export-btn:active {
+  transform: translateY(0.5px) scale(0.985);
+  transition-duration: var(--dur-fast);
 }
 
 .filter-count {

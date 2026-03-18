@@ -30,13 +30,17 @@
   border: 1px solid var(--border);
   padding: var(--space-7, 28px) var(--space-8);
   box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--tx-slow), border-color var(--tx-slow);
+  transition:
+    box-shadow var(--dur-slow) var(--ease-out),
+    border-color var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
   position: relative;
 }
 
 .card:hover {
   border-color: var(--border-2);
   box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
 .card h2 {
@@ -194,7 +198,10 @@
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
-  transition: all var(--tx);
+  transition:
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
   border: 1px solid transparent;
   background: transparent;
   line-height: 1.25;
@@ -218,7 +225,7 @@
 .sidebar-nav-icon {
   flex-shrink: 0;
   color: var(--ink-600);
-  transition: color var(--tx);
+  transition: color var(--dur) var(--ease);
 }
 
 .sidebar-nav-item:hover .sidebar-nav-icon      { color: var(--ink-300); }
