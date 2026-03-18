@@ -91,7 +91,7 @@ var buildExecutiveSummary = (function () {
     return {
       part:    r.part_number,
       status:  r.status,
-      detail:  r.part_number + ' — ' + (r.coverage != null ? r.coverage + ' days coverage' : 'no coverage data') +
+      detail:  r.part_number + ': ' + (r.coverage != null ? r.coverage + ' days coverage' : 'no coverage data') +
                ', usage ' + (r.daily_usage != null ? r.daily_usage + '/day' : 'unknown')
     };
   }
@@ -120,7 +120,7 @@ var buildExecutiveSummary = (function () {
     return {
       part:    r.part_number,
       status:  r.status,
-      detail:  r.part_number + ' — ' + (r.on_hand != null ? r.on_hand.toLocaleString() + ' units on hand' : 'unknown qty') +
+      detail:  r.part_number + ': ' + (r.on_hand != null ? r.on_hand.toLocaleString() + ' units on hand' : 'unknown qty') +
                ', ' + (r.coverage != null ? r.coverage + ' days coverage' : 'no coverage data')
     };
   }

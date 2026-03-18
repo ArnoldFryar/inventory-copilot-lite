@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OpsCopilot-Lite &mdash; Inventory Triage</title>
+  <title>OpsCopilot-Lite · Inventory Triage</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="style.css" />
@@ -77,7 +77,7 @@
       <!-- Right-aligned cluster: plan + upgrade + account -->
       <div class="header-right-group">
         <span id="planBadge" class="plan-badge hidden"></span>
-        <button id="upgradeToProBtn" class="upgrade-to-pro-btn hidden" type="button" data-upgrade="">Upgrade to Pro &mdash; $49/mo</button>
+        <button id="upgradeToProBtn" class="upgrade-to-pro-btn hidden" type="button" data-upgrade="">Upgrade to Pro · $49/mo</button>
         <!-- Account area — avatar trigger + dropdown -->
         <div id="accountMenu" class="account-menu hidden">
           <span id="accountEmail" class="account-email"></span>
@@ -117,11 +117,11 @@
     <!-- ── Upload form ──────────────────────────────────────────────────── -->
     <section class="upload-section card">
       <div class="hero-headline">
-        <h2 class="hero-title">Know which parts will stop the line &mdash; before they&nbsp;do</h2>
-        <p class="hero-subtext">Upload your ERP export. Get a severity-ranked stockout report with coverage analysis, recommended actions, and an executive summary &mdash; in&nbsp;seconds.</p>
+        <h2 class="hero-title">Know which parts will stop the line, before they&nbsp;do</h2>
+        <p class="hero-subtext">Upload your ERP export. Get a severity-ranked stockout report with coverage analysis, recommended actions, and an executive summary: all in&nbsp;seconds.</p>
         <div class="trust-strip">
           <span class="trust-item"><span class="trust-icon" aria-hidden="true">&#x2713;</span> 7 deterministic risk categories</span>
-          <span class="trust-item"><span class="trust-icon" aria-hidden="true">&#x2713;</span> Fixed rules &mdash; no AI hallucination</span>
+          <span class="trust-item"><span class="trust-icon" aria-hidden="true">&#x2713;</span> Fixed rules, no AI hallucination</span>
           <span class="trust-item"><span class="trust-icon" aria-hidden="true">&#x2713;</span> Triage-ready in seconds</span>
         </div>
       </div>
@@ -134,7 +134,7 @@
       <p class="context-block">
         Each part is scored by days of stock remaining relative to its lead time.
         Active stockouts surface first, followed by imminent risks, excess inventory,
-        potential dead stock, and data quality flags &mdash; seven categories, zero&nbsp;guesswork.
+        potential dead stock, and data quality flags: seven categories, zero&nbsp;guesswork.
       </p>
       <p class="hint">
         Columns recognized automatically: <code>Part No</code>, <code>QTY ON HAND</code>,
@@ -146,12 +146,12 @@
       <details class="file-requirements">
         <summary>File requirements &amp; supported formats</summary>
         <div class="file-req-body">
-          <p><strong>Required columns</strong> &mdash; common ERP names are recognized automatically:</p>
+          <p><strong>Required columns</strong>: common ERP names are recognized automatically:</p>
           <ul>
-            <li><strong>Part Number</strong> &mdash; Part No, Item, SKU, Material, Component</li>
-            <li><strong>Quantity on Hand</strong> &mdash; QTY ON HAND, Stock, Balance, Unrestricted</li>
-            <li><strong>Daily Usage</strong> &mdash; Avg Daily Usage, ADU, Consumption, Demand/Day</li>
-            <li><strong>Lead Time</strong> &mdash; LT, LT Days &mdash; <em>must be in calendar days</em></li>
+            <li><strong>Part Number</strong>: Part No, Item, SKU, Material, Component</li>
+            <li><strong>Quantity on Hand</strong>: QTY ON HAND, Stock, Balance, Unrestricted</li>
+            <li><strong>Daily Usage</strong>: Avg Daily Usage, ADU, Consumption, Demand/Day</li>
+            <li><strong>Lead Time</strong>: LT, LT Days (<em>must be in calendar days</em>)</li>
           </ul>
           <p><strong>File format</strong></p>
           <ul>
@@ -167,7 +167,7 @@
         <label class="file-label" for="csvfile">
           <span class="file-label-icon" aria-hidden="true">&#8593;</span>
           <span id="fileLabel">Choose a CSV file&hellip;</span>
-          <span class="file-label-hint">or drag and drop &mdash; .csv up to 5 MB</span>
+          <span class="file-label-hint">or drag and drop, .csv up to 5 MB</span>
           <input type="file" id="csvfile" name="csvfile" accept=".csv" />
         </label>
         <button type="submit" id="submitBtn" disabled>
@@ -177,7 +177,7 @@
       <p class="demo-hint">
         No file?
         <button id="liveDemoBtn" class="demo-btn" type="button">&#9654; Try Live Demo</button>
-        &mdash; instant triage with sample data.
+        · instant triage with sample data.
         Or
         <button id="loadSampleBtn" class="link-btn" type="button">load sample data</button>
         into the uploader, or
@@ -210,13 +210,13 @@
         <summary>What do the result categories mean?</summary>
         <div class="file-req-body">
           <ul>
-            <li><strong>Urgent Stockout Risk</strong> &mdash; Coverage is below 50% of the supplier lead time. A standard replenishment order may not arrive before stock runs out at current usage rates.</li>
-            <li><strong>Stockout Risk</strong> &mdash; Coverage is below the full lead time. Open purchase orders should be reviewed and expedited if needed.</li>
-            <li><strong>Healthy</strong> &mdash; Coverage is within the normal replenishment window. No action required.</li>
-            <li><strong>Excess Inventory</strong> &mdash; Coverage exceeds twice the lead time. More stock than needed for the current replenishment cycle.</li>
-            <li><strong>Potential Dead Stock</strong> &mdash; Coverage exceeds six times the lead time. The part may be obsolete or severely over-procured. Disposition review warranted.</li>
-            <li><strong>No Usage Data</strong> &mdash; Daily usage is zero or not recorded. Coverage cannot be calculated for this part.</li>
-            <li><strong>Invalid</strong> &mdash; One or more required fields are missing or contain non-numeric values. Review the Reason column in the detail table to see exactly which fields need correction.</li>
+            <li><strong>Urgent Stockout Risk</strong>: Coverage is below 50% of the supplier lead time. A standard replenishment order may not arrive before stock runs out at current usage rates.</li>
+            <li><strong>Stockout Risk</strong>: Coverage is below the full lead time. Open purchase orders should be reviewed and expedited if needed.</li>
+            <li><strong>Healthy</strong>: Coverage is within the normal replenishment window. No action required.</li>
+            <li><strong>Excess Inventory</strong>: Coverage exceeds twice the lead time. More stock than needed for the current replenishment cycle.</li>
+            <li><strong>Potential Dead Stock</strong>: Coverage exceeds six times the lead time. The part may be obsolete or severely over-procured. Disposition review warranted.</li>
+            <li><strong>No Usage Data</strong>: Daily usage is zero or not recorded. Coverage cannot be calculated for this part.</li>
+            <li><strong>Invalid</strong>: One or more required fields are missing or contain non-numeric values. Review the Reason column in the detail table to see exactly which fields need correction.</li>
           </ul>
           <p class="file-req-not-supported">Fixed rules, applied uniformly. Coverage = on-hand &divide; daily usage. Thresholds and column mapping are shown in the Triage Summary after each analysis.</p>
         </div>
@@ -225,7 +225,7 @@
 
     <!-- ── Demo mode badge ─────────────────────────────────────────────── -->
     <div id="demoBadge" class="demo-badge hidden" role="status">
-      <strong>Demo Mode</strong> &mdash; Sample data only. Upload your own CSV for live results.
+      <strong>Demo Mode</strong>: Sample data only. Upload your own CSV for live results.
     </div>
 
     <!-- ── Error banner ─────────────────────────────────────────────────── -->
@@ -304,7 +304,7 @@
         <p class="hint" id="priorityHint"></p>
       </div>
       <div id="priorityAllClear" class="priority-all-clear hidden">
-        Every part has adequate coverage against its lead time. No immediate supply-chain action required &mdash; review again after the next replenishment&nbsp;cycle.
+        Every part has adequate coverage against its lead time. No immediate supply-chain action required. Review again after the next replenishment&nbsp;cycle.
       </div>
       <ol id="priorityList" class="priority-list">
         <!-- Items injected by script.js -->
@@ -321,7 +321,7 @@
       <p class="section-label section-label-neutral">Leadership Summary</p>
       <div class="leadership-header">
         <h2>Triage Summary</h2>
-        <span class="audit-tag">Deterministic rules &mdash; no AI inference</span>
+        <span class="audit-tag">Deterministic rules · no AI inference</span>
       </div>
       <p id="leadershipNarrative" class="leadership-narrative"></p>
       <div class="audit-note">
@@ -392,7 +392,7 @@
 
     <!-- ── Comparison locked CTA (free-plan teaser) ────────────────────── -->
     <!-- JS-populated; shown when analysis is loaded and plan is free. -->
-    <section id="comparisonLockedCta" class="card hidden" aria-label="Compare runs — Pro feature"></section>
+    <section id="comparisonLockedCta" class="card hidden" aria-label="Compare runs: Pro feature"></section>
 
     <!-- ── AI Helpers panel (Pro only) ───────────────────────────────────── -->
     <!--
@@ -449,7 +449,7 @@
         <pre id="aiHelperResultText" class="ai-helper-result-text"></pre>
         <p class="ai-helper-result-meta">
           <span id="aiHelperResultModel" class="ai-helper-meta-tag"></span>
-          <span class="ai-helper-meta-tag">Draft &mdash; verify before use</span>
+          <span class="ai-helper-meta-tag">Draft · verify before use</span>
         </p>
       </div>
     </section>
@@ -540,7 +540,7 @@
       <p id="historyCount" class="history-count hidden"></p>
       <ul id="historyList" class="history-list"></ul>
       <p id="historyEmpty" class="history-empty hidden">No analysis runs saved yet. Upload a CSV to create your first&nbsp;one.</p>
-      <p id="historySignIn" class="history-sign-in hidden">Sign in to build an audit trail &mdash; every analysis is saved automatically for trend tracking.</p>
+      <p id="historySignIn" class="history-sign-in hidden">Sign in to build an audit trail. Every analysis is saved automatically for trend tracking.</p>
       <div id="historyUpgrade" class="history-upgrade hidden"></div>
     </section>
 

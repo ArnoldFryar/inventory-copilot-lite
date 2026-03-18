@@ -194,8 +194,8 @@
   letter-spacing: 0.6px;
   color: var(--ink-400);
 }
-.exec-callout-risk .exec-callout-heading { color: var(--red-600); }
-.exec-callout-opp  .exec-callout-heading { color: var(--green-700); }
+.exec-callout-risk .exec-callout-heading { color: var(--red-400); }
+.exec-callout-opp  .exec-callout-heading { color: var(--green-400); }
 
 .exec-callout-detail {
   font-size: 14px;
@@ -399,7 +399,7 @@
   font-size: 28px;
   font-weight: 800;
   line-height: 1.1;
-  color: var(--ink-900);
+  color: var(--color-heading);
   letter-spacing: -0.5px;
 }
 

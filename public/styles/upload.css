@@ -379,7 +379,7 @@ details[open].file-requirements > summary::before { content: '\25be  '; }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  color: var(--ink-600);
+  color: var(--ink-300);
   font-size: 13px;
   line-height: 1.7;
 }
@@ -399,7 +399,7 @@ p.file-req-not-supported {
 details.faq-block { margin-bottom: var(--space-3); }
 
 details.faq-block > summary {
-  color: var(--brand-600);
+  color: var(--brand-400);
   cursor: pointer;
   font-size: 13px;
   list-style: none;
@@ -413,9 +413,9 @@ details.faq-block > summary::-webkit-details-marker { display: none; }
 details.faq-block > summary::before { content: '\25b8  '; text-decoration: none; display: inline-block; }
 details[open].faq-block > summary::before { content: '\25be  '; }
 
-.faq-q { font-weight: 600; margin: 10px 0 2px; color: var(--ink-800); }
+.faq-q { font-weight: 600; margin: 10px 0 2px; color: var(--color-heading); }
 .faq-q:first-child { margin-top: 0; }
-.faq-a { margin: 0; color: var(--ink-600); }
+.faq-a { margin: 0; color: var(--color-body); }
 
 /* ========================================================= */
 /*  Loading spinner on submit                                */

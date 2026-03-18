@@ -156,7 +156,7 @@
           description: 'Every analysis is saved automatically. Compare runs side-by-side, track risk trends over time, and show leadership measurable improvement.',
           features: ['Unlimited saved runs', 'Side-by-side run comparison', 'Search & filter by date or filename', 'Instant access to past reports'],
           showBtn: state.billingConfigured !== false,
-          btnText: 'Unlock Run History — $49/mo →',
+          btnText: 'Unlock Run History · $49/mo →',
           valueAnchor: 'Replaces hours of manual inventory triage every week.',
         });
         dom.historyUpgrade.appendChild(cta);
