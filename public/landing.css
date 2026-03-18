@@ -43,6 +43,41 @@
   outline-offset: 2px;
 }
 
+/* ── Brand lockup (nav) ─────────────────────────────────────────────── */
+.lp-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.lp-brand-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.92);
+  letter-spacing: -0.3px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.lp-brand-suffix {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand-400);
+  margin-left: 1px;
+}
+
+/* ── Brand lockup (footer) ───────────────────────────────────────────── */
+.lp-footer-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.lp-footer-mark {
+  display: block;
+  flex-shrink: 0;
+  opacity: 0.55;
+}
+
 /* ── Section scaffolding ──────────────────────────────────────────────── */
 .lp-section {
   padding: var(--space-16) 0;
