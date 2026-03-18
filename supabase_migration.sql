@@ -143,3 +143,17 @@ DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
 CREATE POLICY "Users can insert own profile"
   ON profiles FOR INSERT
   WITH CHECK (auth.uid() = id);
+
+-- ============================================================================
+-- Seed: backfill existing auth users into profiles
+--
+-- Run after the profiles table is created to populate rows for any users who
+-- signed up before this table existed.  Safe to re-run — ON CONFLICT (id) DO
+-- NOTHING is idempotent.
+-- ============================================================================
+
+INSERT INTO profiles (id, email)
+SELECT id, email
+FROM auth.users
+WHERE email = 'breeze0125@gmail.com'
+ON CONFLICT (id) DO NOTHING;
