@@ -41,37 +41,96 @@
   margin-bottom: var(--space-6);
 }
 
-/* Grid: score ring left, KPIs + callouts right */
-.exec-summary-grid {
+/* 3-column command overview metric row */
+.command-metric-row {
   display: grid;
-  grid-template-columns: 172px 1fr;
-  gap: var(--space-6) var(--space-10);
-  align-items: start;
-  margin-bottom: var(--space-10);
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+  margin-bottom: var(--space-8);
 }
 
-/* Health Score ring – hero element */
+/* Individual metric cards */
+.cmd-metric-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--tx-slow), box-shadow var(--tx-slow);
+}
+
+.cmd-metric-card:hover {
+  border-color: var(--border-2);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Top accent stripe per card type */
+.cmd-metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+/* Health card: center the score ring */
+.cmd-metric-health { align-items: center; }
+.cmd-metric-health::before    { background: linear-gradient(90deg, var(--brand-600), var(--brand-400)); }
+.cmd-metric-critical::before  { background: linear-gradient(90deg, var(--red-600), var(--red-400)); }
+.cmd-metric-excess-exp::before { background: linear-gradient(90deg, var(--amber-600), var(--amber-400)); }
+
+.cmd-metric-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--ink-500);
+  margin-bottom: var(--space-4);
+}
+
+/* Large scannable number */
+.cmd-metric-value {
+  font-size: 56px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -3px;
+  color: var(--color-heading);
+}
+
+.cmd-metric-critical   .cmd-metric-value { color: var(--red-400); }
+.cmd-metric-excess-exp .cmd-metric-value { color: var(--amber-400); }
+
+.cmd-metric-desc {
+  font-size: 12px;
+  color: var(--ink-500);
+  margin-top: var(--space-2);
+}
+
+/* Health Score ring – compact version inside card */
 .exec-score-ring {
-  grid-row: 1 / 3;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 156px;
-  height: 156px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
-  border: 8px solid var(--border-2);
+  border: 7px solid var(--border-2);
   background: var(--surface);
-  box-shadow: 0 16px 48px rgba(0,0,0,0.40);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.40);
   transition: all var(--tx-slow);
 }
-.exec-score-ring.score-strong  { border-color: var(--green-400); box-shadow: 0 16px 48px rgba(34,197,94,0.20); }
-.exec-score-ring.score-fair    { border-color: var(--brand-500); box-shadow: 0 16px 48px rgba(20,184,166,0.22); }
-.exec-score-ring.score-at-risk { border-color: var(--amber-400); box-shadow: 0 16px 48px rgba(245,158,11,0.20); }
-.exec-score-ring.score-critical{ border-color: var(--red-500);   box-shadow: 0 16px 48px rgba(239,68,68,0.20); }
+.exec-score-ring.score-strong  { border-color: var(--green-400); box-shadow: 0 12px 40px rgba(34,197,94,0.20); }
+.exec-score-ring.score-fair    { border-color: var(--brand-500); box-shadow: 0 12px 40px rgba(20,184,166,0.22); }
+.exec-score-ring.score-at-risk { border-color: var(--amber-400); box-shadow: 0 12px 40px rgba(245,158,11,0.20); }
+.exec-score-ring.score-critical{ border-color: var(--red-500);   box-shadow: 0 12px 40px rgba(239,68,68,0.20); }
 
 .exec-score-value {
-  font-size: 52px;
+  font-size: 44px;
   font-weight: 800;
   line-height: 1;
   color: var(--color-heading);
@@ -86,42 +145,13 @@
   margin-top: 6px;
 }
 
-/* KPI blocks */
-.exec-kpis {
-  display: flex;
+/* Callouts row — two-column side by side */
+.exec-callouts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--space-5);
-  flex-wrap: wrap;
+  margin-bottom: var(--space-6);
 }
-.exec-kpi {
-  display: flex;
-  flex-direction: column;
-  padding: var(--space-5) var(--space-6);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  min-width: 130px;
-  flex: 1;
-  box-shadow: var(--shadow-xs);
-  transition: all var(--tx);
-}
-.exec-kpi:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
-
-.exec-kpi-value {
-  font-size: 32px;
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.5px;
-}
-.exec-kpi-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--ink-500);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  margin-top: 4px;
-}
-.exec-kpi-urgent .exec-kpi-value { color: var(--red-600); }
-.exec-kpi-excess .exec-kpi-value { color: var(--amber-600); }
 
 /* Callout cards — risk + opportunity */
 .exec-callout {
@@ -173,9 +203,9 @@
   max-width: 620px;
 }
 
-/* Section spacing — exec summary dominance */
+/* Exec section padding — card already provides container */
 .exec-summary-section {
-  margin-bottom: var(--space-4);
+  padding: var(--space-8) var(--space-8) var(--space-6);
 }
 .exec-summary-section + .action-bar {
   margin-top: calc(-1 * var(--space-5));
@@ -185,8 +215,8 @@
 }
 
 /* Hierarchy transitions: primary → support → detail */
-.leadership-section { margin-top: var(--space-4); }
-.results-section    { margin-top: var(--space-6); }
+.leadership-section { margin-top: var(--space-2); }
+.results-section    { margin-top: var(--space-4); }
 
 /* ========================================================= */
 /*  2 · ACTION BAR  –  clean post-analysis toolbar           */
@@ -370,25 +400,34 @@
 /*  4 · TOP PRIORITY  –  command-center triage panel         */
 /* ========================================================= */
 .priority-section {
-  background: linear-gradient(145deg, #0c0f1d 0%, #111631 40%, #151a3a 70%, #0f172a 100%);
-  border: 1px solid rgba(99,102,241,0.12);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 0 0 1px rgba(99,102,241,0.06);
+  background: linear-gradient(145deg, #0c0f1d 0%, #0e1228 40%, #111630 70%, #0c1020 100%);
+  border: 1px solid rgba(239,68,68,0.14);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(239,68,68,0.06);
+}
+
+/* Priority section header block */
+.priority-section-head {
+  padding-bottom: var(--space-6);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
 .priority-section .section-label { color: var(--red-400); }
 
 .priority-section h2 {
   color: #ffffff;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-  margin-bottom: var(--space-1);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: var(--space-2);
+  margin-top: var(--space-1);
 }
 
 .priority-section .hint {
-  color: rgba(255,255,255,0.40);
-  margin-bottom: var(--space-4);
-  font-size: 12px;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 0;
+  font-size: 13px;
+  line-height: 1.65;
 }
 
 .priority-list {
@@ -498,12 +537,80 @@
   flex-shrink: 0;
 }
 
+/* Priority action — default style for items 2+ */
 .priority-action {
-  font-size: 12px;
-  color: rgba(255,255,255,0.50);
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
   font-style: italic;
   margin-left: auto;
   max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─── Hero spotlight: first priority item ─────────────────
+   #1 item gets full-width card treatment with large part
+   number, clean action chip, and stronger risk context.
+   CSS-only — no JS changes required.
+   ─────────────────────────────────────────────────────── */
+.priority-list > .priority-item:first-child {
+  flex-wrap: wrap;
+  align-items: flex-start;
+  padding: var(--space-6);
+  gap: var(--space-4);
+  border-width: 1.5px;
+  margin-bottom: var(--space-3);
+}
+
+/* Suppress number circle on the hero — the spotlight IS the #1 signal */
+.priority-list > .priority-item:first-child::before {
+  display: none;
+}
+
+/* Hero: large part number */
+.priority-list > .priority-item:first-child .priority-part {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  min-width: unset;
+}
+
+/* Hero: detail takes full row */
+.priority-list > .priority-item:first-child .priority-detail {
+  width: 100%;
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+}
+
+/* Hero: action becomes a teal pill CTA */
+.priority-list > .priority-item:first-child .priority-action {
+  width: 100%;
+  font-size: 12px;
+  font-weight: 600;
+  font-style: normal;
+  color: var(--brand-400);
+  background: rgba(20,184,166,0.10);
+  border: 1px solid rgba(20,184,166,0.22);
+  border-radius: var(--radius-pill);
+  padding: 6px var(--space-4);
+  margin-left: 0;
+  max-width: unset;
+  white-space: normal;
+  display: inline-block;
+}
+
+/* Hero status-specific enhancements */
+.priority-list > .priority-item.status-urgent:first-child {
+  background: rgba(239,68,68,0.09);
+  border-color: rgba(239,68,68,0.38);
+  box-shadow: 0 4px 24px rgba(239,68,68,0.12);
+}
+
+.priority-list > .priority-item.status-risk:first-child {
+  background: rgba(245,158,11,0.08);
+  border-color: rgba(245,158,11,0.32);
+  box-shadow: 0 4px 24px rgba(245,158,11,0.10);
 }
 
 .priority-all-clear {
@@ -938,32 +1045,34 @@ tbody tr:hover { background: var(--surface-2) !important; }
   font-size: 13px;
 }
 
-/* ========================================================= */
-/*  10 · RESPONSIVE                                          */
-/* ========================================================= */
+/* =========================================================
+   10 · RESPONSIVE
+   ======================================================= */
 @media (max-width: 768px) {
-  .exec-summary-section { padding: var(--space-10) var(--space-6) var(--space-8); }
-  .exec-summary-grid {
-    grid-template-columns: 1fr;
-    justify-items: center;
-    gap: var(--space-5);
-  }
-  .exec-score-ring { grid-row: auto; width: 128px; height: 128px; border-width: 7px; }
-  .exec-score-value { font-size: 40px; }
-  .exec-kpis { justify-content: center; }
-  .exec-narrative { max-width: none; }
-  .exec-summary-section + .action-bar { margin-top: 0; }
-  .action-bar { padding: var(--space-3) var(--space-4); }
+  .exec-summary-section  { padding: var(--space-6) var(--space-5) var(--space-5); }
+  /* 3-card row stacks to single column on tablet/mobile */
+  .command-metric-row    { grid-template-columns: 1fr; gap: var(--space-3); }
+  /* Callouts stack */
+  .exec-callouts-row     { grid-template-columns: 1fr; gap: var(--space-3); }
+  .exec-score-ring       { width: 120px; height: 120px; border-width: 6px; }
+  .exec-score-value      { font-size: 36px; }
+  .cmd-metric-value      { font-size: 44px; letter-spacing: -2px; }
+  .exec-narrative        { max-width: none; }
+  .action-bar            { padding: var(--space-3) var(--space-4); }
+  /* Hero item: slightly tighter on mobile */
+  .priority-list > .priority-item:first-child { padding: var(--space-4); }
+  .priority-list > .priority-item:first-child .priority-part { font-size: 17px; }
   .priority-item::before { display: none; }
-  .filter-input { min-width: 0; }
+  .filter-input          { min-width: 0; }
   .comparison-export-btn { margin-left: 0; }
 }
 
 @media (max-width: 480px) {
-  .summary-grid { grid-template-columns: repeat(2, 1fr); }
-  .exec-kpi { min-width: 0; }
-  .exec-score-ring { width: 112px; height: 112px; border-width: 6px; }
-  .exec-score-value { font-size: 34px; }
+  .summary-grid  { grid-template-columns: repeat(2, 1fr); }
+  .exec-score-ring { width: 110px; height: 110px; border-width: 5px; }
+  .exec-score-value { font-size: 32px; }
+  .cmd-metric-value  { font-size: 40px; }
+  .priority-section-head h2 { font-size: 18px; }
   .filter-bar {
     flex-direction: column;
     align-items: stretch;
