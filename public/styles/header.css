@@ -331,6 +331,43 @@
   color: rgba(255,255,255,0.80);
 }
 
+/* =========================================================
+   Header logo lockup — visible on mobile (sidebar hidden),
+   hidden on desktop (sidebar carries the brand).
+   ======================================================= */
+
+/* Hidden on desktop by default */
+.header-logo {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.header-logo-mark {
+  display: block;
+  flex-shrink: 0;
+}
+
+.header-logo-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.92);
+  letter-spacing: -0.3px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Thin vertical rule separating logo from page title on mobile */
+.header-logo-divider {
+  display: none;
+  width: 1px;
+  height: 16px;
+  background: rgba(255,255,255,0.12);
+  flex-shrink: 0;
+}
+
 /* -- Responsive -- */
 @media (max-width: 640px) {
   .app-header { padding: 0 var(--space-4); }
@@ -342,4 +379,10 @@
   .upgrade-to-pro-btn { font-size: 11px; padding: 4px 12px; }
   .account-avatar-btn { width: 28px; height: 28px; font-size: 11px; }
   .account-dropdown { right: -8px; min-width: 180px; }
+}
+
+/* Show logo lockup only when sidebar is hidden (mobile) */
+@media (max-width: 767px) {
+  .header-logo         { display: flex; }
+  .header-logo-divider { display: block; }
 }

@@ -146,9 +146,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
   flex-shrink: 0;
   box-shadow: 0 2px 10px rgba(20,184,166,0.30);
+  overflow: hidden;
 }
 
 .sidebar-logo-copy {

@@ -1,0 +1,22 @@
+<svg viewBox="0 0 100 100" width="48" height="48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="oc-g" x1="15" y1="85" x2="85" y2="15" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#003040"/>
+      <stop offset="100%" stop-color="#00B8BA"/>
+    </linearGradient>
+  </defs>
+  <!-- Dominant arc: 260° — system coverage, starts at 164° CW from 12 o'clock -->
+  <circle cx="50" cy="50" r="37"
+    stroke="url(#oc-g)" stroke-width="5.2"
+    stroke-dasharray="167.901 64.577" stroke-dashoffset="126.571"
+    stroke-linecap="butt" fill="none"
+    transform="rotate(-90 50 50)"/>
+  <!-- Accent arc: 48° — signal/intelligence, starts at 96° CW -->
+  <circle cx="50" cy="50" r="37"
+    stroke="url(#oc-g)" stroke-width="3.6"
+    stroke-dasharray="30.997 201.481" stroke-dashoffset="170.484"
+    stroke-linecap="butt" fill="none"
+    transform="rotate(-90 50 50)"/>
+  <!-- Center dot — intelligence anchor -->
+  <circle cx="50" cy="50" r="3.5" fill="#00B8BA"/>
+</svg>

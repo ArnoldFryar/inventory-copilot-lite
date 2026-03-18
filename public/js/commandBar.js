@@ -9,18 +9,6 @@
   // `available` (optional) — fn returning false hides the item when bar is
   // opened with no query; it is shown (dimmed) only when searched.
 
-  var ICON = {
-    upload:    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>',
-    risk:      '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
-    summary:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
-    table:     '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>',
-    ai:        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
-    history:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-    export:    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
-    billing:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>',
-    dashboard: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
-  };
-
   var ALL_ACTIONS = [
     // ── Navigate ──────────────────────────────────────────────────────────
     {
@@ -28,7 +16,7 @@
       group: 'Navigate',
       label: 'Go to dashboard',
       desc: 'Return to the inventory triage home',
-      icon: ICON.dashboard,
+      icon: App.Icon.html('dashboard', { size: 14 }),
       keywords: ['dashboard', 'home', 'triage', 'main', 'start'],
       run: function () { window.location.href = '/'; },
     },
@@ -37,7 +25,7 @@
       group: 'Navigate',
       label: 'View executive summary',
       desc: 'Jump to health score and KPIs',
-      icon: ICON.summary,
+      icon: App.Icon.html('summary', { size: 14 }),
       keywords: ['exec', 'summary', 'health', 'score', 'kpi'],
       available: function () { return !hidden('execSummarySection'); },
       run: function () { scrollTo('execSummarySection'); },
@@ -47,7 +35,7 @@
       group: 'Navigate',
       label: 'View top risks',
       desc: 'Jump to the priority items panel',
-      icon: ICON.risk,
+      icon: App.Icon.html('risk', { size: 14 }),
       keywords: ['risk', 'priority', 'urgent', 'stockout', 'danger', 'critical'],
       available: function () { return !hidden('prioritySection'); },
       run: function () { scrollTo('prioritySection'); },
@@ -57,7 +45,7 @@
       group: 'Navigate',
       label: 'View results table',
       desc: 'Jump to the full analysis table',
-      icon: ICON.table,
+      icon: App.Icon.html('table', { size: 14 }),
       keywords: ['results', 'table', 'all', 'parts', 'data', 'detail'],
       available: function () { return !hidden('resultsSection'); },
       run: function () { scrollTo('resultsSection'); },
@@ -67,7 +55,7 @@
       group: 'Navigate',
       label: 'Open AI helpers',
       desc: 'Jump to AI draft tools (Pro)',
-      icon: ICON.ai,
+      icon: App.Icon.html('ai', { size: 14 }),
       keywords: ['ai', 'helper', 'draft', 'email', 'escalation', 'talking', 'pro'],
       available: function () { return !hidden('aiHelpersSection'); },
       run: function () { scrollTo('aiHelpersSection'); },
@@ -77,7 +65,7 @@
       group: 'Navigate',
       label: 'Open history',
       desc: 'Browse saved analysis runs',
-      icon: ICON.history,
+      icon: App.Icon.html('history', { size: 14 }),
       keywords: ['history', 'saved', 'past', 'runs', 'previous', 'archive'],
       run: function () {
         var el = document.getElementById('historySection');
@@ -92,7 +80,7 @@
       group: 'Navigate',
       label: 'Go to billing',
       desc: 'Manage your plan and subscription',
-      icon: ICON.billing,
+      icon: App.Icon.html('billing', { size: 14 }),
       keywords: ['billing', 'plan', 'upgrade', 'pro', 'payment', 'subscription'],
       run: function () { window.location.href = '/billing.html'; },
     },
@@ -102,7 +90,7 @@
       group: 'Actions',
       label: 'Analyze new upload',
       desc: 'Upload a new inventory CSV for triage',
-      icon: ICON.upload,
+      icon: App.Icon.html('upload', { size: 14 }),
       keywords: ['upload', 'analyze', 'csv', 'new', 'file', 'import', 'fresh'],
       run: function () {
         var section = document.querySelector('.upload-section');
@@ -116,7 +104,7 @@
       group: 'Actions',
       label: 'Export CSV report',
       desc: 'Download the current analysis as CSV',
-      icon: ICON.export,
+      icon: App.Icon.html('export', { size: 14 }),
       keywords: ['export', 'csv', 'download', 'report', 'save'],
       available: function () {
         return window.App && window.App.state && !!window.App.state.lastResponse;

@@ -1,0 +1,17 @@
+<svg viewBox="0 0 100 100" width="48" height="48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outline light variant — thin stroke, for use on dark surfaces -->
+  <!-- Dominant arc: 260°, starts at 164° CW from 12 o'clock -->
+  <circle cx="50" cy="50" r="37"
+    stroke="#FFFFFF" stroke-opacity="0.88" stroke-width="2.2"
+    stroke-dasharray="167.901 64.577" stroke-dashoffset="126.571"
+    stroke-linecap="butt" fill="none"
+    transform="rotate(-90 50 50)"/>
+  <!-- Accent arc: 48°, starts at 96° CW -->
+  <circle cx="50" cy="50" r="37"
+    stroke="#FFFFFF" stroke-opacity="0.88" stroke-width="1.6"
+    stroke-dasharray="30.997 201.481" stroke-dashoffset="170.484"
+    stroke-linecap="butt" fill="none"
+    transform="rotate(-90 50 50)"/>
+  <!-- Center dot -->
+  <circle cx="50" cy="50" r="2.8" fill="#FFFFFF" fill-opacity="0.75"/>
+</svg>
