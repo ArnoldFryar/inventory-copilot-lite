@@ -198,7 +198,8 @@
 }
 
 .file-label-icon {
-  font-size: 28px;
+  width: 28px;
+  height: 28px;
   opacity: 0.4;
   transition:
     opacity var(--dur-slow) var(--ease-out),

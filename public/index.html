@@ -28,21 +28,21 @@
 
       <div class="sidebar-nav">
         <a href="/" class="sidebar-nav-item is-active" aria-current="page">
-          <span data-icon="summary" data-icon-size="15" class="sidebar-nav-icon" aria-hidden="true"></span>
+          <span data-icon="summary" data-icon-size="15" data-icon-class="sidebar-nav-icon"></span>
           <span>Triage</span>
         </a>
         <a href="#historySection" class="sidebar-nav-item">
-          <span data-icon="history" data-icon-size="15" class="sidebar-nav-icon" aria-hidden="true"></span>
+          <span data-icon="history" data-icon-size="15" data-icon-class="sidebar-nav-icon"></span>
           <span>History</span>
         </a>
         <a href="#aiHelpersSection" class="sidebar-nav-item">
-          <span data-icon="ai" data-icon-size="15" class="sidebar-nav-icon" aria-hidden="true"></span>
+          <span data-icon="ai" data-icon-size="15" data-icon-class="sidebar-nav-icon"></span>
           <span>AI Helpers</span>
           <span class="sidebar-nav-badge">Pro</span>
         </a>
         <div class="sidebar-divider"></div>
         <a href="/billing.html" class="sidebar-nav-item">
-          <span data-icon="billing" data-icon-size="15" class="sidebar-nav-icon" aria-hidden="true"></span>
+          <span data-icon="billing" data-icon-size="15" data-icon-class="sidebar-nav-icon"></span>
           <span>Billing &amp; Plan</span>
         </a>
       </div>
@@ -123,9 +123,9 @@
         <h2 class="hero-title">Know which parts will stop the line, before they&nbsp;do</h2>
         <p class="hero-subtext">Upload your ERP export. Get a severity-ranked stockout report with coverage analysis, recommended actions, and an executive summary: all in&nbsp;seconds.</p>
         <div class="trust-strip">
-          <span class="trust-item"><span class="trust-icon" aria-hidden="true">&#x2713;</span> 7 deterministic risk categories</span>
-          <span class="trust-item"><span class="trust-icon" aria-hidden="true">&#x2713;</span> Fixed rules, no AI hallucination</span>
-          <span class="trust-item"><span class="trust-icon" aria-hidden="true">&#x2713;</span> Triage-ready in seconds</span>
+          <span class="trust-item"><span class="trust-icon" aria-hidden="true"><span data-icon="check" data-icon-size="11"></span></span> 7 deterministic risk categories</span>
+          <span class="trust-item"><span class="trust-icon" aria-hidden="true"><span data-icon="check" data-icon-size="11"></span></span> Fixed rules, no AI hallucination</span>
+          <span class="trust-item"><span class="trust-icon" aria-hidden="true"><span data-icon="check" data-icon-size="11"></span></span> Triage-ready in seconds</span>
         </div>
       </div>
 
@@ -168,7 +168,7 @@
 
       <form id="uploadForm" enctype="multipart/form-data">
         <label class="file-label" for="csvfile">
-          <span class="file-label-icon" aria-hidden="true">&#8593;</span>
+          <span data-icon="upload" data-icon-size="28" data-icon-class="file-label-icon" aria-hidden="true"></span>
           <span id="fileLabel">Choose a CSV file&hellip;</span>
           <span class="file-label-hint">or drag and drop, .csv up to 5 MB</span>
           <input type="file" id="csvfile" name="csvfile" accept=".csv" />
@@ -419,19 +419,19 @@
       </p>
       <div class="ai-helpers-actions" id="aiHelpersActions">
         <button class="ai-helper-btn" type="button" data-helper="expedite_email">
-          <span class="ai-helper-btn-icon">&#9993;</span>
+          <span data-icon="upload" data-icon-size="18" data-icon-class="ai-helper-btn-icon"></span>
           <span class="ai-helper-btn-label">Draft Expedite Email</span>
           <span class="ai-helper-btn-desc">Supplier email for urgent parts</span>
           <span class="ai-helper-btn-outcome">Ready-to-send supplier escalation</span>
         </button>
         <button class="ai-helper-btn" type="button" data-helper="escalation_summary">
-          <span class="ai-helper-btn-icon">&#9888;</span>
+          <span data-icon="flag" data-icon-size="18" data-icon-class="ai-helper-btn-icon"></span>
           <span class="ai-helper-btn-label">Escalation Summary</span>
           <span class="ai-helper-btn-desc">Internal summary for leadership</span>
           <span class="ai-helper-btn-outcome">Executive-ready risk brief</span>
         </button>
         <button class="ai-helper-btn" type="button" data-helper="meeting_talking_points">
-          <span class="ai-helper-btn-icon">&#128172;</span>
+          <span data-icon="ai" data-icon-size="18" data-icon-class="ai-helper-btn-icon"></span>
           <span class="ai-helper-btn-label">Meeting Talking Points</span>
           <span class="ai-helper-btn-desc">S&amp;OP / materials review prep</span>
           <span class="ai-helper-btn-outcome">Structured S&amp;OP talking points</span>

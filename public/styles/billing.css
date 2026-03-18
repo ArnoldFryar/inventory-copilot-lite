@@ -282,7 +282,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
+  gap: 6px;
   padding: var(--space-4);
   background: var(--surface);
   color: var(--ink-300);
@@ -319,10 +319,24 @@
 }
 
 .ai-helper-btn-icon {
-  font-size: 18px;
-  opacity: 0.70;
-  line-height: 1;
-  margin-bottom: 4px;
+  opacity: 0.65;
+  flex-shrink: 0;
+  color: var(--ink-400);
+  transition:
+    opacity var(--dur) var(--ease),
+    color var(--dur) var(--ease),
+    transform var(--dur) var(--ease-out);
+}
+
+.ai-helper-btn:hover .ai-helper-btn-icon {
+  opacity: 1;
+  color: var(--brand-400);
+  transform: translateY(-1px);
+}
+
+.ai-helper-btn:active .ai-helper-btn-icon {
+  transform: translateY(0);
+  transition-duration: var(--dur-fast);
 }
 
 .ai-helper-btn-label {

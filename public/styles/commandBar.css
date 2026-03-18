@@ -283,6 +283,14 @@
 
 .cmd-trigger-label svg {
   opacity: 0.6;
+  transition:
+    opacity var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.cmd-trigger-btn:hover .cmd-trigger-label svg {
+  opacity: 0.9;
+  color: var(--brand-400);
 }
 
 .cmd-trigger-shortcut {

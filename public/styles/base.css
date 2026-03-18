@@ -171,6 +171,14 @@ button, input, select, textarea {
   font-family: inherit;
 }
 
+/* Icon system — SVGs produced by App.Icon are always aria-hidden + focusable=false.
+   Render as block to eliminate inline baseline gaps; flex-shrink:0 prevents
+   compression inside tight flex rows. */
+svg[aria-hidden="true"][focusable="false"] {
+  display: block;
+  flex-shrink: 0;
+}
+
 body {
   font-family: var(--font-sans);
   background: var(--bg);
