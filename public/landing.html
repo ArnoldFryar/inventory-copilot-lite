@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="landing.css" />
+  <script src="/js/Icon.js" defer></script>
 </head>
 <body>
 
@@ -55,7 +56,7 @@
 <div class="lp-urgency-bar" role="note">
   <div class="lp-container">
     <p class="lp-urgency-text">
-      <span class="lp-urgency-icon" aria-hidden="true">&#9888;</span>
+      <span data-icon="alert" data-icon-size="16" data-icon-class="lp-urgency-icon" aria-hidden="true"></span>
       Most inventory issues aren&rsquo;t obvious until production is already at risk.
     </p>
   </div>
@@ -68,28 +69,28 @@
     <h2 class="lp-section-title">Everything your team needs to act fast</h2>
     <div class="lp-value-grid">
       <div class="lp-value-item">
-        <span class="lp-value-icon" aria-hidden="true">&#x1F534;</span>
+        <span data-icon="alert" data-icon-size="22" data-icon-class="lp-value-icon" aria-hidden="true"></span>
         <div class="lp-value-content">
           <h3>Ranked list of highest-risk parts</h3>
           <p>Critical stockouts surface first. Every part is scored by days of coverage against its supplier lead time, so the worst shortfalls are always at the top.</p>
         </div>
       </div>
       <div class="lp-value-item">
-        <span class="lp-value-icon" aria-hidden="true">&#x1F4C5;</span>
+        <span data-icon="history" data-icon-size="22" data-icon-class="lp-value-icon" aria-hidden="true"></span>
         <div class="lp-value-content">
           <h3>Shortage timing visibility</h3>
           <p>See exactly how many days of stock remain before each part runs out at current usage rates. Know whether you have hours, days, or weeks to act.</p>
         </div>
       </div>
       <div class="lp-value-item">
-        <span class="lp-value-icon" aria-hidden="true">&#x26A0;</span>
+        <span data-icon="flag" data-icon-size="22" data-icon-class="lp-value-icon" aria-hidden="true"></span>
         <div class="lp-value-content">
           <h3>Supplier risk signals</h3>
           <p>Lead time gaps flagged automatically. Know instantly where a standard replenishment order won&rsquo;t arrive before stock runs out.</p>
         </div>
       </div>
       <div class="lp-value-item">
-        <span class="lp-value-icon" aria-hidden="true">&#x1F4CB;</span>
+        <span data-icon="summary" data-icon-size="22" data-icon-class="lp-value-icon" aria-hidden="true"></span>
         <div class="lp-value-content">
           <h3>Executive-ready summary</h3>
           <p>Auto-generated plain-language narrative covering all risk categories and excess exposure. Ready to forward directly to plant or supply chain leadership.</p>
@@ -107,17 +108,17 @@
     <h2 class="lp-section-title">Spreadsheets don&rsquo;t catch stockouts</h2>
     <div class="lp-problem-grid">
       <div class="lp-problem-card">
-        <span class="lp-problem-icon" aria-hidden="true">&#x23F1;</span>
+        <span data-icon="chart" data-icon-size="28" data-icon-class="lp-problem-icon" aria-hidden="true"></span>
         <h3>Hours lost to manual triage</h3>
         <p>Materials managers spend 2&ndash;4 hours per cycle sorting ERP exports looking for supply risk. That&rsquo;s time not spent solving problems.</p>
       </div>
       <div class="lp-problem-card">
-        <span class="lp-problem-icon" aria-hidden="true">&#x26A0;</span>
+        <span data-icon="alert" data-icon-size="28" data-icon-class="lp-problem-icon" aria-hidden="true"></span>
         <h3>Stockouts found too late</h3>
         <p>Active coverage gaps hide in thousand-row exports. By the time someone spots them, production is already impacted.</p>
       </div>
       <div class="lp-problem-card">
-        <span class="lp-problem-icon" aria-hidden="true">&#x1F4CA;</span>
+        <span data-icon="chart" data-icon-size="28" data-icon-class="lp-problem-icon" aria-hidden="true"></span>
         <h3>No repeatable, auditable method</h3>
         <p>Everyone triages differently. Without fixed rules, results change based on who runs the review, and none of it is auditable.</p>
       </div>
@@ -138,13 +139,13 @@
         <h3>Upload your ERP export</h3>
         <p>Drop any inventory CSV. OpsCopilot auto-detects your columns: part number, on-hand quantity, daily usage, lead time.</p>
       </div>
-      <div class="lp-step-arrow" aria-hidden="true">&rarr;</div>
+      <div class="lp-step-arrow" aria-hidden="true"><span data-icon="chevron-right" data-icon-size="22"></span></div>
       <div class="lp-step">
         <span class="lp-step-number">2</span>
         <h3>Deterministic rules classify every part</h3>
         <p>Fixed coverage rules assign each row to a status: Active Stockout, Stockout Risk, At Risk, Excess, Dead Stock, or Healthy. Same input, same output, every time.</p>
       </div>
-      <div class="lp-step-arrow" aria-hidden="true">&rarr;</div>
+      <div class="lp-step-arrow" aria-hidden="true"><span data-icon="chevron-right" data-icon-size="22"></span></div>
       <div class="lp-step">
         <span class="lp-step-number">3</span>
         <h3>Act on the triage report</h3>
@@ -247,7 +248,7 @@
     <div class="lp-outcomes-grid">
       <div class="lp-outcome">
         <span class="lp-outcome-metric">2-4 hrs</span>
-        <span class="lp-outcome-arrow" aria-hidden="true">&rarr;</span>
+        <span class="lp-outcome-arrow" aria-hidden="true"><span data-icon="chevron-right" data-icon-size="24"></span></span>
         <span class="lp-outcome-metric lp-outcome-highlight">~30 sec</span>
         <p>Time from raw ERP export to a severity-ranked triage report ready for your materials review.</p>
       </div>
