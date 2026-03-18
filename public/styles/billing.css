@@ -1617,6 +1617,53 @@
   .syd-action-sub { font-size: 10px; }
 }
 
+/* ── Daily activity signal ────────────────────────────────────────────── */
+.daily-signal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-300);
+  margin-bottom: var(--space-4);
+}
+.daily-signal.hidden { display: none; }
+
+.daily-signal-active {
+  color: var(--ink-200);
+}
+.daily-signal-active .daily-signal-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--brand-400);
+  flex-shrink: 0;
+}
+
+.daily-signal-idle {
+  color: var(--ink-400);
+  font-style: italic;
+}
+.daily-signal-idle .daily-signal-cta {
+  color: var(--brand-400);
+  font-weight: 600;
+  font-style: normal;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+}
+.daily-signal-idle .daily-signal-cta:hover {
+  text-decoration: underline;
+}
+
 /* ── AI Context Inputs Panel ──────────────────────────────────────────── */
 .ai-ctx-panel {
   margin-top: var(--space-4);

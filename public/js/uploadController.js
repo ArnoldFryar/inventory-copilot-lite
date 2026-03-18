@@ -71,6 +71,7 @@
 
       App.resultsRenderer.renderAll(data);
       App.historyManager.autoSaveRun(data);
+      if (App.dailySignal) App.dailySignal.record();
 
     } catch (err) {
       track('upload_failed', { reason: 'network_error' });
@@ -146,6 +147,7 @@
         if (dom.demoBadge) dom.demoBadge.classList.remove('hidden');
         track('demo_loaded');
         App.resultsRenderer.renderAll(data);
+        if (App.dailySignal) App.dailySignal.record();
       } catch (err) {
         App.showError(err.message || 'Failed to load demo analysis.');
       } finally {

@@ -29,6 +29,9 @@
     })
     .catch(function () { /* AI helpers not available — that is fine */ });
 
+  // ── Daily activity signal (localStorage-only, always available) ────────────
+  if (App.dailySignal) App.dailySignal.refresh();
+
   // ── Auth initialization ───────────────────────────────────────────────────
   // Waits for authModule.init() to resolve, then wires the onAuthChange
   // listener.  If Supabase is not configured, fetches plan anonymously.
