@@ -4,6 +4,17 @@
 (function () {
   'use strict';
 
+  // ── Safe icon helper ─────────────────────────────────────────────────────
+  // App.Icon may be undefined if Icon.js fails to load. Wrap every call so
+  // a missing icon never prevents the command bar from initialising.
+  function iconHtml(name, opts) {
+    try {
+      return (App.Icon && typeof App.Icon.html === 'function')
+        ? App.Icon.html(name, opts)
+        : '';
+    } catch (_) { return ''; }
+  }
+
   // ── Actions registry ─────────────────────────────────────────────────────
   // Each entry: { id, group, label, desc, icon (SVG string), keywords[], available?, run() }
   // `available` (optional) — fn returning false hides the item when bar is
@@ -16,7 +27,7 @@
       group: 'Navigate',
       label: 'Go to dashboard',
       desc: 'Return to the inventory triage home',
-      icon: App.Icon.html('dashboard', { size: 14 }),
+      icon: iconHtml('dashboard', { size: 14 }),
       keywords: ['dashboard', 'home', 'triage', 'main', 'start'],
       run: function () { window.location.href = '/'; },
     },
@@ -25,7 +36,7 @@
       group: 'Navigate',
       label: 'View executive summary',
       desc: 'Jump to health score and KPIs',
-      icon: App.Icon.html('summary', { size: 14 }),
+      icon: iconHtml('summary', { size: 14 }),
       keywords: ['exec', 'summary', 'health', 'score', 'kpi'],
       available: function () { return !hidden('execSummarySection'); },
       run: function () { scrollTo('execSummarySection'); },
@@ -35,7 +46,7 @@
       group: 'Navigate',
       label: 'View top risks',
       desc: 'Jump to the priority items panel',
-      icon: App.Icon.html('risk', { size: 14 }),
+      icon: iconHtml('risk', { size: 14 }),
       keywords: ['risk', 'priority', 'urgent', 'stockout', 'danger', 'critical'],
       available: function () { return !hidden('prioritySection'); },
       run: function () { scrollTo('prioritySection'); },
@@ -45,7 +56,7 @@
       group: 'Navigate',
       label: 'View results table',
       desc: 'Jump to the full analysis table',
-      icon: App.Icon.html('table', { size: 14 }),
+      icon: iconHtml('table', { size: 14 }),
       keywords: ['results', 'table', 'all', 'parts', 'data', 'detail'],
       available: function () { return !hidden('resultsSection'); },
       run: function () { scrollTo('resultsSection'); },
@@ -55,7 +66,7 @@
       group: 'Navigate',
       label: 'Open AI helpers',
       desc: 'Jump to AI draft tools (Pro)',
-      icon: App.Icon.html('ai', { size: 14 }),
+      icon: iconHtml('ai', { size: 14 }),
       keywords: ['ai', 'helper', 'draft', 'email', 'escalation', 'talking', 'pro'],
       available: function () { return !hidden('aiHelpersSection'); },
       run: function () { scrollTo('aiHelpersSection'); },
@@ -65,7 +76,7 @@
       group: 'Navigate',
       label: 'Open history',
       desc: 'Browse saved analysis runs',
-      icon: App.Icon.html('history', { size: 14 }),
+      icon: iconHtml('history', { size: 14 }),
       keywords: ['history', 'saved', 'past', 'runs', 'previous', 'archive'],
       run: function () {
         var el = document.getElementById('historySection');
@@ -80,7 +91,7 @@
       group: 'Navigate',
       label: 'Go to billing',
       desc: 'Manage your plan and subscription',
-      icon: App.Icon.html('billing', { size: 14 }),
+      icon: iconHtml('billing', { size: 14 }),
       keywords: ['billing', 'plan', 'upgrade', 'pro', 'payment', 'subscription'],
       run: function () { window.location.href = '/billing.html'; },
     },
@@ -90,7 +101,7 @@
       group: 'Actions',
       label: 'Analyze new upload',
       desc: 'Upload a new inventory CSV for triage',
-      icon: App.Icon.html('upload', { size: 14 }),
+      icon: iconHtml('upload', { size: 14 }),
       keywords: ['upload', 'analyze', 'csv', 'new', 'file', 'import', 'fresh'],
       run: function () {
         var section = document.querySelector('.upload-section');
@@ -104,7 +115,7 @@
       group: 'Actions',
       label: 'Export CSV report',
       desc: 'Download the current analysis as CSV',
-      icon: App.Icon.html('export', { size: 14 }),
+      icon: iconHtml('export', { size: 14 }),
       keywords: ['export', 'csv', 'download', 'report', 'save'],
       available: function () {
         return window.App && window.App.state && !!window.App.state.lastResponse;
@@ -226,7 +237,7 @@
       item.tabIndex = -1;
 
       item.innerHTML =
-        '<div class="cmd-item-icon" aria-hidden="true">' + action.icon + '</div>' +
+        '<div class="cmd-item-icon" aria-hidden="true">' + (action.icon || '') + '</div>' +
         '<div class="cmd-item-body">' +
           '<div class="cmd-item-label">' + escHtml(action.label) + '</div>' +
           '<div class="cmd-item-desc">' + escHtml(action.desc) + '</div>' +
