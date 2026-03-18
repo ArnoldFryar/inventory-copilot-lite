@@ -112,3 +112,34 @@ CREATE POLICY "Users can read own subscription"
 
 -- No INSERT/UPDATE/DELETE policies for the anon key — only the server
 -- (via service-role key, bypassing RLS) writes to this table.
+
+-- ============================================================================
+-- profiles — one row per auth user, created at signup
+--
+-- Stores non-sensitive identity metadata (email, admin flag) that is safe to
+-- read via the anon RLS policy.  The server can also read/write this table
+-- via the service-role key (bypasses RLS).
+--
+-- id is the same UUID as auth.users(id) — no separate PK sequence needed.
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS profiles (
+  id         uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email      text,
+  is_admin   boolean NOT NULL DEFAULT false,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+-- Allow authenticated users to read their own profile row.
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
+CREATE POLICY "Users can view own profile"
+  ON profiles FOR SELECT
+  USING (auth.uid() = id);
+
+-- Allow the user to insert their own profile row at signup.
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
+CREATE POLICY "Users can insert own profile"
+  ON profiles FOR INSERT
+  WITH CHECK (auth.uid() = id);
