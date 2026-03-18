@@ -86,6 +86,19 @@
     return _supabase.auth.onAuthStateChange(callback);
   }
 
+  // Fetch the profiles row for the given user id.
+  // Returns { id, email, is_admin } or null on error / not found.
+  async function fetchProfile(userId) {
+    if (!_supabase || !userId) return null;
+    var result = await _supabase
+      .from('profiles')
+      .select('id, email, is_admin')
+      .eq('id', userId)
+      .single();
+    if (result.error) return null;
+    return result.data;
+  }
+
   window.authModule = {
     init: init,
     signUp: signUp,
@@ -94,6 +107,7 @@
     getSession: getSession,
     getToken: getToken,
     onAuthChange: onAuthChange,
-    isConfigured: isConfigured
+    isConfigured: isConfigured,
+    fetchProfile: fetchProfile,
   };
 })();

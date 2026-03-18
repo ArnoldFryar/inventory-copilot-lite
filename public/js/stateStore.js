@@ -43,6 +43,7 @@
     aiHelpersAvailable: false,
     authMode:           'signin',
     currentUser:        null,
+    currentProfile:     null,
     autoSaveInFlight:   false,
     billingConfigured:  false,
   };

@@ -112,6 +112,13 @@
   // ── Auth state change handler ─────────────────────────────────────────────
   function onAuthStateChanged(_event, session) {
     state.currentUser = session?.user || null;
+    if (state.currentUser) {
+      window.authModule.fetchProfile(state.currentUser.id).then(function (profile) {
+        state.currentProfile = profile;
+      });
+    } else {
+      state.currentProfile = null;
+    }
     updateAccountUI();
     App.historyManager.refreshHistory();
     // Re-fetch plan to get per-user subscription state
