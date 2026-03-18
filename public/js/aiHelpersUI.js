@@ -82,6 +82,15 @@
       thresholds:  state.lastResponse.thresholds,
     };
 
+    // Optional business context — enhances prompt personalisation.
+    // Urgency is derived from the analysis; company/supplier/notes can be
+    // extended later when those fields exist in the UI.
+    var summary = state.lastResponse.summary || {};
+    var urgentCount = summary.urgent_stockout || 0;
+    var context = {
+      urgency: urgentCount > 0 ? 'High — ' + urgentCount + ' urgent stockout(s)' : 'Standard',
+    };
+
     // Find and disable the clicked button
     var btn = dom.aiHelpersSection.querySelector('[data-helper="' + helperType + '"]');
     if (btn) { btn.disabled = true; btn.querySelector('.ai-helper-btn-label').textContent = 'Generating\u2026'; }
@@ -97,7 +106,7 @@
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token,
         },
-        body: JSON.stringify({ helperType: helperType, runData: runData }),
+        body: JSON.stringify({ helperType: helperType, runData: runData, context: context }),
       });
 
       if (!res.ok) {

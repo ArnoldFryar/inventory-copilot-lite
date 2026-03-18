@@ -68,9 +68,10 @@ const VALID_HELPER_TYPES = new Set(Object.keys(HELPER_TYPES));
  * @param {Array}  opts.topPriority — top-priority items
  * @param {string} opts.analyzedAt — ISO timestamp
  * @param {object} opts.thresholds — classification thresholds
+ * @param {object} [businessCtx]  — optional { company, supplier, urgency, notes }
  * @returns {object} shaped context for prompt interpolation
  */
-function shapeInput({ summary, results, topPriority, analyzedAt, thresholds }) {
+function shapeInput({ summary, results, topPriority, analyzedAt, thresholds }, businessCtx) {
   // Cap how many results we feed to the LLM — keeps prompt bounded.
   const MAX_ITEMS = 30;
   const urgentParts = (results || [])
@@ -80,6 +81,17 @@ function shapeInput({ summary, results, topPriority, analyzedAt, thresholds }) {
   const excessParts = (results || [])
     .filter(r => r.status === 'Excess Inventory' || r.status === 'Potential Dead Stock')
     .slice(0, MAX_ITEMS);
+
+  // Build a compact context block from optional business metadata.
+  const bc = businessCtx || {};
+  const contextLines = [];
+  if (bc.company)  contextLines.push(`Company: ${String(bc.company).slice(0, 100)}`);
+  if (bc.supplier) contextLines.push(`Supplier: ${String(bc.supplier).slice(0, 100)}`);
+  if (bc.urgency)  contextLines.push(`Urgency: ${String(bc.urgency).slice(0, 40)}`);
+  if (bc.notes)    contextLines.push(`Notes: ${String(bc.notes).slice(0, 300)}`);
+  const contextBlock = contextLines.length
+    ? 'Context:\n' + contextLines.map(l => '- ' + l).join('\n')
+    : '';
 
   return {
     analyzedAt:   analyzedAt || new Date().toISOString(),
@@ -95,6 +107,7 @@ function shapeInput({ summary, results, topPriority, analyzedAt, thresholds }) {
     urgentParts:  urgentParts.map(simplifyRow),
     excessParts:  excessParts.map(simplifyRow),
     thresholds,
+    contextBlock,
   };
 }
 
@@ -122,6 +135,7 @@ function buildExpediteEmailPrompt(ctx) {
 
   const parts = ctx.urgentParts.length > 0 ? ctx.urgentParts : ctx.topPriority;
   const user = [
+    ctx.contextBlock,
     `Analysis date: ${ctx.analyzedAt}`,
     `Total parts analyzed: ${ctx.total}`,
     `Urgent stockout parts: ${ctx.urgentCount}`,
@@ -142,6 +156,7 @@ function buildEscalationSummaryPrompt(ctx) {
   const system = getSystemPrompt('escalation_summary');
 
   const user = [
+    ctx.contextBlock,
     `Analysis date: ${ctx.analyzedAt}`,
     `Total parts: ${ctx.total}`,
     `Urgent stockout: ${ctx.urgentCount}`,
@@ -178,6 +193,7 @@ function buildMeetingTalkingPointsPrompt(ctx) {
   });
 
   const user = [
+    ctx.contextBlock,
     `Analysis date: ${ctx.analyzedAt}`,
     `Scope: ${ctx.total} parts analyzed`,
     `Urgent stockout: ${ctx.urgentCount} | Stockout risk: ${ctx.stockoutCount}`,
@@ -210,10 +226,11 @@ const PROMPT_BUILDERS = {
  * @param {string} helperType    — one of VALID_HELPER_TYPES
  * @param {object} runData       — { summary, results, topPriority, analyzedAt, thresholds }
  * @param {object} [opts]
- * @param {string} [opts.model]  — model override from route (MODEL_MAP selection)
+ * @param {string} [opts.model]   — model override from route (MODEL_MAP selection)
+ * @param {object} [opts.context] — optional business context { company, supplier, urgency, notes }
  * @returns {Promise<{text: string, model: string, usage: object}>}
  */
-async function generateHelper(helperType, runData, { model: modelOverride } = {}) {
+async function generateHelper(helperType, runData, { model: modelOverride, context } = {}) {
   if (!VALID_HELPER_TYPES.has(helperType)) {
     throw new Error(`Unknown helper type: ${helperType}`);
   }
@@ -221,7 +238,7 @@ async function generateHelper(helperType, runData, { model: modelOverride } = {}
     throw new Error('AI provider is not configured. Set OPENAI_API_KEY.');
   }
 
-  const ctx    = shapeInput(runData);
+  const ctx    = shapeInput(runData, context);
   const prompt = PROMPT_BUILDERS[helperType](ctx);
 
   // Model priority: env-var override → route selection (MODEL_MAP) → fallback.

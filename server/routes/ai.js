@@ -41,7 +41,7 @@ router.post('/api/ai-helper', requireAuth, async (req, res) => {
     return res.status(503).json({ error: 'AI provider is not configured.' });
   }
 
-  const { helperType, runData } = req.body || {};
+  const { helperType, runData, context } = req.body || {};
 
   if (!helperType || !VALID_HELPER_TYPES.has(helperType)) {
     return res.status(400).json({
@@ -62,7 +62,7 @@ router.post('/api/ai-helper', requireAuth, async (req, res) => {
   console.log('[AI ROUTE]', { helperType, model, isPro });
 
   try {
-    const result = await generateHelper(helperType, runData, { model });
+    const result = await generateHelper(helperType, runData, { model, context });
 
     // Telemetry — log which helper was used (no PII, no content)
     const safe = {
