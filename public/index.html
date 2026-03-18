@@ -512,6 +512,20 @@
           </form>
         </div>
       </div>
+
+      <!-- ── AI Draft History ─────────────────────────────────────────── -->
+      <div id="aiHistoryPanel" class="ai-history-panel hidden">
+        <button id="aiHistoryToggle" class="ai-history-toggle" type="button">
+          <svg class="ai-history-toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Past Drafts</span>
+          <span id="aiHistoryCount" class="ai-history-count">0</span>
+          <svg class="ai-history-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div id="aiHistoryBody" class="ai-history-body hidden">
+          <div id="aiHistoryList" class="ai-history-list"></div>
+          <button id="aiHistoryClear" class="ai-history-clear" type="button">Clear All History</button>
+        </div>
+      </div>
     </section>
 
     <!-- ── Results table ────────────────────────────────────────────────── -->
@@ -670,6 +684,7 @@
   <script src="js/stateStore.js"></script>
   <script src="js/resultsRenderer.js"></script>
   <script src="js/comparisonRenderer.js"></script>
+  <script src="js/aiHistoryStore.js"></script>
   <script src="js/aiHelpersUI.js"></script>
   <script src="js/historyManager.js"></script>
   <script src="js/exportManager.js"></script>

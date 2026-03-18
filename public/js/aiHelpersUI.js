@@ -27,6 +27,7 @@
       if (dom.aiHelpersActions) dom.aiHelpersActions.classList.remove('hidden');
       if (dom.aiHelpersLockedCta) dom.aiHelpersLockedCta.classList.add('hidden');
       if (dom.comparisonLockedCta) dom.comparisonLockedCta.classList.add('hidden');
+      renderHistory();
       return;
     }
 
@@ -350,6 +351,16 @@
 
       // Telemetry
       track('ai_helper_used', { helper_type: helperType, refined: !!refinement });
+
+      // Save to local history
+      if (App.aiHistoryStore) {
+        App.aiHistoryStore.saveEntry({
+          helperType: helperType,
+          label: LABELS[helperType] || helperType,
+          output: data.text || '',
+        });
+        renderHistory();
+      }
     } catch (err) {
       hideLoading();
       hideContent();
@@ -450,7 +461,169 @@
     });
   }
 
+  /* ── AI Draft History ─────────────────────────────────────────────── */
+
+  var HISTORY_ICONS = {
+    expedite_email:       '\u2709\uFE0F',
+    escalation_summary:   '\uD83D\uDEA8',
+    meeting_talking_points: '\uD83D\uDCCB',
+  };
+
+  function escHistHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function formatHistoryTime(iso) {
+    try {
+      var d = new Date(iso);
+      var now = new Date();
+      var diffMs = now - d;
+      var diffMin = Math.floor(diffMs / 60000);
+      if (diffMin < 1) return 'Just now';
+      if (diffMin < 60) return diffMin + 'm ago';
+      var diffHr = Math.floor(diffMin / 60);
+      if (diffHr < 24) return diffHr + 'h ago';
+      var diffDay = Math.floor(diffHr / 24);
+      if (diffDay < 7) return diffDay + 'd ago';
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    } catch (_) { return ''; }
+  }
+
+  function renderHistory() {
+    if (!dom.aiHistoryList || !App.aiHistoryStore) return;
+
+    var entries = App.aiHistoryStore.getEntries();
+
+    // Update count badge
+    if (dom.aiHistoryCount) dom.aiHistoryCount.textContent = entries.length || '';
+
+    // Show/hide history panel based on entries
+    if (dom.aiHistoryPanel) {
+      if (entries.length > 0) {
+        dom.aiHistoryPanel.classList.remove('hidden');
+      } else {
+        dom.aiHistoryPanel.classList.add('hidden');
+      }
+    }
+
+    if (entries.length === 0) {
+      dom.aiHistoryList.innerHTML = '<p style="font-size:12px;color:var(--ink-200);text-align:center;padding:12px 0;">No drafts saved yet.</p>';
+      return;
+    }
+
+    // Group by helperType
+    var grouped = App.aiHistoryStore.getGrouped();
+    var groupOrder = ['expedite_email', 'escalation_summary', 'meeting_talking_points'];
+    var html = [];
+
+    for (var g = 0; g < groupOrder.length; g++) {
+      var type = groupOrder[g];
+      var items = grouped[type];
+      if (!items || items.length === 0) continue;
+      html.push('<div class="ai-history-group-header">' + escHistHtml(LABELS[type] || type) + '</div>');
+      for (var i = 0; i < items.length; i++) {
+        var e = items[i];
+        var preview = (e.output || '').substring(0, 80).replace(/\n/g, ' ');
+        html.push(
+          '<div class="ai-history-entry" data-history-id="' + escHistHtml(e.id) + '">' +
+            '<div class="ai-history-entry-header">' +
+              '<span class="ai-history-entry-icon">' + (HISTORY_ICONS[e.helperType] || '\u2728') + '</span>' +
+              '<span class="ai-history-entry-title">' + escHistHtml(preview || e.label) + '</span>' +
+              '<span class="ai-history-entry-time">' + escHistHtml(formatHistoryTime(e.timestamp)) + '</span>' +
+              '<svg class="ai-history-entry-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>' +
+            '</div>' +
+            '<div class="ai-history-entry-body">' +
+              '<div class="ai-history-entry-text">' + escHistHtml(e.output || '') + '</div>' +
+              '<div class="ai-history-entry-actions">' +
+                '<button class="ai-history-reuse-btn" type="button" data-reuse-id="' + escHistHtml(e.id) + '">Use this again</button>' +
+                '<button class="ai-history-delete-btn" type="button" data-delete-id="' + escHistHtml(e.id) + '">Delete</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>'
+        );
+      }
+    }
+
+    dom.aiHistoryList.innerHTML = html.join('');
+  }
+
+  // Toggle history panel open/closed
+  if (dom.aiHistoryToggle) {
+    dom.aiHistoryToggle.addEventListener('click', function () {
+      if (!dom.aiHistoryPanel || !dom.aiHistoryBody) return;
+      var isOpen = dom.aiHistoryPanel.classList.toggle('is-open');
+      if (isOpen) {
+        dom.aiHistoryBody.classList.remove('hidden');
+        renderHistory();
+      } else {
+        dom.aiHistoryBody.classList.add('hidden');
+      }
+    });
+  }
+
+  // Event delegation for history list: expand, reuse, delete
+  if (dom.aiHistoryList) {
+    dom.aiHistoryList.addEventListener('click', function (e) {
+      // Reuse button
+      var reuseBtn = e.target.closest('[data-reuse-id]');
+      if (reuseBtn) {
+        var id = reuseBtn.getAttribute('data-reuse-id');
+        var entries = App.aiHistoryStore.getEntries();
+        var entry = null;
+        for (var i = 0; i < entries.length; i++) {
+          if (entries[i].id === id) { entry = entries[i]; break; }
+        }
+        if (entry) {
+          // Populate the result card with the stored output
+          if (dom.aiHelperResultLabel) dom.aiHelperResultLabel.textContent = entry.label || LABELS[entry.helperType] || entry.helperType;
+          if (dom.aiResultCardIcon) dom.aiResultCardIcon.textContent = ICONS[entry.helperType] || '\u2728';
+          var resultTextEl = document.getElementById('aiHelperResultText');
+          if (resultTextEl) resultTextEl.innerHTML = formatAiText(entry.output);
+          if (dom.aiHelperResult) dom.aiHelperResult._rawText = entry.output || '';
+          if (dom.aiHelperResultModel) dom.aiHelperResultModel.textContent = '';
+          if (dom.aiResultTimestamp) dom.aiResultTimestamp.textContent = formatHistoryTime(entry.timestamp);
+          _lastHelperType = entry.helperType;
+          hideError();
+          hideLoading();
+          showContent();
+          if (dom.aiHelperResult) {
+            dom.aiHelperResult.classList.remove('ai-fade-in');
+            void dom.aiHelperResult.offsetWidth;
+            dom.aiHelperResult.classList.add('ai-fade-in');
+          }
+          // Scroll to the result card
+          if (dom.aiHelperResult) dom.aiHelperResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        return;
+      }
+
+      // Delete button
+      var delBtn = e.target.closest('[data-delete-id]');
+      if (delBtn) {
+        App.aiHistoryStore.removeEntry(delBtn.getAttribute('data-delete-id'));
+        renderHistory();
+        return;
+      }
+
+      // Expand/collapse entry header
+      var header = e.target.closest('.ai-history-entry-header');
+      if (header) {
+        var entry = header.closest('.ai-history-entry');
+        if (entry) entry.classList.toggle('is-expanded');
+      }
+    });
+  }
+
+  // Clear all history
+  if (dom.aiHistoryClear) {
+    dom.aiHistoryClear.addEventListener('click', function () {
+      App.aiHistoryStore.clearHistory();
+      renderHistory();
+    });
+  }
+
   App.aiHelpersUI = {
     showAiHelpersPanel: showAiHelpersPanel,
+    renderHistory: renderHistory,
   };
 })();

@@ -187,6 +187,14 @@
     aiRefineForm:        $('aiRefineForm'),
     aiRefineInput:       $('aiRefineInput'),
     aiRefineSubmit:      $('aiRefineSubmit'),
+
+    // AI history panel
+    aiHistoryPanel:      $('aiHistoryPanel'),
+    aiHistoryToggle:     $('aiHistoryToggle'),
+    aiHistoryCount:      $('aiHistoryCount'),
+    aiHistoryBody:       $('aiHistoryBody'),
+    aiHistoryList:       $('aiHistoryList'),
+    aiHistoryClear:      $('aiHistoryClear'),
   };
 
   // ── CSS class helpers ─────────────────────────────────────────────────────
