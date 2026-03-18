@@ -89,6 +89,147 @@
   var _lastHelperType = null;
   var _lastRunData = null;
   var _lastContext = null;
+  var _pendingHelperType = null;
+
+  /* ── Context input defaults (localStorage-backed) ───────────────── */
+  var CTX_STORAGE_KEY = 'opscopilot_ai_ctx_defaults';
+
+  var FIELD_MAP = {
+    expedite_email:        { icon: '\u2709\uFE0F', title: 'Draft Expedite Email',   panel: 'aiCtxExpedite' },
+    escalation_summary:    { icon: '\uD83D\uDEA8',  title: 'Escalation Summary',     panel: 'aiCtxEscalation' },
+    meeting_talking_points: { icon: '\uD83D\uDCCB', title: 'Meeting Talking Points', panel: 'aiCtxMeeting' },
+  };
+
+  /** Read saved context defaults from localStorage. */
+  function loadCtxDefaults() {
+    try {
+      var raw = localStorage.getItem(CTX_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (_) { return {}; }
+  }
+
+  /** Persist current field values per helper type. */
+  function saveCtxDefaults(helperType) {
+    var saved = loadCtxDefaults();
+    saved[helperType] = collectCtxFields(helperType);
+    try { localStorage.setItem(CTX_STORAGE_KEY, JSON.stringify(saved)); } catch (_) {}
+  }
+
+  /** Collect field values for a given helper type. */
+  function collectCtxFields(helperType) {
+    if (helperType === 'expedite_email') {
+      return {
+        urgency:  dom.aiCtxUrgency  ? dom.aiCtxUrgency.value  : 'High',
+        tone:     dom.aiCtxTone     ? dom.aiCtxTone.value     : 'Direct',
+        supplier: dom.aiCtxSupplier ? dom.aiCtxSupplier.value.trim() : '',
+        company:  dom.aiCtxCompanyExp ? dom.aiCtxCompanyExp.value.trim() : '',
+      };
+    }
+    if (helperType === 'escalation_summary') {
+      return {
+        focus:   dom.aiCtxFocus      ? dom.aiCtxFocus.value.trim()      : '',
+        company: dom.aiCtxCompanyEsc ? dom.aiCtxCompanyEsc.value.trim() : '',
+      };
+    }
+    if (helperType === 'meeting_talking_points') {
+      return {
+        objective: dom.aiCtxObjective  ? dom.aiCtxObjective.value.trim()  : '',
+        company:   dom.aiCtxCompanyMtg ? dom.aiCtxCompanyMtg.value.trim() : '',
+      };
+    }
+    return {};
+  }
+
+  /** Prefill fields from saved defaults. */
+  function prefillCtxFields(helperType) {
+    var saved = loadCtxDefaults();
+    var vals = saved[helperType] || {};
+
+    if (helperType === 'expedite_email') {
+      if (dom.aiCtxUrgency)    dom.aiCtxUrgency.value    = vals.urgency  || 'High';
+      if (dom.aiCtxTone)       dom.aiCtxTone.value       = vals.tone     || 'Direct';
+      if (dom.aiCtxSupplier)   dom.aiCtxSupplier.value   = vals.supplier || '';
+      if (dom.aiCtxCompanyExp) dom.aiCtxCompanyExp.value  = vals.company  || '';
+    } else if (helperType === 'escalation_summary') {
+      if (dom.aiCtxFocus)      dom.aiCtxFocus.value      = vals.focus   || '';
+      if (dom.aiCtxCompanyEsc) dom.aiCtxCompanyEsc.value  = vals.company || '';
+    } else if (helperType === 'meeting_talking_points') {
+      if (dom.aiCtxObjective)  dom.aiCtxObjective.value   = vals.objective || '';
+      if (dom.aiCtxCompanyMtg) dom.aiCtxCompanyMtg.value  = vals.company   || '';
+    }
+  }
+
+  /** Build the backend context object from current field values + analysis. */
+  function buildContext(helperType) {
+    var summary = (state.lastResponse && state.lastResponse.summary) || {};
+    var urgentCount = summary.urgent_stockout || 0;
+    var fields = collectCtxFields(helperType);
+    var ctx = {};
+
+    if (helperType === 'expedite_email') {
+      ctx.urgency  = fields.urgency || (urgentCount > 0 ? 'High' : 'Standard');
+      ctx.supplier = fields.supplier || '';
+      ctx.company  = fields.company  || '';
+      ctx.notes    = fields.tone ? 'Tone: ' + fields.tone : '';
+    } else if (helperType === 'escalation_summary') {
+      ctx.urgency = urgentCount > 0 ? 'High \u2014 ' + urgentCount + ' urgent stockout(s)' : 'Standard';
+      ctx.company = fields.company || '';
+      ctx.notes   = fields.focus   || '';
+    } else if (helperType === 'meeting_talking_points') {
+      ctx.urgency = urgentCount > 0 ? 'High \u2014 ' + urgentCount + ' urgent stockout(s)' : 'Standard';
+      ctx.company = fields.company   || '';
+      ctx.notes   = fields.objective || '';
+    } else {
+      ctx.urgency = urgentCount > 0 ? 'High \u2014 ' + urgentCount + ' urgent stockout(s)' : 'Standard';
+    }
+
+    return ctx;
+  }
+
+  /** Show the context panel for a given helper type. */
+  function showContextPanel(helperType) {
+    if (!dom.aiContextPanel) return;
+    _pendingHelperType = helperType;
+
+    // Show correct field group
+    var info = FIELD_MAP[helperType] || {};
+    if (dom.aiContextIcon)  dom.aiContextIcon.textContent  = info.icon  || '\u2728';
+    if (dom.aiContextTitle) dom.aiContextTitle.textContent = info.title || helperType;
+
+    var panels = ['aiCtxExpedite', 'aiCtxEscalation', 'aiCtxMeeting'];
+    for (var i = 0; i < panels.length; i++) {
+      var el = dom[panels[i]];
+      if (el) el.classList.add('hidden');
+    }
+    if (info.panel && dom[info.panel]) dom[info.panel].classList.remove('hidden');
+
+    // Prefill
+    prefillCtxFields(helperType);
+
+    // Highlight selected button
+    if (dom.aiHelpersActions) {
+      var btns = dom.aiHelpersActions.querySelectorAll('.ai-helper-btn');
+      for (var j = 0; j < btns.length; j++) btns[j].classList.remove('is-selected');
+      var active = dom.aiHelpersActions.querySelector('[data-helper="' + helperType + '"]');
+      if (active) active.classList.add('is-selected');
+    }
+
+    dom.aiContextPanel.classList.remove('hidden');
+    // Focus first visible input
+    var firstInput = dom.aiContextPanel.querySelector('.ai-ctx-fields:not(.hidden) input, .ai-ctx-fields:not(.hidden) select');
+    if (firstInput) setTimeout(function () { firstInput.focus(); }, 80);
+  }
+
+  /** Hide the context panel. */
+  function hideContextPanel() {
+    if (dom.aiContextPanel) dom.aiContextPanel.classList.add('hidden');
+    _pendingHelperType = null;
+    // Remove button highlight
+    if (dom.aiHelpersActions) {
+      var btns = dom.aiHelpersActions.querySelectorAll('.ai-helper-btn');
+      for (var i = 0; i < btns.length; i++) btns[i].classList.remove('is-selected');
+    }
+  }
 
   function setAllButtons(disabled) {
     if (!dom.aiHelpersActions) return;
@@ -233,12 +374,14 @@
       thresholds:  state.lastResponse.thresholds,
     };
 
-    // Optional business context
-    var summary = state.lastResponse.summary || {};
-    var urgentCount = summary.urgent_stockout || 0;
-    var context = {
-      urgency: urgentCount > 0 ? 'High \u2014 ' + urgentCount + ' urgent stockout(s)' : 'Standard',
-    };
+    // Build business context from the context input fields
+    var context = buildContext(helperType);
+
+    // Save field values for next time
+    saveCtxDefaults(helperType);
+
+    // Hide context panel once generation starts
+    hideContextPanel();
 
     // Persist for refinement iterations
     _lastRunData = runData;
@@ -377,12 +520,36 @@
     }
   }
 
-  // Wire AI helper buttons via event delegation
+  // Wire AI helper buttons — show context panel instead of generating directly
   if (dom.aiHelpersSection) {
     dom.aiHelpersSection.addEventListener('click', function (e) {
       var btn = e.target.closest('[data-helper]');
       if (btn && !btn.disabled) {
-        requestAiHelper(btn.getAttribute('data-helper'));
+        showContextPanel(btn.getAttribute('data-helper'));
+      }
+    });
+  }
+
+  // Context panel: Generate button
+  if (dom.aiContextGenerate) {
+    dom.aiContextGenerate.addEventListener('click', function () {
+      if (_pendingHelperType) requestAiHelper(_pendingHelperType);
+    });
+  }
+
+  // Context panel: Close button
+  if (dom.aiContextClose) {
+    dom.aiContextClose.addEventListener('click', function () {
+      hideContextPanel();
+    });
+  }
+
+  // Allow Enter in context inputs to trigger generate
+  if (dom.aiContextPanel) {
+    dom.aiContextPanel.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey && _pendingHelperType) {
+        e.preventDefault();
+        requestAiHelper(_pendingHelperType);
       }
     });
   }

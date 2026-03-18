@@ -188,6 +188,24 @@
     aiRefineInput:       $('aiRefineInput'),
     aiRefineSubmit:      $('aiRefineSubmit'),
 
+    // AI context inputs panel
+    aiContextPanel:      $('aiContextPanel'),
+    aiContextIcon:       $('aiContextIcon'),
+    aiContextTitle:      $('aiContextTitle'),
+    aiContextClose:      $('aiContextClose'),
+    aiContextGenerate:   $('aiContextGenerate'),
+    aiCtxExpedite:       $('aiCtxExpedite'),
+    aiCtxEscalation:     $('aiCtxEscalation'),
+    aiCtxMeeting:        $('aiCtxMeeting'),
+    aiCtxUrgency:        $('aiCtxUrgency'),
+    aiCtxTone:           $('aiCtxTone'),
+    aiCtxSupplier:       $('aiCtxSupplier'),
+    aiCtxCompanyExp:     $('aiCtxCompanyExp'),
+    aiCtxFocus:          $('aiCtxFocus'),
+    aiCtxCompanyEsc:     $('aiCtxCompanyEsc'),
+    aiCtxObjective:      $('aiCtxObjective'),
+    aiCtxCompanyMtg:     $('aiCtxCompanyMtg'),
+
     // Start Your Day
     startYourDay:        $('startYourDay'),
     sydLastRun:          $('sydLastRun'),

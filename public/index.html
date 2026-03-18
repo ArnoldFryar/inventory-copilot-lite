@@ -470,6 +470,74 @@
       </div>
       <!-- Upgrade CTA shown when analysis is loaded but plan is free -->
       <div id="aiHelpersLockedCta" class="hidden"></div>
+
+      <!-- ── Context inputs panel (smart defaults) ──────────────────── -->
+      <div id="aiContextPanel" class="ai-ctx-panel hidden">
+        <div class="ai-ctx-header">
+          <span id="aiContextIcon" class="ai-ctx-icon"></span>
+          <span id="aiContextTitle" class="ai-ctx-title"></span>
+          <button id="aiContextClose" class="ai-ctx-close" type="button" aria-label="Close">&times;</button>
+        </div>
+        <p class="ai-ctx-hint">Optional — pre-filled defaults. Override anything or just hit Generate.</p>
+
+        <!-- Expedite email fields -->
+        <div id="aiCtxExpedite" class="ai-ctx-fields hidden">
+          <div class="ai-ctx-row">
+            <label class="ai-ctx-label" for="aiCtxUrgency">Urgency</label>
+            <select id="aiCtxUrgency" class="ai-ctx-select">
+              <option value="High" selected>High</option>
+              <option value="Critical">Critical</option>
+              <option value="Standard">Standard</option>
+            </select>
+          </div>
+          <div class="ai-ctx-row">
+            <label class="ai-ctx-label" for="aiCtxTone">Tone</label>
+            <select id="aiCtxTone" class="ai-ctx-select">
+              <option value="Direct" selected>Direct</option>
+              <option value="Firm but professional">Firm but professional</option>
+              <option value="Collaborative">Collaborative</option>
+            </select>
+          </div>
+          <div class="ai-ctx-row">
+            <label class="ai-ctx-label" for="aiCtxSupplier">Supplier</label>
+            <input id="aiCtxSupplier" class="ai-ctx-input" type="text" placeholder="Enter supplier name…" maxlength="100" />
+          </div>
+          <div class="ai-ctx-row">
+            <label class="ai-ctx-label" for="aiCtxCompanyExp">Company</label>
+            <input id="aiCtxCompanyExp" class="ai-ctx-input" type="text" placeholder="Your company name…" maxlength="100" />
+          </div>
+        </div>
+
+        <!-- Escalation summary fields -->
+        <div id="aiCtxEscalation" class="ai-ctx-fields hidden">
+          <div class="ai-ctx-row">
+            <label class="ai-ctx-label" for="aiCtxFocus">Focus area</label>
+            <input id="aiCtxFocus" class="ai-ctx-input" type="text" placeholder="Summarize current issues or updates…" maxlength="300" />
+          </div>
+          <div class="ai-ctx-row">
+            <label class="ai-ctx-label" for="aiCtxCompanyEsc">Company</label>
+            <input id="aiCtxCompanyEsc" class="ai-ctx-input" type="text" placeholder="Your company name…" maxlength="100" />
+          </div>
+        </div>
+
+        <!-- Meeting talking points fields -->
+        <div id="aiCtxMeeting" class="ai-ctx-fields hidden">
+          <div class="ai-ctx-row">
+            <label class="ai-ctx-label" for="aiCtxObjective">Meeting objective</label>
+            <input id="aiCtxObjective" class="ai-ctx-input" type="text" placeholder="Enter meeting objective…" maxlength="300" />
+          </div>
+          <div class="ai-ctx-row">
+            <label class="ai-ctx-label" for="aiCtxCompanyMtg">Company</label>
+            <input id="aiCtxCompanyMtg" class="ai-ctx-input" type="text" placeholder="Your company name…" maxlength="100" />
+          </div>
+        </div>
+
+        <button id="aiContextGenerate" class="ai-ctx-generate" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Generate
+        </button>
+      </div>
+
       <div id="aiHelperResult" class="ai-helper-result hidden">
         <!-- Loading skeleton (shown during request) -->
         <div id="aiHelperLoading" class="ai-helper-loading hidden">
