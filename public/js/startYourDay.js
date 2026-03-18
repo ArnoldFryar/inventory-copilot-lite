@@ -95,12 +95,12 @@
         aiSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
-      // Trigger the matching AI helper button after a short delay for scroll
+      // Trigger the matching AI helper button after scroll starts
       setTimeout(function () {
         if (!aiSection) return;
         var target = aiSection.querySelector('[data-helper="' + helperType + '"]');
         if (target && !target.disabled) target.click();
-      }, 400);
+      }, 200);
     });
   }
 

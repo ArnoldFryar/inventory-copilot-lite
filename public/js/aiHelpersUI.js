@@ -215,9 +215,15 @@
     }
 
     dom.aiContextPanel.classList.remove('hidden');
-    // Focus first visible input
-    var firstInput = dom.aiContextPanel.querySelector('.ai-ctx-fields:not(.hidden) input, .ai-ctx-fields:not(.hidden) select');
-    if (firstInput) setTimeout(function () { firstInput.focus(); }, 80);
+    // Smart autofocus: first empty text input, or Generate button if all filled
+    setTimeout(function () {
+      var fields = dom.aiContextPanel.querySelectorAll('.ai-ctx-fields:not(.hidden) input[type="text"]');
+      var focused = false;
+      for (var k = 0; k < fields.length; k++) {
+        if (!fields[k].value.trim()) { fields[k].focus(); focused = true; break; }
+      }
+      if (!focused && dom.aiContextGenerate) dom.aiContextGenerate.focus();
+    }, 80);
   }
 
   /** Hide the context panel. */
@@ -239,14 +245,27 @@
 
   function showLoading(helperType) {
     closeRegenMenu();
-    // Show the result container with only the skeleton visible
+    // Show the result container
     if (dom.aiHelperResult) {
       dom.aiHelperResult.classList.remove('hidden', 'ai-fade-in');
     }
-    if (dom.aiHelperLoading) dom.aiHelperLoading.classList.remove('hidden');
 
-    // Hide result content and error
-    hideContent();
+    var hasExistingResult = dom.aiHelperResult && dom.aiHelperResult._rawText;
+
+    if (hasExistingResult) {
+      // Keep previous result visible but dimmed
+      if (dom.aiHelperResultBody) dom.aiHelperResultBody.classList.add('ai-dimmed');
+      // Hide action bar and refine panel during regeneration
+      var hideIds = ['aiResultActions', 'aiRefinePanel'];
+      for (var h = 0; h < hideIds.length; h++) {
+        var hEl = document.getElementById(hideIds[h]);
+        if (hEl) hEl.classList.add('hidden');
+      }
+    } else {
+      hideContent();
+    }
+
+    if (dom.aiHelperLoading) dom.aiHelperLoading.classList.remove('hidden');
     hideError();
 
     // Label (visible during loading in the card header is hidden, but pre-set)
@@ -284,12 +303,19 @@
       var el = document.getElementById(ids[i]);
       if (el) el.classList.remove('hidden');
     }
+    // Remove dimmed state from previous result
+    if (dom.aiHelperResultBody) dom.aiHelperResultBody.classList.remove('ai-dimmed');
+
     var hdr = dom.aiHelperResult ? dom.aiHelperResult.querySelector('.ai-result-card-header') : null;
     if (hdr) hdr.classList.remove('hidden');
     var strip = dom.aiHelperResult ? dom.aiHelperResult.querySelector('.ai-result-card-meta-strip') : null;
     if (strip) strip.classList.remove('hidden');
-    // Clear refine input for next iteration
-    if (dom.aiRefineInput) dom.aiRefineInput.value = '';
+    // Clear refine input and autofocus for quick follow-up
+    if (dom.aiRefineInput) {
+      dom.aiRefineInput.value = '';
+      dom.aiRefineInput.style.height = 'auto';
+      setTimeout(function () { dom.aiRefineInput.focus(); }, 120);
+    }
   }
 
   /** Format plain-text AI output into cleaner HTML. Preserves line breaks,
@@ -507,6 +533,7 @@
       }
     } catch (err) {
       hideLoading();
+      if (dom.aiHelperResultBody) dom.aiHelperResultBody.classList.remove('ai-dimmed');
       hideContent();
       showError(err.message || 'AI helper failed. Please try again.', helperType);
       track('ai_helper_error', { helper_type: helperType, refined: !!refinement });
@@ -692,6 +719,22 @@
       e.preventDefault();
       var val = (dom.aiRefineInput.value || '').trim();
       if (val) submitRefinement(val);
+    });
+  }
+
+  // Refine textarea: Enter to submit, Shift+Enter for newline
+  if (dom.aiRefineInput) {
+    dom.aiRefineInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        var val = (dom.aiRefineInput.value || '').trim();
+        if (val) submitRefinement(val);
+      }
+    });
+    // Auto-resize textarea as user types
+    dom.aiRefineInput.addEventListener('input', function () {
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
     });
   }
 
