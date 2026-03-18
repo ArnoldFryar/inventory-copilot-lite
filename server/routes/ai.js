@@ -76,9 +76,15 @@ router.post('/api/ai-helper', requireAuth, async (req, res) => {
       disclaimer: 'This is an AI-generated draft for human review. Verify all details before sending or acting on this content.',
     });
   } catch (err) {
+    const isTimeout = err.message?.includes('timed out');
+    const isNetwork = err.message?.includes('network error');
+    const errCategory = isTimeout ? 'timeout' : isNetwork ? 'network' : 'api_error';
+
     console.error('AI_HELPER_ERROR', {
       helperType,
+      category:  errCategory,
       error:     err.message,
+      stack:     err.stack,
       timestamp: new Date().toISOString(),
     });
     res.status(502).json({

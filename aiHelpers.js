@@ -248,9 +248,14 @@ async function generateHelper(helperType, runData) {
     temperature: 0.3,   // low temperature for factual, grounded output
   };
 
-  // Abort the request after 10 seconds to prevent indefinite hangs.
+  // Abort the request after 90 seconds — LLM completions routinely take
+  // 15-30 s; 10 s was far too short and caused "This operation was aborted".
+  const AI_TIMEOUT_MS = 90_000;
   const controller = new AbortController();
-  const timeoutId  = setTimeout(() => controller.abort(), 10_000);
+  const timeoutId  = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+
+  const t0 = Date.now();
+  console.log('[AI_HELPER] start', { helperType, model: AI_CONFIG.model, ts: new Date(t0).toISOString() });
 
   let res;
   try {
@@ -263,20 +268,41 @@ async function generateHelper(helperType, runData) {
       body:   JSON.stringify(body),
       signal: controller.signal,
     });
+  } catch (fetchErr) {
+    clearTimeout(timeoutId);
+    const durationMs = Date.now() - t0;
+    const isAbort = fetchErr.name === 'AbortError';
+    console.error('[AI_HELPER] fetch failed', {
+      helperType,
+      durationMs,
+      errorName:    fetchErr.name,
+      errorMessage: fetchErr.message,
+      isTimeout:    isAbort,
+    });
+    if (isAbort) {
+      throw new Error(`AI request timed out after ${Math.round(durationMs / 1000)}s (limit ${AI_TIMEOUT_MS / 1000}s).`);
+    }
+    throw new Error(`AI network error: ${fetchErr.message}`);
   } finally {
     clearTimeout(timeoutId);
   }
 
+  const durationMs = Date.now() - t0;
+
   if (!res.ok) {
     const errBody = await res.text().catch(() => '');
+    console.error('[AI_HELPER] API error', { helperType, status: res.status, durationMs, body: errBody.slice(0, 300) });
     throw new Error(`AI provider returned ${res.status}: ${errBody.slice(0, 200)}`);
   }
 
   const json = await res.json();
   const choice = json.choices?.[0];
   if (!choice?.message?.content) {
+    console.error('[AI_HELPER] empty response', { helperType, durationMs, json });
     throw new Error('AI provider returned an empty response.');
   }
+
+  console.log('[AI_HELPER] done', { helperType, durationMs, model: json.model, tokens: json.usage?.total_tokens ?? 0 });
 
   return {
     text:  choice.message.content.trim(),
