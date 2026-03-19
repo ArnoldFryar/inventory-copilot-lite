@@ -24,7 +24,8 @@ const rateLimit  = require('express-rate-limit');
 const nodemailer = require('nodemailer');
 const router     = express.Router();
 
-const DEST_EMAIL = 'support@myopscopilot.com';
+const SMTP_TIMEOUT_MS = 15_000;   // 15-second hard cap on SMTP send
+const DEST_EMAIL = (process.env.SUPPORT_EMAIL_TO || 'support@myopscopilot.com').trim();
 
 const smtpConfigured = Boolean(
   process.env.SUPPORT_SMTP_HOST &&
@@ -48,6 +49,9 @@ function getTransporter() {
       user: process.env.SUPPORT_SMTP_USER,
       pass: process.env.SUPPORT_SMTP_PASS,
     },
+    connectionTimeout: 10_000,
+    greetingTimeout:   10_000,
+    socketTimeout:     15_000,
   });
   return _transporter;
 }
@@ -125,6 +129,8 @@ router.post('/api/support', supportRateLimit, async (req, res) => {
     if (email.length   > 254)  return res.status(400).json({ error: 'Email address is too long.' });
     if (subject.length > 200)  return res.status(400).json({ error: 'Subject is too long (max 200 characters).' });
     if (message.length > 4000) return res.status(400).json({ error: 'Message is too long (max 4000 characters).' });
+
+    console.log('[support] payload validated');
 
   // ── Sanitise inputs ───────────────────────────────────────────────────
   const fromName    = name.trim();
@@ -205,28 +211,44 @@ router.post('/api/support', supportRateLimit, async (req, res) => {
   ].filter(line => line !== null).join('\n');
 
   // ── Send or log ─────────────────────────────────────────────────────────
+  console.log('[support] smtp config validated — smtpConfigured:', smtpConfigured);
+
   if (!smtpConfigured) {
     console.log('[support] SMTP not configured — logging message (dev mode)');
     console.log(textBody);
+    console.log('[support] response sent — 200 ok:true (dev)');
     return res.json({ ok: true });
   }
 
   try {
-    console.log('[support] Sending email via SMTP to', DEST_EMAIL);
+    console.log('[support] sendMail starting →', DEST_EMAIL);
     const fromAddress = (process.env.SUPPORT_EMAIL_FROM || process.env.SUPPORT_SMTP_USER).trim();
-    await getTransporter().sendMail({
+    const mailOpts = {
       from:    `"${fromName.replace(/"/g, '')}" <${fromAddress}>`,
       replyTo: `"${fromName.replace(/"/g, '')}" <${fromEmail}>`,
       to:      DEST_EMAIL,
       subject: subjectLine,
       text:    textBody,
       html:    htmlBody,
+    };
+
+    const smtpTimeout = new Promise(function (_, reject) {
+      setTimeout(function () { reject(new Error('SMTP_TIMEOUT')); }, SMTP_TIMEOUT_MS);
     });
-    console.log(`[support] Email sent OK from ${fromEmail} — subject: ${subjectText}`);
+
+    await Promise.race([getTransporter().sendMail(mailOpts), smtpTimeout]);
+
+    console.log('[support] sendMail success — from:', fromEmail, 'subject:', subjectText);
+    console.log('[support] response sent — 200 ok:true');
     return res.json({ ok: true });
   } catch (err) {
-    console.error('[support] sendMail failed:', err.message);
-    return res.status(500).json({ error: 'Failed to send your message. Please try again shortly.' });
+    if (err.message === 'SMTP_TIMEOUT') {
+      console.error('[support] sendMail timeout after ' + SMTP_TIMEOUT_MS + 'ms');
+    } else {
+      console.error('[support] sendMail failure:', err.message);
+    }
+    console.log('[support] response sent — 502 ok:false');
+    return res.status(502).json({ ok: false, error: 'Support email failed to send' });
   }
 
   } catch (outerErr) {

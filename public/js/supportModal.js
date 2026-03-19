@@ -197,10 +197,14 @@
     var url = '/api/support';
     console.debug('[support] submit start \u2192', url);
 
+    var controller = new AbortController();
+    var fetchTimeout = setTimeout(function () { controller.abort(); }, 20000);
+
     fetch(url, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ name: name, email: email, subject: subject, message: message, metadata: metadata }),
+      signal:  controller.signal,
     })
     .then(function (res) {
       console.debug('[support] response status:', res.status, res.statusText);
@@ -223,9 +227,14 @@
     })
     .catch(function (err) {
       console.error('[support] fetch error:', err);
-      setError('Network error. Please check your connection and try again.');
+      if (err.name === 'AbortError') {
+        setError('Request timed out. Please try again.');
+      } else {
+        setError('Network error. Please check your connection and try again.');
+      }
     })
     .finally(function () {
+      clearTimeout(fetchTimeout);
       // Always reset loading state — prevents permanent "Sending…" lock.
       // Skip reset only when the success view is visible (form is hidden).
       var successVisible = false;
