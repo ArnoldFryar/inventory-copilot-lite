@@ -23,6 +23,7 @@ function logAccessDenied(route, userId, plan) {
 
 // POST /api/runs — save an analysis run
 async function createRun(req, res) {
+  try {
   if (!supabaseAdmin) {
     return res.status(503).json({ error: 'Database is not configured.' });
   }
@@ -61,10 +62,15 @@ async function createRun(req, res) {
   }
 
   res.status(201).json(data);
+  } catch (err) {
+    console.error('[POST /api/runs] unhandled:', err.message);
+    if (!res.headersSent) res.status(500).json({ error: 'An unexpected error occurred.' });
+  }
 }
 
 // GET /api/runs — list the authenticated user's saved runs (most recent first)
 async function listRuns(req, res) {
+  try {
   if (!supabaseAdmin) {
     return res.status(503).json({ error: 'Database is not configured.' });
   }
@@ -88,11 +94,16 @@ async function listRuns(req, res) {
   }
 
   res.json(data);
+  } catch (err) {
+    console.error('[GET /api/runs] unhandled:', err.message);
+    if (!res.headersSent) res.status(500).json({ error: 'An unexpected error occurred.' });
+  }
 }
 
 // GET /api/runs/:id/compare — compare a run against its immediate predecessor.
 // MUST be registered BEFORE getRun so Express matches /compare before :id.
 async function compareRun(req, res) {
+  try {
   if (!supabaseAdmin) {
     return res.status(503).json({ error: 'Database is not configured.' });
   }
@@ -143,10 +154,15 @@ async function compareRun(req, res) {
   comparison.priorFileName   = priorRun.file_name;
 
   return res.json(comparison);
+  } catch (err) {
+    console.error('[GET /api/runs/:id/compare] unhandled:', err.message, err.stack);
+    if (!res.headersSent) res.status(500).json({ error: 'An unexpected error occurred.' });
+  }
 }
 
 // GET /api/runs/:id — retrieve a single saved run (with full results)
 async function getRun(req, res) {
+  try {
   if (!supabaseAdmin) {
     return res.status(503).json({ error: 'Database is not configured.' });
   }
@@ -169,10 +185,15 @@ async function getRun(req, res) {
   }
 
   res.json(data);
+  } catch (err) {
+    console.error('[GET /api/runs/:id] unhandled:', err.message);
+    if (!res.headersSent) res.status(500).json({ error: 'An unexpected error occurred.' });
+  }
 }
 
 // DELETE /api/runs/:id — delete a saved run
 async function deleteRun(req, res) {
+  try {
   if (!supabaseAdmin) {
     return res.status(503).json({ error: 'Database is not configured.' });
   }
@@ -195,6 +216,10 @@ async function deleteRun(req, res) {
   }
 
   res.status(204).end();
+  } catch (err) {
+    console.error('[DELETE /api/runs/:id] unhandled:', err.message);
+    if (!res.headersSent) res.status(500).json({ error: 'An unexpected error occurred.' });
+  }
 }
 
 module.exports = { createRun, listRuns, compareRun, getRun, deleteRun };

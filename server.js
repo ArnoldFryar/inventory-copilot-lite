@@ -165,3 +165,12 @@ app.listen(PORT, () => {
   console.log(`OpsCopilot-Lite running at http://localhost:${PORT}`);
 });
 
+// Prevent unhandled promise rejections from crashing the process.
+// Express 4 does not automatically forward async route errors to the
+// error-handling middleware — a rejected promise leaves the request hanging
+// until the proxy times out (502). The try/catch wrappers in each route
+// handler are the primary defence; this is the last-resort safety net.
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason);
+});
+
