@@ -195,7 +195,14 @@
 
     'trending-down':
       '<polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/>' +
-      '<polyline points="17 18 23 18 23 12"/>',  };
+      '<polyline points="17 18 23 18 23 12"/>',
+
+    play:
+      '<polygon points="5 3 19 12 5 21 5 3"/>',
+
+    shield:
+      '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  };
 
   // ── Brand asset paths (served from /assets/) ─────────────────────────────
   var BRAND_PATHS = {

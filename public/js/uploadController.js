@@ -13,9 +13,11 @@
     if (file) {
       dom.fileLabel.textContent = file.name;
       dom.submitBtn.disabled = false;
+      dom.submitBtn.classList.add('is-ready');
     } else {
       dom.fileLabel.textContent = 'Choose a CSV file\u2026';
       dom.submitBtn.disabled = true;
+      dom.submitBtn.classList.remove('is-ready');
     }
     App.hideError();
     App.hideResults();

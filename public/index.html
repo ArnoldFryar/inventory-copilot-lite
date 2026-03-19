@@ -125,12 +125,13 @@
     <!-- ── Upload form ──────────────────────────────────────────────────── -->
     <section class="upload-section card">
       <div class="hero-headline">
-        <h2 class="hero-title">Stop stockouts before they stop&nbsp;the&nbsp;line</h2>
-        <p class="hero-subtext">Upload your ERP export &mdash; get a ranked list of at-risk parts, supplier lead-time gap flags, excess exposure, and an AI-ready executive summary, all in&nbsp;seconds.</p>
+        <span class="hero-eyebrow">Inventory Triage Engine</span>
+        <h2 class="hero-title">Stop stockouts before<br class="hidden-mobile" /> they stop&nbsp;the&nbsp;line</h2>
+        <p class="hero-subtext">Upload your ERP export. Get a ranked risk assessment in&nbsp;seconds.</p>
         <div class="trust-strip">
-          <span class="trust-item"><span class="trust-icon" aria-hidden="true"><span data-icon="check" data-icon-size="11"></span></span> Stockout &amp; supplier gap detection</span>
-          <span class="trust-item"><span class="trust-icon" aria-hidden="true"><span data-icon="check" data-icon-size="11"></span></span> Fixed rules, no AI hallucination</span>
-          <span class="trust-item"><span class="trust-icon" aria-hidden="true"><span data-icon="check" data-icon-size="11"></span></span> Triage-ready in seconds</span>
+          <span class="trust-item"><span class="trust-icon" aria-hidden="true"><span data-icon="check" data-icon-size="11"></span></span> Stockout &amp; gap detection</span>
+          <span class="trust-item"><span class="trust-icon" aria-hidden="true"><span data-icon="check" data-icon-size="11"></span></span> Deterministic rules, zero hallucination</span>
+          <span class="trust-item"><span class="trust-icon" aria-hidden="true"><span data-icon="check" data-icon-size="11"></span></span> Results in under 3&thinsp;s</span>
         </div>
       </div>
 
@@ -140,21 +141,18 @@
           <h2>Upload your ERP inventory export</h2>
         </div>
       <p class="context-block">
-        Each part is scored by days of stock remaining relative to its lead time.
-        Active stockouts surface first, followed by imminent risks, excess inventory,
-        potential dead stock, and data quality flags: seven categories, zero&nbsp;guesswork.
+        Parts are scored by days-of-stock vs. lead time &mdash; seven categories, zero&nbsp;guesswork.
       </p>
       <p class="hint">
-        Columns recognized automatically: <code>Part No</code>, <code>QTY ON HAND</code>,
-        <code>Avg Daily Usage</code>, <code>Lead Time</code>.
-        <strong>Lead time must be in calendar days.</strong>
-        Max 5&thinsp;MB. UTF-16 exports: re-save in Excel as <em>CSV (Comma delimited)</em>.
+        Columns auto-detected: <code>Part No</code>, <code>QTY ON HAND</code>,
+        <code>Avg Daily Usage</code>, <code>Lead Time</code> (calendar days).
+        Max 5&thinsp;MB&thinsp;CSV.
       </p>
 
       <details class="file-requirements">
         <summary>File requirements &amp; supported formats</summary>
         <div class="file-req-body">
-          <p><strong>Required columns</strong>: common ERP names are recognized automatically:</p>
+          <p><strong>Required columns</strong> &mdash; common ERP names recognized automatically:</p>
           <ul>
             <li><strong>Part Number</strong>: Part No, Item, SKU, Material, Component</li>
             <li><strong>Quantity on Hand</strong>: QTY ON HAND, Stock, Balance, Unrestricted</li>
@@ -173,25 +171,30 @@
 
       <form id="uploadForm" enctype="multipart/form-data">
         <label class="file-label" for="csvfile">
-          <span data-icon="upload" data-icon-size="28" data-icon-class="file-label-icon" aria-hidden="true"></span>
-          <span id="fileLabel">Choose a CSV file&hellip;</span>
-          <span class="file-label-hint">or drag and drop, .csv up to 5 MB</span>
+          <div class="file-label-ring" aria-hidden="true">
+            <span data-icon="upload" data-icon-size="28" data-icon-class="file-label-icon" aria-hidden="true"></span>
+          </div>
+          <span id="fileLabel" class="file-label-text">Choose a CSV file&hellip;</span>
+          <span class="file-label-hint">or drag and drop &middot; .csv up to 5&thinsp;MB</span>
           <input type="file" id="csvfile" name="csvfile" accept=".csv" />
         </label>
-        <button type="submit" id="submitBtn" disabled>
-          <span id="submitLabel">Analyze</span>
+        <button type="submit" id="submitBtn" class="analyze-cta" disabled>
+          <span data-icon="play" data-icon-size="16" data-icon-class="analyze-cta-icon" aria-hidden="true"></span>
+          <span id="submitLabel">Analyze Inventory</span>
         </button>
       </form>
-      <p class="demo-hint">
-        No file?
+      <div class="demo-hint">
+        <span class="demo-hint-label">No file handy?</span>
         <button id="liveDemoBtn" class="demo-btn" type="button">&#9654; Try Live Demo</button>
-        · instant triage with sample data.
-        Or
-        <button id="loadSampleBtn" class="link-btn" type="button">load sample data</button>
-        into the uploader, or
-        <a href="/sample-data" id="sampleDownloadLink" class="link-btn" download="sample_inventory.csv">download the sample CSV</a>
-        for a format reference.
-      </p>
+        <span class="demo-hint-sep">&middot;</span>
+        <button id="loadSampleBtn" class="link-btn" type="button">Load sample data</button>
+        <span class="demo-hint-sep">&middot;</span>
+        <a href="/sample-data" id="sampleDownloadLink" class="link-btn" download="sample_inventory.csv">Download sample CSV</a>
+      </div>
+      <div class="upload-proof-line" aria-hidden="true">
+        <span data-icon="shield" data-icon-size="13" data-icon-class="upload-proof-icon"></span>
+        Your data is processed locally and never stored on our servers.
+      </div>
       </div><!-- /.upload-engine-wrapper -->
 
       <details class="faq-block">

@@ -393,10 +393,11 @@
     App.dom.submitBtn.disabled = isLoading;
     if (isLoading) {
       App.dom.submitBtn.classList.add('is-loading');
+      App.dom.submitBtn.classList.remove('is-ready');
       App.dom.submitLabel.textContent = 'Analyzing\u2026';
     } else {
       App.dom.submitBtn.classList.remove('is-loading');
-      App.dom.submitLabel.textContent = 'Analyze';
+      App.dom.submitLabel.textContent = 'Analyze Inventory';
     }
   };
 })();
