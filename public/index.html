@@ -45,6 +45,10 @@
           <span data-icon="billing" data-icon-size="15" data-icon-class="sidebar-nav-icon"></span>
           <span>Billing &amp; Plan</span>
         </a>
+        <button type="button" class="sidebar-nav-item" data-support-trigger aria-label="Contact Support">
+          <span data-icon="info" data-icon-size="15" data-icon-class="sidebar-nav-icon"></span>
+          <span>Support</span>
+        </button>
       </div>
 
       <div class="sidebar-foot">
@@ -91,6 +95,7 @@
             <span class="account-dropdown-email" id="accountDropdownEmail"></span>
             <hr class="account-dropdown-sep" />
             <button id="manageBillingBtn" class="account-dropdown-item hidden" type="button" role="menuitem">Manage billing</button>
+            <button class="account-dropdown-item" type="button" role="menuitem" data-support-trigger>Contact Support</button>
             <button id="signOutBtn" class="account-dropdown-item" type="button" role="menuitem">Sign out</button>
           </div>
         </div>
@@ -863,6 +868,7 @@
   <script src="script.js"></script>
   <script src="js/Icon.js"></script>
   <script src="js/commandBar.js"></script>
+  <script src="js/supportModal.js"></script>
 
   <!-- Toast container -->
   <div id="toastContainer" class="toast-container" aria-live="polite"></div>
