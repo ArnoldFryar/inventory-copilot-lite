@@ -23,7 +23,7 @@ const AI_CONFIG = {
   apiKey:  (process.env.OPENAI_API_KEY || '').trim(),
   // AI_MODEL env var overrides the route-selected model (useful in dev/demo).
   // In production the model is chosen per helper type via server/ai/config.js MODEL_MAP.
-  model:   (process.env.AI_MODEL       || '').trim(),
+  model:   (process.env.AI_MODEL       || 'gpt-4.1').trim(),
   baseUrl: (process.env.AI_BASE_URL    || 'https://api.openai.com/v1').trim(),
 };
 
