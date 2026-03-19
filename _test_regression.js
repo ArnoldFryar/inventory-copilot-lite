@@ -1492,15 +1492,16 @@ console.log('\n[P40] simplifyRow');
 
 test('simplifyRow returns only expected fields', () => {
   const full = {
-    part_number: 'X1', status: 'Healthy', severity: 'Low', coverage: 30,
+    part_number: 'X1', supplier: 'Acme', status: 'Healthy', severity: 'Low', coverage: 30,
     on_hand: 500, daily_usage: 5, lead_time: 14, reason: 'Ok',
     recommended_action: 'None', extra_field: 'should be stripped'
   };
   const simple = simplifyRow(full);
   const keys = Object.keys(simple).sort();
-  const expected = ['coverage', 'daily_usage', 'lead_time', 'on_hand', 'part_number', 'reason', 'severity', 'status'].sort();
+  const expected = ['coverage', 'daily_usage', 'lead_time', 'on_hand', 'part_number', 'reason', 'severity', 'status', 'supplier'].sort();
   assert.deepEqual(keys, expected);
   assert.equal(simple.part_number, 'X1');
+  assert.equal(simple.supplier, 'Acme');
   assert.equal(simple.extra_field, undefined);
 });
 

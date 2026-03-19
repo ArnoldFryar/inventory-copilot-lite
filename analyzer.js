@@ -235,11 +235,16 @@ function analyzeRow(row, fieldMap) {
   const rawOnHand     = get('on_hand');
   const rawDailyUsage = get('daily_usage');
   const rawLeadTime   = get('lead_time');
+  const rawSupplier   = get('supplier');
 
   const partNumber = (rawPartNumber !== null && rawPartNumber !== undefined)
     ? String(rawPartNumber).trim()
     : '';
   const label = partNumber || '(no part number)';
+
+  const supplier = (rawSupplier !== null && rawSupplier !== undefined)
+    ? String(rawSupplier).trim()
+    : '';
 
   const onHand     = safePositiveNumber(rawOnHand);
   const dailyUsage = safePositiveNumber(rawDailyUsage);
@@ -265,6 +270,7 @@ function analyzeRow(row, fieldMap) {
     const friendlyBadFields = badFields.map(f => FRIENDLY_FIELD_NAMES[f] || f);
     return {
       part_number:        label,
+      supplier:           supplier,
       on_hand:            isNaN(onHand)     ? null : onHand,
       daily_usage:        isNaN(dailyUsage) ? null : dailyUsage,
       lead_time:          isNaN(leadTime)   ? null : leadTime,
@@ -280,6 +286,7 @@ function analyzeRow(row, fieldMap) {
 
   return {
     part_number: label,
+    supplier:    supplier,
     on_hand:     onHand,
     daily_usage: dailyUsage,
     lead_time:   leadTime,

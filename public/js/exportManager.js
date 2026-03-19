@@ -75,7 +75,7 @@
   // ── CSV export ────────────────────────────────────────────────────────────
 
   var EXPORT_COLUMNS = [
-    'part_number', 'on_hand', 'daily_usage', 'lead_time',
+    'part_number', 'supplier', 'on_hand', 'daily_usage', 'lead_time',
     'coverage', 'status', 'severity', 'reason', 'recommended_action'
   ];
 

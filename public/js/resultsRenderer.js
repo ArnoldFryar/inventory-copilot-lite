@@ -394,10 +394,20 @@
       dom.resultsBody.removeChild(dom.resultsBody.firstChild);
     }
 
+    // Reset header checkbox
+    if (dom.selectAllParts) dom.selectAllParts.checked = false;
+
+    // Show/hide supplier column based on whether any row has data
+    var hasSupplier = rows.some(function (r) { return r.supplier && r.supplier.trim(); });
+    var supplierCols = document.querySelectorAll('.col-supplier');
+    for (var sc = 0; sc < supplierCols.length; sc++) {
+      supplierCols[sc].style.display = hasSupplier ? '' : 'none';
+    }
+
     if (rows.length === 0) {
       var tr = document.createElement('tr');
       var td = document.createElement('td');
-      td.colSpan = 9;
+      td.colSpan = hasSupplier ? 11 : 10;
       td.className = 'table-no-results';
       td.textContent = 'No rows match the current filters. Clear a filter to see more results.';
       tr.appendChild(td);
@@ -405,11 +415,48 @@
       return;
     }
 
-    rows.forEach(function (row) {
+    rows.forEach(function (row, idx) {
       var tr = document.createElement('tr');
       tr.className = App.statusClass(row.status);
 
+      // Checkbox cell
+      var tdCb = document.createElement('td');
+      tdCb.className = 'col-select';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.className = 'part-select-cb';
+      cb.setAttribute('aria-label', 'Select ' + (row.part_number || 'row'));
+      // Find the "real" index in allResults for this row
+      var realIdx = state.allResults.indexOf(row);
+      cb.setAttribute('data-row-idx', realIdx);
+      if (state.selectedParts.has(realIdx)) {
+        cb.checked = true;
+        tr.classList.add('row-selected');
+      }
+      cb.addEventListener('change', function () {
+        var i = parseInt(this.getAttribute('data-row-idx'), 10);
+        if (this.checked) {
+          state.selectedParts.add(i);
+          this.closest('tr').classList.add('row-selected');
+        } else {
+          state.selectedParts.delete(i);
+          this.closest('tr').classList.remove('row-selected');
+        }
+        updateSelectionBadge();
+        syncSelectAll();
+      });
+      tdCb.appendChild(cb);
+      tr.appendChild(tdCb);
+
       appendCell(tr, row.part_number);
+
+      // Supplier cell (conditionally visible)
+      var tdSup = document.createElement('td');
+      tdSup.className = 'col-supplier';
+      tdSup.textContent = (row.supplier && row.supplier.trim()) ? row.supplier : '\u2014';
+      tdSup.style.display = hasSupplier ? '' : 'none';
+      tr.appendChild(tdSup);
+
       appendCell(tr, App.formatNumber(row.coverage));
       appendStatusCell(tr, row.status);
       appendSeverityCell(tr, row.severity);
@@ -421,6 +468,8 @@
 
       dom.resultsBody.appendChild(tr);
     });
+
+    syncSelectAll();
   }
 
   // ── DOM cell helpers ──────────────────────────────────────────────────────
@@ -448,6 +497,69 @@
     td.appendChild(badge);
     tr.appendChild(td);
   }
+
+  // ── Part selection helpers ────────────────────────────────────────────────
+
+  /** Keep the header "Select all" checkbox in sync with individual row checkboxes. */
+  function syncSelectAll() {
+    if (!dom.selectAllParts) return;
+    var cbs = dom.resultsBody.querySelectorAll('.part-select-cb');
+    if (cbs.length === 0) { dom.selectAllParts.checked = false; return; }
+    var allChecked = true;
+    for (var i = 0; i < cbs.length; i++) {
+      if (!cbs[i].checked) { allChecked = false; break; }
+    }
+    dom.selectAllParts.checked = allChecked;
+  }
+
+  /** Broadcast selection count so other modules (AI helpers) can react. */
+  function updateSelectionBadge() {
+    var count = state.selectedParts.size;
+    // Fire a custom event that aiHelpersUI listens to
+    var ev = new CustomEvent('partSelectionChanged', { detail: { count: count } });
+    document.dispatchEvent(ev);
+  }
+
+  /** Select all visible rows. */
+  if (dom.selectAllParts) {
+    dom.selectAllParts.addEventListener('change', function () {
+      var checked = this.checked;
+      var cbs = dom.resultsBody.querySelectorAll('.part-select-cb');
+      for (var i = 0; i < cbs.length; i++) {
+        cbs[i].checked = checked;
+        var idx = parseInt(cbs[i].getAttribute('data-row-idx'), 10);
+        if (checked) {
+          state.selectedParts.add(idx);
+          cbs[i].closest('tr').classList.add('row-selected');
+        } else {
+          state.selectedParts.delete(idx);
+          cbs[i].closest('tr').classList.remove('row-selected');
+        }
+      }
+      updateSelectionBadge();
+    });
+  }
+
+  /** Expose for other modules to read selected part data. */
+  App.getSelectedParts = function () {
+    var parts = [];
+    state.selectedParts.forEach(function (idx) {
+      if (state.allResults[idx]) parts.push(state.allResults[idx]);
+    });
+    return parts;
+  };
+
+  /** Clear selection (e.g. after new upload). */
+  App.clearPartSelection = function () {
+    state.selectedParts.clear();
+    var cbs = dom.resultsBody.querySelectorAll('.part-select-cb');
+    for (var i = 0; i < cbs.length; i++) {
+      cbs[i].checked = false;
+      cbs[i].closest('tr').classList.remove('row-selected');
+    }
+    if (dom.selectAllParts) dom.selectAllParts.checked = false;
+    updateSelectionBadge();
+  };
 
   // ── Leadership summary ──────────────────────────────────────────────────────────────
 

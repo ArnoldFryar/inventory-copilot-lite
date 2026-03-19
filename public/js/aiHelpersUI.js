@@ -156,6 +156,44 @@
       ctx.supplier = fields.supplier || '';
       ctx.company  = fields.company  || '';
       ctx.notes    = fields.tone ? 'Tone: ' + fields.tone : '';
+
+      // Attach selected parts with supplier grouping
+      var selected = App.getSelectedParts ? App.getSelectedParts() : [];
+      if (selected.length > 0) {
+        ctx.selectedParts = selected.map(function (r) {
+          return {
+            part_number: r.part_number,
+            supplier:    r.supplier || '',
+            status:      r.status,
+            severity:    r.severity,
+            coverage:    r.coverage,
+            on_hand:     r.on_hand,
+            daily_usage: r.daily_usage,
+            lead_time:   r.lead_time,
+            reason:      r.reason,
+          };
+        });
+        // Auto-detect supplier groups
+        var groups = groupBySupplier(selected);
+        var supplierNames = Object.keys(groups);
+        if (supplierNames.length > 1 || (supplierNames.length === 1 && supplierNames[0] !== 'Unknown Supplier')) {
+          ctx.supplierGroups = {};
+          for (var s = 0; s < supplierNames.length; s++) {
+            ctx.supplierGroups[supplierNames[s]] = groups[supplierNames[s]].map(function (r) {
+              return {
+                part_number: r.part_number,
+                status:      r.status,
+                severity:    r.severity,
+                coverage:    r.coverage,
+                on_hand:     r.on_hand,
+                daily_usage: r.daily_usage,
+                lead_time:   r.lead_time,
+                reason:      r.reason,
+              };
+            });
+          }
+        }
+      }
     } else if (helperType === 'escalation_summary') {
       ctx.urgency = urgentCount > 0 ? 'High \u2014 ' + urgentCount + ' urgent stockout(s)' : 'Standard';
       ctx.company = fields.company || '';
@@ -170,6 +208,69 @@
 
     return ctx;
   }
+
+  /** Group an array of part rows by their supplier field. */
+  function groupBySupplier(parts) {
+    var groups = {};
+    for (var i = 0; i < parts.length; i++) {
+      var key = (parts[i].supplier && parts[i].supplier.trim()) || 'Unknown Supplier';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(parts[i]);
+    }
+    return groups;
+  }
+
+  /** Update the expedite context panel to reflect current part selection. */
+  function updateExpediteSelectionUI() {
+    var selected = App.getSelectedParts ? App.getSelectedParts() : [];
+    var count = selected.length;
+
+    // Selection badge
+    if (dom.aiCtxSelectionInfo && dom.aiCtxSelectionBadge) {
+      if (count > 0) {
+        dom.aiCtxSelectionBadge.textContent = count + ' part' + (count !== 1 ? 's' : '') + ' selected';
+        dom.aiCtxSelectionInfo.classList.remove('hidden');
+      } else {
+        dom.aiCtxSelectionBadge.textContent = 'No parts selected \u2014 all urgent parts will be used';
+        dom.aiCtxSelectionInfo.classList.remove('hidden');
+      }
+    }
+
+    // Detect suppliers from selection
+    if (count > 0) {
+      var groups = groupBySupplier(selected);
+      var supplierNames = Object.keys(groups);
+      var hasRealSupplier = supplierNames.some(function (n) { return n !== 'Unknown Supplier'; });
+
+      if (hasRealSupplier && supplierNames.length >= 1) {
+        // Show detected suppliers, hide manual input
+        if (dom.aiCtxSupplierRow) dom.aiCtxSupplierRow.classList.add('hidden');
+        if (dom.aiCtxSuppliersDetected && dom.aiCtxSuppliersList) {
+          var labels = supplierNames.map(function (name) {
+            var n = groups[name].length;
+            return name + ' (' + n + ')';
+          });
+          dom.aiCtxSuppliersList.textContent = labels.join(', ');
+          dom.aiCtxSuppliersDetected.classList.remove('hidden');
+        }
+      } else {
+        // No supplier data — show manual input as before
+        if (dom.aiCtxSupplierRow) dom.aiCtxSupplierRow.classList.remove('hidden');
+        if (dom.aiCtxSuppliersDetected) dom.aiCtxSuppliersDetected.classList.add('hidden');
+      }
+    } else {
+      // No selection — show manual input
+      if (dom.aiCtxSupplierRow) dom.aiCtxSupplierRow.classList.remove('hidden');
+      if (dom.aiCtxSuppliersDetected) dom.aiCtxSuppliersDetected.classList.add('hidden');
+    }
+  }
+
+  // Listen for selection changes to update panel if it's open
+  document.addEventListener('partSelectionChanged', function () {
+    if (_pendingHelperType === 'expedite_email') {
+      updateExpediteSelectionUI();
+    }
+  });
 
   /** Show the context panel for a given helper type. */
   function showContextPanel(helperType) {
@@ -190,6 +291,11 @@
 
     // Prefill
     prefillCtxFields(helperType);
+
+    // ── Expedite: update selection info and supplier detection ──────────
+    if (helperType === 'expedite_email') {
+      updateExpediteSelectionUI();
+    }
 
     // Highlight selected button
     if (dom.aiHelpersActions) {
@@ -305,8 +411,87 @@
 
   /** Format plain-text AI output into cleaner HTML. Preserves line breaks,
    *  bolds lines that look like headers (ALL-CAPS or ending with ':'),
-   *  and renders '- ' or '• ' as bullet items. */
+   *  and renders '- ' or '• ' as bullet items.
+   *  For multi-supplier expedite emails, splits on ===SUPPLIER: X=== delimiters
+   *  and renders each section with a header and copy button. */
   function formatAiText(raw) {
+    if (!raw) return '';
+
+    // Detect multi-supplier delimiter
+    var supplierSections = splitSupplierSections(raw);
+    if (supplierSections.length > 1) {
+      return renderSupplierSections(supplierSections);
+    }
+
+    return formatSingleSection(raw);
+  }
+
+  /** Split raw text by ===SUPPLIER: Name=== delimiters. */
+  function splitSupplierSections(raw) {
+    var re = /===\s*SUPPLIER:\s*(.+?)\s*===/g;
+    var sections = [];
+    var match;
+    var lastIdx = 0;
+    var lastSupplier = null;
+
+    // Check if there's content before the first delimiter
+    var firstMatch = re.exec(raw);
+    if (!firstMatch) return [{ supplier: null, text: raw }];
+
+    // If there's text before the first delimiter, add it as a preamble
+    var preamble = raw.substring(0, firstMatch.index).trim();
+    if (preamble) {
+      sections.push({ supplier: null, text: preamble });
+    }
+
+    lastSupplier = firstMatch[1].trim();
+    lastIdx = firstMatch.index + firstMatch[0].length;
+
+    while ((match = re.exec(raw)) !== null) {
+      var sectionText = raw.substring(lastIdx, match.index).trim();
+      if (sectionText) {
+        sections.push({ supplier: lastSupplier, text: sectionText });
+      }
+      lastSupplier = match[1].trim();
+      lastIdx = match.index + match[0].length;
+    }
+
+    // Last section
+    var remaining = raw.substring(lastIdx).trim();
+    if (remaining) {
+      sections.push({ supplier: lastSupplier, text: remaining });
+    }
+
+    return sections;
+  }
+
+  /** Render multi-supplier sections with headers and per-section copy buttons. */
+  function renderSupplierSections(sections) {
+    var html = [];
+    for (var i = 0; i < sections.length; i++) {
+      var sec = sections[i];
+      if (sec.supplier) {
+        html.push(
+          '<div class="ai-supplier-section" data-supplier-idx="' + i + '">' +
+            '<div class="ai-supplier-header">' +
+              '<span class="ai-supplier-name">\u2709\uFE0F ' + escHtml(sec.supplier) + '</span>' +
+              '<button type="button" class="ai-supplier-copy-btn" data-supplier-idx="' + i + '" title="Copy this email">' +
+                '<span>Copy</span>' +
+              '</button>' +
+            '</div>' +
+            '<div class="ai-supplier-body">' + formatSingleSection(sec.text) + '</div>' +
+          '</div>'
+        );
+      } else {
+        // Preamble (before any supplier section)
+        html.push('<div class="ai-supplier-preamble">' + formatSingleSection(sec.text) + '</div>');
+      }
+    }
+    return html.join('\n');
+  }
+
+  /** Format a single section of text (original logic). */
+  function formatSingleSection(raw) {
     if (!raw) return '';
     var lines = raw.split('\n');
     var html = [];
@@ -317,7 +502,7 @@
       var trimmed = ln.trim();
 
       // Detect bullet lines
-      var bulletMatch = trimmed.match(/^[-•*]\s+(.*)$/);
+      var bulletMatch = trimmed.match(/^[-\u2022*]\s+(.*)$/);
       if (bulletMatch) {
         if (!inList) { html.push('<ul>'); inList = true; }
         html.push('<li>' + escHtml(bulletMatch[1]) + '</li>');
@@ -651,6 +836,34 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+    });
+  }
+
+  // Per-supplier copy buttons (event delegation on the result text container)
+  var resultTextContainer = document.getElementById('aiHelperResultText');
+  if (resultTextContainer) {
+    resultTextContainer.addEventListener('click', function (e) {
+      var copyBtn = e.target.closest('.ai-supplier-copy-btn');
+      if (!copyBtn) return;
+      var idx = parseInt(copyBtn.getAttribute('data-supplier-idx'), 10);
+      var raw = dom.aiHelperResult ? dom.aiHelperResult._rawText : '';
+      if (!raw) return;
+
+      var sections = splitSupplierSections(raw);
+      var section = sections[idx];
+      if (!section || !section.text) return;
+
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(section.text).then(function () {
+          var lbl = copyBtn.querySelector('span');
+          if (lbl) { lbl.textContent = 'Copied \u2713'; setTimeout(function () { lbl.textContent = 'Copy'; }, 2000); }
+          copyBtn.classList.add('copy-pulse');
+          setTimeout(function () { copyBtn.classList.remove('copy-pulse'); }, 400);
+          var count = incrementCopyCount();
+          var sub = section.supplier ? section.supplier : '';
+          showToast('Copied \u2014 ' + sub + ' email ready', count > 1 ? 'Copied ' + count + ' times today' : '');
+        });
+      }
     });
   }
 

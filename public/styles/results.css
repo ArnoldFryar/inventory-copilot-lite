@@ -1112,9 +1112,9 @@ thead th {
   user-select: none;
 }
 
-/* First column (Part Number) gets slightly more weight */
-thead th:first-child {
-  padding-left: var(--space-4);
+/* First column (Part Number) gets slightly more weight — now 2nd column due to checkbox */
+thead th:nth-child(2) {
+  padding-left: var(--space-3);
   color: var(--ink-400);
 }
 
@@ -1133,8 +1133,8 @@ tbody td {
   font-variant-numeric: tabular-nums;
 }
 
-tbody td:first-child {
-  padding-left: var(--space-4);
+tbody td:nth-child(2) {
+  padding-left: var(--space-3);
   font-weight: 600;
   color: var(--ink-200);
   letter-spacing: -0.1px;
@@ -1231,6 +1231,50 @@ tbody tr:hover {
 
 /* Shared height token for all form controls */
 :root { --ctrl-h: 34px; }
+
+/* =========================================================
+   10 · PART SELECTION CHECKBOXES
+   ======================================================= */
+.col-select {
+  width: 36px;
+  min-width: 36px;
+  max-width: 36px;
+  text-align: center;
+  padding-left: var(--space-2) !important;
+  padding-right: 0 !important;
+}
+
+.col-select input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--brand-500);
+  cursor: pointer;
+}
+
+thead th.col-select {
+  padding-left: var(--space-2);
+  color: var(--ink-500);
+}
+
+/* Selected row highlight */
+tbody tr.row-selected {
+  background: rgba(20,184,166,0.08) !important;
+  box-shadow: inset 3px 0 0 var(--brand-500);
+}
+
+tbody tr.row-selected:hover {
+  background: rgba(20,184,166,0.12) !important;
+}
+
+/* Supplier column */
+.col-supplier {
+  font-weight: 500;
+  color: var(--ink-300);
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .filter-input,
 .filter-select {

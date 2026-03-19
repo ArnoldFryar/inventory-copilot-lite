@@ -487,6 +487,9 @@
 
         <!-- Expedite email fields -->
         <div id="aiCtxExpedite" class="ai-ctx-fields hidden">
+          <div id="aiCtxSelectionInfo" class="ai-ctx-selection-info hidden">
+            <span id="aiCtxSelectionBadge" class="ai-ctx-selection-badge"></span>
+          </div>
           <div class="ai-ctx-row">
             <label class="ai-ctx-label" for="aiCtxUrgency">Urgency</label>
             <select id="aiCtxUrgency" class="ai-ctx-select">
@@ -503,9 +506,13 @@
               <option value="Collaborative">Collaborative</option>
             </select>
           </div>
-          <div class="ai-ctx-row">
+          <div id="aiCtxSupplierRow" class="ai-ctx-row">
             <label class="ai-ctx-label" for="aiCtxSupplier">Supplier</label>
             <input id="aiCtxSupplier" class="ai-ctx-input" type="text" placeholder="Enter supplier name…" maxlength="100" />
+          </div>
+          <div id="aiCtxSuppliersDetected" class="ai-ctx-suppliers-detected hidden">
+            <span class="ai-ctx-label">Suppliers detected</span>
+            <span id="aiCtxSuppliersList" class="ai-ctx-suppliers-list"></span>
           </div>
           <div class="ai-ctx-row">
             <label class="ai-ctx-label" for="aiCtxCompanyExp">Company</label>
@@ -692,7 +699,9 @@
         <table id="resultsTable">
           <thead>
             <tr>
+              <th scope="col" class="col-select"><input type="checkbox" id="selectAllParts" aria-label="Select all parts" title="Select all visible parts" /></th>
               <th scope="col">Part Number</th>
+              <th scope="col" class="col-supplier">Supplier</th>
               <th scope="col">Coverage (days)</th>
               <th scope="col">Status</th>
               <th scope="col">Severity</th>

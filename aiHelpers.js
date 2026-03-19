@@ -108,6 +108,9 @@ function shapeInput({ summary, results, topPriority, analyzedAt, thresholds }, b
     excessParts:  excessParts.map(simplifyRow),
     thresholds,
     contextBlock,
+    // Pass through client-selected parts and supplier groups (if any)
+    selectedParts:  bc.selectedParts  || null,
+    supplierGroups: bc.supplierGroups || null,
   };
 }
 
@@ -115,6 +118,7 @@ function shapeInput({ summary, results, topPriority, analyzedAt, thresholds }, b
 function simplifyRow(r) {
   return {
     part_number: r.part_number,
+    supplier:    r.supplier || '',
     status:      r.status,
     severity:    r.severity,
     coverage:    r.coverage,
@@ -133,7 +137,42 @@ function simplifyRow(r) {
 function buildExpediteEmailPrompt(ctx) {
   const system = getSystemPrompt('expedite_email');
 
-  const parts = ctx.urgentParts.length > 0 ? ctx.urgentParts : ctx.topPriority;
+  // If the client sent pre-selected parts grouped by supplier, use those.
+  const hasGroups = ctx.supplierGroups && Object.keys(ctx.supplierGroups).length > 1;
+  const hasSelected = ctx.selectedParts && ctx.selectedParts.length > 0;
+
+  if (hasGroups) {
+    // Multi-supplier: ask for one email per supplier separated by delimiter
+    const groupEntries = Object.entries(ctx.supplierGroups);
+    const groupBlocks = groupEntries.map(([supplier, parts]) =>
+      `--- Supplier: ${supplier} (${parts.length} parts) ---\n` +
+      JSON.stringify(parts, null, 2)
+    ).join('\n\n');
+
+    const user = [
+      ctx.contextBlock,
+      `Analysis date: ${ctx.analyzedAt}`,
+      `Total parts analyzed: ${ctx.total}`,
+      `Selected parts: ${ctx.selectedParts ? ctx.selectedParts.length : 0} across ${groupEntries.length} suppliers`,
+      '',
+      'Parts grouped by supplier:',
+      groupBlocks,
+      '',
+      `Generate a SEPARATE expedite email for EACH supplier above (${groupEntries.length} emails total).`,
+      'Separate each email with a line: ===SUPPLIER: [Supplier Name]===',
+      'Each email should follow the standard expedite format.',
+      'Include specific coverage days and lead times from the data.',
+      'Group by severity within each supplier email if there are multiple parts.',
+    ].join('\n');
+
+    return { system, user };
+  }
+
+  // Single-supplier or no selection: original behavior
+  const parts = hasSelected
+    ? ctx.selectedParts
+    : (ctx.urgentParts.length > 0 ? ctx.urgentParts : ctx.topPriority);
+
   const user = [
     ctx.contextBlock,
     `Analysis date: ${ctx.analyzedAt}`,
@@ -244,6 +283,10 @@ async function generateHelper(helperType, runData, { model: modelOverride, conte
   // Model priority: env-var override → route selection (MODEL_MAP) → fallback.
   const resolvedModel = AI_CONFIG.model || modelOverride || 'gpt-4.1';
 
+  // Increase token limit for multi-supplier expedite emails
+  const hasMultipleSuppliers = ctx.supplierGroups && Object.keys(ctx.supplierGroups).length > 1;
+  const maxTokens = hasMultipleSuppliers ? 2048 : 1024;
+
   // Build messages array — if refinement is provided, append the previous
   // assistant output and the user's refinement instruction so the model can
   // iterate on its own output without losing the original request context.
@@ -262,7 +305,7 @@ async function generateHelper(helperType, runData, { model: modelOverride, conte
   const body = {
     model:       resolvedModel,
     messages,
-    max_tokens:  1024,
+    max_tokens:  maxTokens,
     temperature: 0.3,   // low temperature for factual, grounded output
   };
 

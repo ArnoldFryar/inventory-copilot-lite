@@ -2090,3 +2090,99 @@
 @media (max-width: 480px) {
   .toast { font-size: 12px; padding: 8px 14px; }
 }
+
+/* =========================================================
+   PART SELECTION — context panel + supplier sections
+   ======================================================= */
+
+/* Selection info badge in expedite context panel */
+.ai-ctx-selection-info {
+  margin-bottom: var(--space-3);
+}
+
+.ai-ctx-selection-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(20,184,166,0.10);
+  color: var(--brand-400);
+  border: 1px solid rgba(20,184,166,0.20);
+}
+
+/* Detected suppliers list */
+.ai-ctx-suppliers-detected {
+  margin-bottom: var(--space-3);
+}
+
+.ai-ctx-suppliers-detected .ai-ctx-label {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.ai-ctx-suppliers-list {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-200);
+  padding: 6px 10px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+/* Supplier-grouped result sections */
+.ai-supplier-section {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+  overflow: hidden;
+}
+
+.ai-supplier-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.ai-supplier-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink-100);
+}
+
+.ai-supplier-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface-3);
+  color: var(--ink-300);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease);
+}
+
+.ai-supplier-copy-btn:hover {
+  background: var(--brand-600);
+  color: var(--brand-100);
+  border-color: var(--brand-500);
+}
+
+.ai-supplier-body {
+  padding: 12px 14px;
+}
+
+.ai-supplier-preamble {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}

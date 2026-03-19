@@ -72,6 +72,7 @@
     currentProfile:     null,
     autoSaveInFlight:   false,
     billingConfigured:  false,
+    selectedParts:      new Set(),   // indices into allResults for part selection
   };
 
   // ── DOM element cache ─────────────────────────────────────────────────────
@@ -185,6 +186,7 @@
     exportBtn:        $('exportBtn'),
     exportUpgrade:    $('exportUpgrade'),
     tableLimitNotice: $('tableLimitNotice'),
+    selectAllParts:   $('selectAllParts'),
     planBadge:        $('planBadge'),
     upgradeToProBtn:  $('upgradeToProBtn'),
     manageBillingBtn: $('manageBillingBtn'),
@@ -228,6 +230,11 @@
     aiCtxUrgency:        $('aiCtxUrgency'),
     aiCtxTone:           $('aiCtxTone'),
     aiCtxSupplier:       $('aiCtxSupplier'),
+    aiCtxSupplierRow:    $('aiCtxSupplierRow'),
+    aiCtxSuppliersDetected: $('aiCtxSuppliersDetected'),
+    aiCtxSuppliersList:  $('aiCtxSuppliersList'),
+    aiCtxSelectionInfo:  $('aiCtxSelectionInfo'),
+    aiCtxSelectionBadge: $('aiCtxSelectionBadge'),
     aiCtxCompanyExp:     $('aiCtxCompanyExp'),
     aiCtxFocus:          $('aiCtxFocus'),
     aiCtxCompanyEsc:     $('aiCtxCompanyEsc'),

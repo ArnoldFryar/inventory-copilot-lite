@@ -90,7 +90,22 @@ const ALIASES = {
     'lead time days',
   ],
 
+  // ── Optional field — not required for analysis but enriches AI helpers ──
+  supplier: [
+    'supplier',
+    'supplier_name',  'supplier name',
+    'vendor',         'vendor_name',   'vendor name',
+    'vendor_code',    'vendor code',
+    'supplier_code',  'supplier code',
+    'source',         'source_name',   'source name',
+    'mfg',            'manufacturer',  'manufacturer_name',  'manufacturer name',
+  ],
+
 };
+
+// Fields that MUST be present for analysis to proceed.
+// 'supplier' is intentionally excluded — it's optional enrichment.
+const REQUIRED_FIELDS = ['part_number', 'on_hand', 'daily_usage', 'lead_time'];
 
 // ---------------------------------------------------------------------------
 // resolveHeaders
@@ -141,7 +156,7 @@ function resolveHeaders(rawKeys) {
       if (resolvedBy !== canonical) {
         aliases[canonical] = resolved;   // human-readable: the raw header
       }
-    } else {
+    } else if (REQUIRED_FIELDS.includes(canonical)) {
       missing.push(canonical);
     }
   }
