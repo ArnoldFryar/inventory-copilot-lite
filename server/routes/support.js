@@ -35,6 +35,19 @@ const smtpConfigured = Boolean(
 
 if (!smtpConfigured) {
   console.warn('[startup] SUPPORT_SMTP_HOST/USER/PASS not set — support emails will be logged only.');
+} else {
+  // Verify SMTP credentials at startup so misconfiguration surfaces immediately.
+  const t = nodemailer.createTransport({
+    host:   process.env.SUPPORT_SMTP_HOST,
+    port:   Number(process.env.SUPPORT_SMTP_PORT || 587),
+    secure: Number(process.env.SUPPORT_SMTP_PORT || 587) === 465,
+    auth: { user: process.env.SUPPORT_SMTP_USER, pass: process.env.SUPPORT_SMTP_PASS },
+    connectionTimeout: 10_000,
+    greetingTimeout:   10_000,
+  });
+  t.verify()
+    .then(() => console.log('[startup] SMTP transport verified OK'))
+    .catch(err => console.error('[startup] SMTP transport verification FAILED:', err.message));
 }
 
 // Lazy singleton transporter — created only when SMTP is configured.
@@ -66,6 +79,7 @@ const supportRateLimit = rateLimit({
   standardHeaders: true,
   legacyHeaders:  false,
   message: { error: 'Too many requests. Please wait before trying again.' },
+  validate: { xForwardedForHeader: false },
 });
 
 // ---------------------------------------------------------------------------

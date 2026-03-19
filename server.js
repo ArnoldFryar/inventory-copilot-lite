@@ -19,6 +19,15 @@ const app  = express();
 const PORT = process.env.PORT || 3000;
 
 // ---------------------------------------------------------------------------
+// Trust proxy — Railway (and most PaaS hosts) terminate TLS at a reverse
+// proxy that injects X-Forwarded-For / X-Forwarded-Proto headers.
+// Without this, express-rate-limit v7+ throws ERR_ERL_UNEXPECTED_X_FORWARDED_FOR
+// and req.ip returns the proxy IP instead of the real client IP.
+// Value 1 = trust the first (nearest) proxy hop.
+// ---------------------------------------------------------------------------
+app.set('trust proxy', 1);
+
+// ---------------------------------------------------------------------------
 // Security headers â€” applied to every response, including static files.
 // Must be registered BEFORE express.static so headers run for all requests.
 // ---------------------------------------------------------------------------
@@ -56,7 +65,7 @@ app.use((_req, res, next) => {
 // Registered BEFORE express.static so this handler wins for GET /.
 //
 // Uses req.headers.host directly (strips port) instead of req.hostname so
-// the result is proxy-safe on Railway without needing trust proxy config.
+// the result is consistent regardless of trust proxy depth.
 //
 //   myopscopilot.com         → ops.html  (marketing landing page)
 //   www.myopscopilot.com     → 301 redirect → https://myopscopilot.com/

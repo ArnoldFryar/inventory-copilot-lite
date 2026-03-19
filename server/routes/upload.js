@@ -64,6 +64,7 @@ const uploadLimiter = rateLimit({
   max:             cfg.UPLOAD_RATE_MAX,
   standardHeaders: true,
   legacyHeaders:   false,
+  validate: { xForwardedForHeader: false },
   handler: (_req, res) => {
     res.status(429).json({
       error:
