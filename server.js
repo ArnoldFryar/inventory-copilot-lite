@@ -46,7 +46,7 @@ app.use((_req, res, next) => {
 
   res.setHeader(
     'Content-Security-Policy',
-    `default-src 'self'; script-src ${scriptSrc}; style-src ${styleSrc}; font-src ${fontSrc}; connect-src ${connectSrc}; object-src 'none'; frame-ancestors 'none'`
+    `default-src 'self'; script-src ${scriptSrc}; style-src ${styleSrc}; font-src ${fontSrc}; img-src 'self' data:; connect-src ${connectSrc}; object-src 'none'; frame-ancestors 'none'`
   );
   next();
 });

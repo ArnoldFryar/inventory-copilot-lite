@@ -16,8 +16,14 @@
   // Fire-and-forget POST to /api/events.
   // Fails silently — never blocks the UI or surfaces errors to users.
   App.track = function (eventName, properties) {
+    if (!eventName || typeof eventName !== 'string') {
+      console.warn('[track] skipped: missing event name', eventName);
+      return;
+    }
     try {
-      var body = JSON.stringify({ event: eventName, properties: properties || {} });
+      var payload = { event: eventName, properties: (properties && typeof properties === 'object') ? properties : {} };
+      console.debug('[track]', eventName, payload.properties);
+      var body    = JSON.stringify(payload);
       var headers = { 'Content-Type': 'application/json' };
       // Attach auth token when the user is signed in
       if (window.authModule && typeof window.authModule.getToken === 'function') {

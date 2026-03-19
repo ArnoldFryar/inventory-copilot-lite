@@ -18,8 +18,31 @@ const { supabaseAdmin, verifyToken } = require('../../supabaseClient');
 // Allowlist of event names accepted from the client.
 // Any unrecognised name is rejected with 400 to prevent log spam.
 const VALID_EVENTS = new Set([
+  // Paywall
   'helper_access_attempt',
   'upgrade_btn_clicked',
+  // AI helpers
+  'ai_helper_used',
+  'ai_helper_error',
+  // Upload / analysis
+  'upload_started',
+  'upload_failed',
+  'sample_loaded',
+  'sample_csv_downloaded',
+  'demo_loaded',
+  'analysis_completed',
+  // Export
+  'export_csv_clicked',
+  'export_comparison_csv_clicked',
+  'print_clicked',
+  // History
+  'run_saved',
+  'run_auto_saved',
+  'history_run_loaded',
+  'history_run_deleted',
+  'history_compare_clicked',
+  // Comparison
+  'comparison_shown',
 ]);
 
 router.post('/api/events', async (req, res) => {
