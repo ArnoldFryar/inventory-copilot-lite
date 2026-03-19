@@ -7,77 +7,43 @@
 //   Body: { name, email, subject, message, metadata? }
 //   Auth: optional — metadata.userEmail is passed from the client if signed in.
 //
-// Sends a formatted support email to support@myopscopilot.com via SMTP.
-// Falls back to console.log in development when SMTP is not configured.
+// Sends a formatted support email via SendGrid HTTP Web API (HTTPS/443).
+// Falls back to console.log in development when API key is not configured.
 //
-// Required env vars (SMTP):
-//   SUPPORT_SMTP_HOST   — e.g. smtp.sendgrid.net
-//   SUPPORT_SMTP_PORT   — default 587
-//   SUPPORT_SMTP_USER   — SMTP auth username
-//   SUPPORT_SMTP_PASS   — SMTP auth password / API key
-//   SUPPORT_EMAIL_FROM  — sender address, e.g. noreply@myopscopilot.com
-//                         defaults to SUPPORT_SMTP_USER
+// Required env vars:
+//   SUPPORT_SMTP_PASS   — SendGrid API key (starts with SG.)
+//   SUPPORT_EMAIL_FROM  — verified sender address, e.g. noreply@myopscopilot.com
+//   SUPPORT_EMAIL_TO    — inbox that receives support requests (optional,
+//                         defaults to support@myopscopilot.com)
+//
+// NOTE: nodemailer SMTP was removed because Railway blocks outbound TCP 587.
+//       @sendgrid/mail uses HTTPS (port 443) which is always available.
 // ---------------------------------------------------------------------------
 
-const express    = require('express');
-const rateLimit  = require('express-rate-limit');
-const nodemailer = require('nodemailer');
-const router     = express.Router();
+const express   = require('express');
+const rateLimit = require('express-rate-limit');
+const sgMail    = require('@sendgrid/mail');
+const router    = express.Router();
 
-const SMTP_TIMEOUT_MS = 15_000;   // 15-second hard cap on SMTP send
 const DEST_EMAIL = (process.env.SUPPORT_EMAIL_TO || 'support@myopscopilot.com').trim();
 
-const smtpConfigured = Boolean(
-  process.env.SUPPORT_SMTP_HOST &&
-  process.env.SUPPORT_SMTP_USER &&
-  process.env.SUPPORT_SMTP_PASS
-);
+const sgConfigured = Boolean(process.env.SUPPORT_SMTP_PASS);
 
-if (!smtpConfigured) {
-  console.warn('[startup] SUPPORT_SMTP_HOST/USER/PASS not set — support emails will be logged only.');
+if (!sgConfigured) {
+  console.warn('[startup] SUPPORT_SMTP_PASS (SendGrid API key) not set — support emails will be logged only.');
 } else {
-  // Verify SMTP credentials at startup so misconfiguration surfaces immediately.
-  const t = nodemailer.createTransport({
-    host:   process.env.SUPPORT_SMTP_HOST,
-    port:   Number(process.env.SUPPORT_SMTP_PORT || 587),
-    secure: Number(process.env.SUPPORT_SMTP_PORT || 587) === 465,
-    auth: { user: process.env.SUPPORT_SMTP_USER, pass: process.env.SUPPORT_SMTP_PASS },
-    connectionTimeout: 10_000,
-    greetingTimeout:   10_000,
-  });
-  t.verify()
-    .then(() => console.log('[startup] SMTP transport verified OK'))
-    .catch(err => console.error('[startup] SMTP transport verification FAILED:', err.message));
-}
-
-// Lazy singleton transporter — created only when SMTP is configured.
-let _transporter = null;
-function getTransporter() {
-  if (_transporter) return _transporter;
-  _transporter = nodemailer.createTransport({
-    host:   process.env.SUPPORT_SMTP_HOST,
-    port:   Number(process.env.SUPPORT_SMTP_PORT || 587),
-    secure: Number(process.env.SUPPORT_SMTP_PORT || 587) === 465,
-    auth: {
-      user: process.env.SUPPORT_SMTP_USER,
-      pass: process.env.SUPPORT_SMTP_PASS,
-    },
-    connectionTimeout: 10_000,
-    greetingTimeout:   10_000,
-    socketTimeout:     15_000,
-  });
-  return _transporter;
+  sgMail.setApiKey(process.env.SUPPORT_SMTP_PASS);
+  console.log('[startup] SendGrid HTTP API configured — key prefix:', process.env.SUPPORT_SMTP_PASS.slice(0, 6));
 }
 
 // ---------------------------------------------------------------------------
 // Rate limit — 5 submissions per IP per 15 minutes.
-// Tighter than the default AI route limit to discourage spam.
 // ---------------------------------------------------------------------------
 const supportRateLimit = rateLimit({
-  windowMs:       15 * 60 * 1000,
-  max:            5,
+  windowMs:        15 * 60 * 1000,
+  max:             5,
   standardHeaders: true,
-  legacyHeaders:  false,
+  legacyHeaders:   false,
   message: { error: 'Too many requests. Please wait before trying again.' },
   validate: { xForwardedForHeader: false },
 });
@@ -103,22 +69,12 @@ router.post('/api/support', supportRateLimit, async (req, res) => {
   try {
     const { name, email, subject, message, metadata } = req.body || {};
 
-    // ── Debug: payload presence ─────────────────────────────────────────
+    // ── Payload presence log ────────────────────────────────────────────
     console.log('[support] payload:', {
       name:    name    ? 'present' : 'MISSING',
       email:   email   ? 'present' : 'MISSING',
       subject: subject ? 'present' : 'MISSING',
       message: message ? 'present' : 'MISSING',
-    });
-
-    // ── Debug: SMTP env var presence ────────────────────────────────────
-    console.log('[support] SMTP config:', {
-      SUPPORT_SMTP_HOST:  process.env.SUPPORT_SMTP_HOST  ? 'set' : 'MISSING',
-      SUPPORT_SMTP_PORT:  process.env.SUPPORT_SMTP_PORT  ? 'set' : 'MISSING',
-      SUPPORT_SMTP_USER:  process.env.SUPPORT_SMTP_USER  ? 'set' : 'MISSING',
-      SUPPORT_SMTP_PASS:  process.env.SUPPORT_SMTP_PASS  ? 'set' : 'MISSING',
-      SUPPORT_EMAIL_FROM: process.env.SUPPORT_EMAIL_FROM ? 'set' : 'MISSING',
-      smtpConfigured:     smtpConfigured,
     });
 
     // ── Required field validation ──────────────────────────────────────
@@ -133,12 +89,10 @@ router.post('/api/support', supportRateLimit, async (req, res) => {
       return res.status(400).json({ error: `Missing required fields: ${missing.join(', ')}.` });
     }
 
-    // ── Email format ───────────────────────────────────────────────────
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       return res.status(400).json({ error: 'Invalid email address.' });
     }
 
-    // ── Length limits ──────────────────────────────────────────────────
     if (name.length    > 120)  return res.status(400).json({ error: 'Name is too long (max 120 characters).' });
     if (email.length   > 254)  return res.status(400).json({ error: 'Email address is too long.' });
     if (subject.length > 200)  return res.status(400).json({ error: 'Subject is too long (max 200 characters).' });
@@ -146,28 +100,27 @@ router.post('/api/support', supportRateLimit, async (req, res) => {
 
     console.log('[support] payload validated');
 
-  // ── Sanitise inputs ───────────────────────────────────────────────────
-  const fromName    = name.trim();
-  const fromEmail   = email.trim().toLowerCase();
-  const subjectText = subject.trim();
-  const bodyText    = message.trim();
-  const timestamp   = new Date().toISOString();
+    // ── Sanitise inputs ─────────────────────────────────────────────────
+    const fromName    = name.trim();
+    const fromEmail   = email.trim().toLowerCase();
+    const subjectText = subject.trim();
+    const bodyText    = message.trim();
+    const timestamp   = new Date().toISOString();
 
-  // Optional metadata — never trusted for routing, display-only
-  const meta      = (metadata && typeof metadata === 'object' && !Array.isArray(metadata)) ? metadata : {};
-  const pageUrl   = typeof meta.pageUrl   === 'string' ? meta.pageUrl.slice(0, 200)   : '';
-  const userEmail = typeof meta.userEmail === 'string' ? meta.userEmail.slice(0, 254) : '';
+    const meta      = (metadata && typeof metadata === 'object' && !Array.isArray(metadata)) ? metadata : {};
+    const pageUrl   = typeof meta.pageUrl   === 'string' ? meta.pageUrl.slice(0, 200)   : '';
+    const userEmail = typeof meta.userEmail === 'string' ? meta.userEmail.slice(0, 254) : '';
 
-  // ── Build email content ───────────────────────────────────────────────
-  const subjectLine = `[Support] ${subjectText}`;
+    // ── Build email content ─────────────────────────────────────────────
+    const subjectLine = `[Support] ${subjectText}`;
 
-  const metaRows = [
-    `<tr><td style="padding:4px 0;font-size:12px;color:#475569;width:130px;vertical-align:top;">Timestamp</td><td style="padding:4px 0;font-size:12px;color:#94a3b8;">${esc(timestamp)}</td></tr>`,
-    pageUrl   ? `<tr><td style="padding:4px 0;font-size:12px;color:#475569;vertical-align:top;">Page URL</td><td style="padding:4px 0;font-size:12px;color:#94a3b8;">${esc(pageUrl)}</td></tr>` : '',
-    userEmail ? `<tr><td style="padding:4px 0;font-size:12px;color:#475569;vertical-align:top;">User Account</td><td style="padding:4px 0;font-size:12px;color:#94a3b8;">${esc(userEmail)}</td></tr>` : '',
-  ].filter(Boolean).join('\n');
+    const metaRows = [
+      `<tr><td style="padding:4px 0;font-size:12px;color:#475569;width:130px;vertical-align:top;">Timestamp</td><td style="padding:4px 0;font-size:12px;color:#94a3b8;">${esc(timestamp)}</td></tr>`,
+      pageUrl   ? `<tr><td style="padding:4px 0;font-size:12px;color:#475569;vertical-align:top;">Page URL</td><td style="padding:4px 0;font-size:12px;color:#94a3b8;">${esc(pageUrl)}</td></tr>` : '',
+      userEmail ? `<tr><td style="padding:4px 0;font-size:12px;color:#475569;vertical-align:top;">User Account</td><td style="padding:4px 0;font-size:12px;color:#94a3b8;">${esc(userEmail)}</td></tr>` : '',
+    ].filter(Boolean).join('\n');
 
-  const htmlBody = `<!DOCTYPE html>
+    const htmlBody = `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8" /></head>
 <body style="margin:0;padding:24px;background:#080c18;font-family:Inter,Helvetica,Arial,sans-serif;">
@@ -208,68 +161,57 @@ router.post('/api/support', supportRateLimit, async (req, res) => {
 </body>
 </html>`;
 
-  const textBody = [
-    'SUPPORT REQUEST — OpsCopilot',
-    '',
-    `From:    ${fromName}`,
-    `Email:   ${fromEmail}`,
-    `Subject: ${subjectText}`,
-    '',
-    '--- Message ---',
-    bodyText,
-    '',
-    '--- Metadata ---',
-    `Timestamp:    ${timestamp}`,
-    pageUrl   ? `Page URL:     ${pageUrl}`   : null,
-    userEmail ? `User Account: ${userEmail}` : null,
-  ].filter(line => line !== null).join('\n');
+    const textBody = [
+      'SUPPORT REQUEST — OpsCopilot',
+      '',
+      `From:    ${fromName}`,
+      `Email:   ${fromEmail}`,
+      `Subject: ${subjectText}`,
+      '',
+      '--- Message ---',
+      bodyText,
+      '',
+      '--- Metadata ---',
+      `Timestamp:    ${timestamp}`,
+      pageUrl   ? `Page URL:     ${pageUrl}`   : null,
+      userEmail ? `User Account: ${userEmail}` : null,
+    ].filter(line => line !== null).join('\n');
 
-  // ── Send or log ─────────────────────────────────────────────────────────
-  console.log('[support] smtp config validated — smtpConfigured:', smtpConfigured);
+    // ── Send or log ─────────────────────────────────────────────────────
+    console.log('[support] sgConfigured:', sgConfigured);
 
-  if (!smtpConfigured) {
-    console.log('[support] SMTP not configured — logging message (dev mode)');
-    console.log(textBody);
-    console.log('[support] response sent — 200 ok:true (dev)');
-    return res.json({ ok: true });
-  }
+    if (!sgConfigured) {
+      console.log('[support] SendGrid not configured — logging message (dev mode)');
+      console.log(textBody);
+      console.log('[support] response sent — 200 ok:true (dev)');
+      return res.json({ ok: true });
+    }
 
-  try {
-    console.log('[support] sendMail starting →', DEST_EMAIL);
-    const fromAddress = (process.env.SUPPORT_EMAIL_FROM || process.env.SUPPORT_SMTP_USER).trim();
-    const mailOpts = {
-      from:    `"${fromName.replace(/"/g, '')}" <${fromAddress}>`,
-      replyTo: `"${fromName.replace(/"/g, '')}" <${fromEmail}>`,
+    const fromAddress = (process.env.SUPPORT_EMAIL_FROM || '').trim() || `noreply@myopscopilot.com`;
+
+    const msg = {
       to:      DEST_EMAIL,
+      from:    { name: 'OpsCopilot Support', email: fromAddress },
+      replyTo: { name: fromName, email: fromEmail },
       subject: subjectLine,
       text:    textBody,
       html:    htmlBody,
     };
 
-    const smtpTimeout = new Promise(function (_, reject) {
-      setTimeout(function () { reject(new Error('SMTP_TIMEOUT')); }, SMTP_TIMEOUT_MS);
-    });
-
-    await Promise.race([getTransporter().sendMail(mailOpts), smtpTimeout]);
+    console.log('[support] sendMail starting → SendGrid HTTP API →', DEST_EMAIL);
+    await sgMail.send(msg);
 
     console.log('[support] sendMail success — from:', fromEmail, 'subject:', subjectText);
     console.log('[support] response sent — 200 ok:true');
     return res.json({ ok: true });
-  } catch (err) {
-    if (err.message === 'SMTP_TIMEOUT') {
-      console.error('[support] sendMail timeout after ' + SMTP_TIMEOUT_MS + 'ms');
-    } else {
-      console.error('[support] sendMail failure:', err.message);
-    }
-    console.log('[support] response sent — 502 ok:false');
-    return res.status(502).json({ ok: false, error: 'Support email failed to send' });
-  }
 
-  } catch (outerErr) {
-    // Top-level catch — prevents Express 4 async handler from hanging
-    console.error('[support] unhandled route error:', outerErr);
+  } catch (err) {
+    const code    = err.code || (err.response && err.response.status) || '';
+    const sgBody  = err.response && err.response.body ? JSON.stringify(err.response.body) : '';
+    console.error('[support] sendMail failure — code:', code, 'message:', err.message, sgBody ? 'body:' + sgBody : '');
+    console.log('[support] response sent — 502 ok:false');
     if (!res.headersSent) {
-      res.status(500).json({ error: 'An unexpected error occurred. Please try again.' });
+      res.status(502).json({ ok: false, error: 'Support email failed to send' });
     }
   }
 });
