@@ -194,27 +194,46 @@
     var appUser  = window.App && window.App.state && window.App.state.currentUser;
     if (appUser && appUser.email) metadata.userEmail = appUser.email;
 
-    fetch('/api/support', {
+    var url = '/api/support';
+    console.debug('[support] submit start \u2192', url);
+
+    fetch(url, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ name: name, email: email, subject: subject, message: message, metadata: metadata }),
     })
     .then(function (res) {
-      return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+      console.debug('[support] response status:', res.status, res.statusText);
+      return res.text().then(function (raw) {
+        console.debug('[support] response body:', raw.slice(0, 300));
+        var data;
+        try { data = JSON.parse(raw); } catch (_) { data = { error: 'Server returned an invalid response (status ' + res.status + ').' }; }
+        return { ok: res.ok, data: data };
+      });
     })
     .then(function (result) {
-      if (result.ok && result.data.ok) {
+      if (result.ok && result.data && result.data.ok) {
+        console.debug('[support] success');
         showView('success');
       } else {
-        submitBtn.disabled    = false;
-        submitBtn.textContent = 'Send message';
-        setError(result.data.error || 'Something went wrong. Please try again.');
+        var msg = (result.data && result.data.error) || 'Something went wrong. Please try again.';
+        console.warn('[support] server error:', msg);
+        setError(msg);
       }
     })
-    .catch(function () {
-      submitBtn.disabled    = false;
-      submitBtn.textContent = 'Send message';
+    .catch(function (err) {
+      console.error('[support] fetch error:', err);
       setError('Network error. Please check your connection and try again.');
+    })
+    .finally(function () {
+      // Always reset loading state — prevents permanent "Sending…" lock.
+      // Skip reset only when the success view is visible (form is hidden).
+      var successVisible = false;
+      try { successVisible = !document.getElementById('supportSuccessView').classList.contains('hidden'); } catch (_) {}
+      if (submitBtn && !successVisible) {
+        submitBtn.disabled    = false;
+        submitBtn.textContent = 'Send message';
+      }
     });
   }
 

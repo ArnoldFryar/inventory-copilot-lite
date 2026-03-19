@@ -80,29 +80,51 @@ function esc(str) {
 // POST /api/support
 // ---------------------------------------------------------------------------
 router.post('/api/support', supportRateLimit, async (req, res) => {
-  const { name, email, subject, message, metadata } = req.body || {};
+  console.log('[support] POST /api/support hit — method:', req.method);
 
-  // ── Required field validation ──────────────────────────────────────────
-  const missing = [];
-  if (!name    || typeof name    !== 'string' || !name.trim())    missing.push('name');
-  if (!email   || typeof email   !== 'string' || !email.trim())   missing.push('email');
-  if (!subject || typeof subject !== 'string' || !subject.trim()) missing.push('subject');
-  if (!message || typeof message !== 'string' || !message.trim()) missing.push('message');
+  try {
+    const { name, email, subject, message, metadata } = req.body || {};
 
-  if (missing.length) {
-    return res.status(400).json({ error: `Missing required fields: ${missing.join(', ')}.` });
-  }
+    // ── Debug: payload presence ─────────────────────────────────────────
+    console.log('[support] payload:', {
+      name:    name    ? 'present' : 'MISSING',
+      email:   email   ? 'present' : 'MISSING',
+      subject: subject ? 'present' : 'MISSING',
+      message: message ? 'present' : 'MISSING',
+    });
 
-  // ── Email format ──────────────────────────────────────────────────────
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-    return res.status(400).json({ error: 'Invalid email address.' });
-  }
+    // ── Debug: SMTP env var presence ────────────────────────────────────
+    console.log('[support] SMTP config:', {
+      SUPPORT_SMTP_HOST:  process.env.SUPPORT_SMTP_HOST  ? 'set' : 'MISSING',
+      SUPPORT_SMTP_PORT:  process.env.SUPPORT_SMTP_PORT  ? 'set' : 'MISSING',
+      SUPPORT_SMTP_USER:  process.env.SUPPORT_SMTP_USER  ? 'set' : 'MISSING',
+      SUPPORT_SMTP_PASS:  process.env.SUPPORT_SMTP_PASS  ? 'set' : 'MISSING',
+      SUPPORT_EMAIL_FROM: process.env.SUPPORT_EMAIL_FROM ? 'set' : 'MISSING',
+      smtpConfigured:     smtpConfigured,
+    });
 
-  // ── Length limits ─────────────────────────────────────────────────────
-  if (name.length    > 120)  return res.status(400).json({ error: 'Name is too long (max 120 characters).' });
-  if (email.length   > 254)  return res.status(400).json({ error: 'Email address is too long.' });
-  if (subject.length > 200)  return res.status(400).json({ error: 'Subject is too long (max 200 characters).' });
-  if (message.length > 4000) return res.status(400).json({ error: 'Message is too long (max 4000 characters).' });
+    // ── Required field validation ──────────────────────────────────────
+    const missing = [];
+    if (!name    || typeof name    !== 'string' || !name.trim())    missing.push('name');
+    if (!email   || typeof email   !== 'string' || !email.trim())   missing.push('email');
+    if (!subject || typeof subject !== 'string' || !subject.trim()) missing.push('subject');
+    if (!message || typeof message !== 'string' || !message.trim()) missing.push('message');
+
+    if (missing.length) {
+      console.log('[support] validation failed — missing:', missing);
+      return res.status(400).json({ error: `Missing required fields: ${missing.join(', ')}.` });
+    }
+
+    // ── Email format ───────────────────────────────────────────────────
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      return res.status(400).json({ error: 'Invalid email address.' });
+    }
+
+    // ── Length limits ──────────────────────────────────────────────────
+    if (name.length    > 120)  return res.status(400).json({ error: 'Name is too long (max 120 characters).' });
+    if (email.length   > 254)  return res.status(400).json({ error: 'Email address is too long.' });
+    if (subject.length > 200)  return res.status(400).json({ error: 'Subject is too long (max 200 characters).' });
+    if (message.length > 4000) return res.status(400).json({ error: 'Message is too long (max 4000 characters).' });
 
   // ── Sanitise inputs ───────────────────────────────────────────────────
   const fromName    = name.trim();
@@ -184,12 +206,13 @@ router.post('/api/support', supportRateLimit, async (req, res) => {
 
   // ── Send or log ─────────────────────────────────────────────────────────
   if (!smtpConfigured) {
-    console.log('[support] SMTP not configured — support message received (dev mode):');
+    console.log('[support] SMTP not configured — logging message (dev mode)');
     console.log(textBody);
     return res.json({ ok: true });
   }
 
   try {
+    console.log('[support] Sending email via SMTP to', DEST_EMAIL);
     const fromAddress = (process.env.SUPPORT_EMAIL_FROM || process.env.SUPPORT_SMTP_USER).trim();
     await getTransporter().sendMail({
       from:    `"${fromName.replace(/"/g, '')}" <${fromAddress}>`,
@@ -199,11 +222,19 @@ router.post('/api/support', supportRateLimit, async (req, res) => {
       text:    textBody,
       html:    htmlBody,
     });
-    console.log(`[support] Email sent from ${fromEmail} — subject: ${subjectText}`);
-    res.json({ ok: true });
+    console.log(`[support] Email sent OK from ${fromEmail} — subject: ${subjectText}`);
+    return res.json({ ok: true });
   } catch (err) {
     console.error('[support] sendMail failed:', err.message);
-    res.status(500).json({ error: 'Failed to send your message. Please try again shortly.' });
+    return res.status(500).json({ error: 'Failed to send your message. Please try again shortly.' });
+  }
+
+  } catch (outerErr) {
+    // Top-level catch — prevents Express 4 async handler from hanging
+    console.error('[support] unhandled route error:', outerErr);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'An unexpected error occurred. Please try again.' });
+    }
   }
 });
 
