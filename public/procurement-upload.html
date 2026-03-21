@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpsCopilot · Upload PO Export</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+  <div class="app-layout">
+
+    <!-- ── Sidebar (rendered by sidebarRenderer.js) ──────────────────── -->
+    <nav id="appSidebar" class="app-sidebar" aria-label="Application navigation"></nav>
+
+    <!-- ── App body ────────────────────────────────────────────────────── -->
+    <div class="app-body">
+
+      <header class="app-header">
+        <div class="app-header-inner">
+          <a href="/" class="header-logo" aria-label="OpsCopilot home">
+            <img src="/assets/logo/opscopilot-mark-gradient.svg" class="header-logo-mark" width="24" height="24" alt="" aria-hidden="true" draggable="false">
+            <span class="header-logo-name">OpsCopilot</span>
+          </a>
+          <div class="header-logo-divider" aria-hidden="true"></div>
+          <div class="app-header-text">
+            <h1>Upload PO Export</h1>
+          </div>
+          <span class="header-method-pill">Early Access</span>
+          <div class="header-right-group">
+            <span id="planBadge" class="plan-badge hidden"></span>
+            <div id="accountMenu" class="account-menu hidden">
+              <span id="accountEmail" class="account-email"></span>
+              <button id="accountAvatarBtn" class="account-avatar-btn" type="button" aria-label="Account menu" aria-expanded="false" aria-haspopup="true">
+                <span id="accountInitial" class="account-initial" aria-hidden="true"></span>
+              </button>
+              <div id="accountDropdown" class="account-dropdown hidden" role="menu">
+                <span class="account-dropdown-email" id="accountDropdownEmail"></span>
+                <hr class="account-dropdown-sep" />
+                <button id="signOutBtn" class="account-dropdown-item" type="button" role="menuitem">Sign out</button>
+              </div>
+            </div>
+            <button id="signInBtn" class="sign-in-btn hidden" type="button">Sign in</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="app-main">
+
+        <!-- ── Upload PO section ───────────────────────────────────────── -->
+        <section class="upload-section card">
+          <div class="hero-headline">
+            <span class="hero-eyebrow">Procurement Upload</span>
+            <h2 class="hero-title">Upload your purchase order&nbsp;export</h2>
+            <p class="hero-subtext">PO data will be analysed for spend patterns, delivery risk, and consolidation&nbsp;opportunities.</p>
+          </div>
+
+          <div class="upload-engine-wrapper">
+            <div class="upload-engine-header">
+              <span class="upload-step-badge">Step 1</span>
+              <h2>Select your PO export file</h2>
+            </div>
+            <p class="context-block">
+              Upload a CSV of purchase orders. Columns like PO Number, Supplier, Line Amount, and Delivery Date are auto-detected.
+            </p>
+
+            <form id="poUploadForm" enctype="multipart/form-data">
+              <label class="file-label" for="pofile">
+                <div class="file-label-ring" aria-hidden="true">
+                  <span data-icon="upload" data-icon-size="28" data-icon-class="file-label-icon" aria-hidden="true"></span>
+                </div>
+                <span id="poFileLabel" class="file-label-text">Choose a PO CSV file&hellip;</span>
+                <span class="file-label-hint">or drag and drop &middot; .csv up to 5&thinsp;MB</span>
+                <input type="file" id="pofile" name="pofile" accept=".csv" disabled />
+              </label>
+              <button type="submit" id="poSubmitBtn" class="analyze-cta" disabled>
+                <span data-icon="play" data-icon-size="16" data-icon-class="analyze-cta-icon" aria-hidden="true"></span>
+                <span id="poSubmitLabel">Analyse POs</span>
+              </button>
+            </form>
+
+            <div class="procurement-status-line" style="margin-top: var(--space-4);">
+              <span data-icon="info" data-icon-size="13" data-icon-class="procurement-status-icon"></span>
+              PO ingestion is not yet active. This page is a preview of the upcoming upload experience.
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <footer class="app-footer">
+        &copy; 2026 OpsCopilot &middot; Procurement Copilot
+      </footer>
+
+    </div><!-- /.app-body -->
+  </div><!-- /.app-layout -->
+
+  <script src="/js/sidebarRenderer.js"></script>
+  <script src="/analytics.js"></script>
+  <script src="/auth.js"></script>
+  <script src="/js/Icon.js"></script>
+  <script src="/js/supportModal.js"></script>
+  <script src="/js/procurement/procurementApp.js"></script>
+
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+</body>
+</html>

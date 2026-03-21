@@ -154,6 +154,14 @@
       dom.signInBtn.classList.remove('hidden');
       closeAccountDropdown();
       if (dom.saveRunBtn) dom.saveRunBtn.classList.add('hidden');
+      // Auto-open sign-in modal when redirected from another page
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('signin') === '1') {
+        setAuthMode('signin');
+        dom.authModal.classList.remove('hidden');
+        dom.authEmail.focus();
+        history.replaceState(null, '', window.location.pathname);
+      }
     }
   }
 

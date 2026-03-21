@@ -196,3 +196,23 @@ ON CONFLICT (id) DO NOTHING;
 UPDATE profiles
 SET is_admin = true
 WHERE email = 'breeze0125@gmail.com';
+
+-- ============================================================================
+-- Migration: add module_key to analysis_runs
+--
+-- Allows the history table to store runs from any OpsCopilot product module
+-- (inventory, procurement, …) without a separate table per module.
+-- Existing rows default to 'inventory' — no data loss, fully backwards-
+-- compatible.  The CHECK constraint mirrors the VALID_MODULES set in
+-- runController.js; update both together when adding a module.
+--
+-- Run this section independently if the base schema was already applied.
+-- ============================================================================
+
+ALTER TABLE analysis_runs
+  ADD COLUMN IF NOT EXISTS module_key text NOT NULL DEFAULT 'inventory'
+    CHECK (module_key IN ('inventory', 'procurement'));
+
+-- Index supports history list filtered by module (e.g. show only procurement runs).
+CREATE INDEX IF NOT EXISTS idx_runs_user_module
+  ON analysis_runs (user_id, module_key, uploaded_at DESC);

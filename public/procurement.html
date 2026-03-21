@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpsCopilot · Procurement Copilot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+  <div class="app-layout">
+
+    <!-- ── Sidebar (rendered by sidebarRenderer.js) ──────────────────── -->
+    <nav id="appSidebar" class="app-sidebar" aria-label="Application navigation"></nav>
+
+    <!-- ── App body (topbar + content) ─────────────────────────────────── -->
+    <div class="app-body">
+
+      <header class="app-header">
+        <div class="app-header-inner">
+          <a href="/" class="header-logo" aria-label="OpsCopilot home">
+            <img src="/assets/logo/opscopilot-mark-gradient.svg" class="header-logo-mark" width="24" height="24" alt="" aria-hidden="true" draggable="false">
+            <span class="header-logo-name">OpsCopilot</span>
+          </a>
+          <div class="header-logo-divider" aria-hidden="true"></div>
+          <div class="app-header-text">
+            <h1>Procurement Copilot</h1>
+          </div>
+          <span class="header-method-pill">Early Access</span>
+          <!-- Right-aligned cluster -->
+          <div class="header-right-group">
+            <span id="planBadge" class="plan-badge hidden"></span>
+            <div id="accountMenu" class="account-menu hidden">
+              <span id="accountEmail" class="account-email"></span>
+              <button id="accountAvatarBtn" class="account-avatar-btn" type="button" aria-label="Account menu" aria-expanded="false" aria-haspopup="true">
+                <span id="accountInitial" class="account-initial" aria-hidden="true"></span>
+              </button>
+              <div id="accountDropdown" class="account-dropdown hidden" role="menu">
+                <span class="account-dropdown-email" id="accountDropdownEmail"></span>
+                <hr class="account-dropdown-sep" />
+                <button id="signOutBtn" class="account-dropdown-item" type="button" role="menuitem">Sign out</button>
+              </div>
+            </div>
+            <button id="signInBtn" class="sign-in-btn hidden" type="button">Sign in</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="app-main">
+
+        <!-- ── Upload CTA banner ─────────────────────────────────────────── -->
+        <section class="pco-upload-banner card">
+          <div class="pco-upload-banner-content">
+            <div class="pco-upload-banner-text">
+              <span class="hero-eyebrow">Procurement Copilot</span>
+              <h2 class="pco-upload-title">Your purchasing command centre</h2>
+              <p class="pco-upload-sub">Upload an open PO report to surface delivery risk, supplier flags, and spend exposure &mdash; scored in&nbsp;seconds.</p>
+              <div class="pco-feature-strip">
+                <span class="pco-feature-item">
+                  <span data-icon="check" data-icon-size="11" aria-hidden="true"></span>
+                  Supplier risk detection
+                </span>
+                <span class="pco-feature-item">
+                  <span data-icon="check" data-icon-size="11" aria-hidden="true"></span>
+                  Past-due &amp; due-soon flags
+                </span>
+                <span class="pco-feature-item">
+                  <span data-icon="check" data-icon-size="11" aria-hidden="true"></span>
+                  Dollar exposure by supplier
+                </span>
+              </div>
+            </div>
+            <div class="pco-upload-banner-actions">
+              <a href="/procurement/upload" class="procurement-cta-primary pco-cta-lg">
+                <span data-icon="upload" data-icon-size="18" data-icon-class="procurement-cta-icon" aria-hidden="true"></span>
+                Upload PO Export
+              </a>
+              <p class="pco-cta-hint">CSV from any ERP &middot; Results in under 3&thinsp;s</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── KPI Grid ──────────────────────────────────────────────────── -->
+        <div class="pco-kpi-grid" role="list" aria-label="Key procurement metrics">
+
+          <div class="pco-kpi-card pco-kpi--neutral" role="listitem">
+            <div class="pco-kpi-top">
+              <span class="pco-kpi-label">Open PO Lines</span>
+              <span class="pco-kpi-icon-wrap" aria-hidden="true">
+                <span data-icon="table" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
+              </span>
+            </div>
+            <div class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
+            <div class="pco-kpi-desc">Active lines across all suppliers</div>
+          </div>
+
+          <div class="pco-kpi-card pco-kpi--danger" role="listitem">
+            <div class="pco-kpi-top">
+              <span class="pco-kpi-label">Past Due Lines</span>
+              <span class="pco-kpi-icon-wrap" aria-hidden="true">
+                <span data-icon="alert" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
+              </span>
+            </div>
+            <div class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
+            <div class="pco-kpi-desc">Delivery date already passed</div>
+          </div>
+
+          <div class="pco-kpi-card pco-kpi--warning" role="listitem">
+            <div class="pco-kpi-top">
+              <span class="pco-kpi-label">Due Soon</span>
+              <span class="pco-kpi-icon-wrap" aria-hidden="true">
+                <span data-icon="summary" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
+              </span>
+            </div>
+            <div class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
+            <div class="pco-kpi-desc">Due within 7 days</div>
+          </div>
+
+          <div class="pco-kpi-card pco-kpi--alert" role="listitem">
+            <div class="pco-kpi-top">
+              <span class="pco-kpi-label">High Risk Lines</span>
+              <span class="pco-kpi-icon-wrap" aria-hidden="true">
+                <span data-icon="flag" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
+              </span>
+            </div>
+            <div class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
+            <div class="pco-kpi-desc">Single-source or high variance</div>
+          </div>
+
+          <div class="pco-kpi-card pco-kpi--purple" role="listitem">
+            <div class="pco-kpi-top">
+              <span class="pco-kpi-label">Suppliers at Risk</span>
+              <span class="pco-kpi-icon-wrap" aria-hidden="true">
+                <span data-icon="user" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
+              </span>
+            </div>
+            <div class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
+            <div class="pco-kpi-desc">Flagged for follow-up</div>
+          </div>
+
+          <div class="pco-kpi-card pco-kpi--brand" role="listitem">
+            <div class="pco-kpi-top">
+              <span class="pco-kpi-label">Dollar Exposure</span>
+              <span class="pco-kpi-icon-wrap" aria-hidden="true">
+                <span data-icon="chart" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
+              </span>
+            </div>
+            <div class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
+            <div class="pco-kpi-desc">At-risk open order value</div>
+          </div>
+
+        </div><!-- /.pco-kpi-grid -->
+
+        <!-- ── Middle row: Recent Runs + Top Risks ───────────────────────── -->
+        <div class="pco-middle-row">
+
+          <!-- Recent Runs -->
+          <section class="pco-runs-card card" aria-labelledby="pcoRecentRunsTitle">
+            <div class="pco-section-header">
+              <div>
+                <h2 id="pcoRecentRunsTitle" class="pco-section-title">Recent Runs</h2>
+                <p class="card-sub">Your last uploaded PO reports</p>
+              </div>
+              <a href="/procurement/upload" class="pco-section-action" aria-label="Upload a new PO report">
+                <span data-icon="upload" data-icon-size="13" aria-hidden="true"></span>
+                New run
+              </a>
+            </div>
+            <div class="pco-empty-state">
+              <span class="pco-empty-icon-wrap" aria-hidden="true">
+                <span data-icon="history" data-icon-size="26"></span>
+              </span>
+              <p class="pco-empty-title">No runs yet</p>
+              <p class="pco-empty-sub">Upload a PO CSV to start tracking your analysis history here.</p>
+              <a href="/procurement/upload" class="pco-empty-cta">Upload your first report</a>
+            </div>
+          </section>
+
+          <!-- Top Risks / Action Queue -->
+          <section class="pco-risks-card card" aria-labelledby="pcoTopRisksTitle">
+            <div class="pco-section-header">
+              <div>
+                <h2 id="pcoTopRisksTitle" class="pco-section-title">Top Risks</h2>
+                <p class="card-sub">Highest-priority action items</p>
+              </div>
+              <span class="pco-coming-pill">Coming soon</span>
+            </div>
+            <div class="pco-empty-state">
+              <span class="pco-empty-icon-wrap" aria-hidden="true">
+                <span data-icon="risk" data-icon-size="26"></span>
+              </span>
+              <p class="pco-empty-title">No active risks</p>
+              <p class="pco-empty-sub">Risk flags surface automatically after your first PO analysis.</p>
+              <a href="/procurement/upload" class="pco-empty-cta">Run first analysis</a>
+            </div>
+          </section>
+
+        </div><!-- /.pco-middle-row -->
+
+        <!-- ── Supplier Risk Breakdown ────────────────────────────────────── -->
+        <section class="pco-supplier-card card" aria-labelledby="pcoSupplierTitle">
+          <div class="pco-section-header">
+            <div>
+              <h2 id="pcoSupplierTitle" class="pco-section-title">Supplier Risk Breakdown</h2>
+              <p class="card-sub">Ranked by delivery risk and open-order exposure</p>
+            </div>
+            <span class="pco-coming-pill">Coming soon</span>
+          </div>
+          <div class="pco-supplier-table-wrap">
+            <table class="pco-supplier-table" aria-label="Supplier risk table — no data yet">
+              <thead>
+                <tr>
+                  <th scope="col">Supplier</th>
+                  <th scope="col" class="pco-th-num">PO Lines</th>
+                  <th scope="col" class="pco-th-num">Past Due</th>
+                  <th scope="col" class="pco-th-num">At Risk</th>
+                  <th scope="col" class="pco-th-num">Spend Exposure</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="6" class="pco-table-empty-cell">
+                    <div class="pco-table-empty-inner">
+                      <span data-icon="user" data-icon-size="20" aria-hidden="true"></span>
+                      <span>No supplier data yet &mdash; <a href="/procurement/upload" class="pco-inline-link">upload a PO report</a> to populate this table.</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </main>
+
+      <footer class="app-footer">
+        &copy; 2026 OpsCopilot &middot; Procurement Copilot
+      </footer>
+
+    </div><!-- /.app-body -->
+  </div><!-- /.app-layout -->
+
+  <!-- Shared scripts (auth, icons, support modal) -->
+  <script src="/js/sidebarRenderer.js"></script>
+  <script src="/analytics.js"></script>
+  <script src="/auth.js"></script>
+  <script src="/js/Icon.js"></script>
+  <script src="/js/supportModal.js"></script>
+
+  <!-- Procurement page bootstrap -->
+  <script src="/js/procurement/procurementApp.js"></script>
+
+  <!-- Toast container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+</body>
+</html>

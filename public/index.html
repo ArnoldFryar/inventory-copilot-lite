@@ -12,60 +12,8 @@
 
   <div class="app-layout">
 
-    <!-- ── Sidebar navigation ──────────────────────────────────────────── -->
-    <nav class="app-sidebar" aria-label="Application navigation">
-      <div class="sidebar-brand">
-        <div class="sidebar-logo">
-          <div class="sidebar-logo-mark" aria-hidden="true">
-            <img src="/assets/logo/opscopilot-mark-white.svg" width="18" height="18" alt="" draggable="false">
-          </div>
-          <div class="sidebar-logo-copy">
-            <span class="sidebar-logo-name">OpsCopilot</span>
-            <span class="sidebar-logo-module">Inventory Suite</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="sidebar-nav">
-        <a href="/" class="sidebar-nav-item is-active" aria-current="page">
-          <span data-icon="summary" data-icon-size="15" data-icon-class="sidebar-nav-icon"></span>
-          <span>Triage</span>
-        </a>
-        <a href="#historySection" class="sidebar-nav-item">
-          <span data-icon="history" data-icon-size="15" data-icon-class="sidebar-nav-icon"></span>
-          <span>History</span>
-        </a>
-        <a href="#aiHelpersSection" class="sidebar-nav-item">
-          <span data-icon="ai" data-icon-size="15" data-icon-class="sidebar-nav-icon"></span>
-          <span>AI Helpers</span>
-          <span class="sidebar-nav-badge">Pro</span>
-        </a>
-        <div class="sidebar-divider"></div>
-        <a href="/billing.html" class="sidebar-nav-item">
-          <span data-icon="billing" data-icon-size="15" data-icon-class="sidebar-nav-icon"></span>
-          <span>Billing &amp; Plan</span>
-        </a>
-        <button type="button" class="sidebar-nav-item" data-support-trigger aria-label="Contact Support">
-          <span data-icon="info" data-icon-size="15" data-icon-class="sidebar-nav-icon"></span>
-          <span>Support</span>
-        </button>
-      </div>
-
-      <div class="sidebar-foot">
-        <!-- Command bar trigger -->
-        <button id="cmdTriggerBtn" class="cmd-trigger-btn" type="button" aria-label="Open command bar">
-          <span class="cmd-trigger-label">
-            <span data-icon="search" data-icon-size="13" aria-hidden="true"></span>
-            Quick actions
-          </span>
-          <span class="cmd-trigger-shortcut">Ctrl K</span>
-        </button>
-        <div class="sidebar-status-row">
-          <span class="sidebar-status-dot" aria-hidden="true"></span>
-          <span class="sidebar-status-text">System online</span>
-        </div>
-      </div>
-    </nav>
+    <!-- ── Sidebar (rendered by sidebarRenderer.js) ──────────────────── -->
+    <nav id="appSidebar" class="app-sidebar" data-sidebar-cmd-bar aria-label="Application navigation"></nav>
 
     <!-- ── App body (topbar + content) ─────────────────────────────────── -->
     <div class="app-body">
@@ -853,6 +801,7 @@
     </div>
   </div>
 
+  <script src="js/sidebarRenderer.js"></script>
   <script src="analytics.js"></script>
   <script src="auth.js"></script>
   <script src="executiveSummary.js"></script>

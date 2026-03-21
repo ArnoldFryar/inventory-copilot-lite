@@ -1,0 +1,506 @@
+/* =========================================================
+   procurement.css — Procurement Copilot page styles
+   Extends the shared design system from base.css / layout.css
+   ======================================================= */
+
+/* ========================================================= */
+/*  Upload banner — horizontal hero + primary CTA            */
+/* ========================================================= */
+.pco-upload-banner {
+  position: relative;
+  /* Override the default card lift — banner stays anchored */
+  transition: box-shadow var(--dur-slow) var(--ease-out),
+              border-color var(--dur-slow) var(--ease-out) !important;
+  overflow: hidden;
+}
+
+.pco-upload-banner:hover {
+  transform: none !important;
+}
+
+/* Brand gradient top accent */
+.pco-upload-banner::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--brand-600) 0%, var(--brand-500) 50%, var(--brand-400) 100%);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+/* Ambient radial glow — top-right corner */
+.pco-upload-banner::after {
+  content: '';
+  position: absolute;
+  top: -40px; right: -60px;
+  width: 360px; height: 200px;
+  background: radial-gradient(ellipse, rgba(20,184,166,0.07) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.pco-upload-banner > * { position: relative; z-index: 1; }
+
+.pco-upload-banner-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.pco-upload-banner-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.pco-upload-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-heading);
+  margin: var(--space-2) 0 var(--space-3);
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.pco-upload-sub {
+  font-size: 14px;
+  color: var(--ink-400);
+  line-height: 1.65;
+  margin: 0 0 var(--space-4);
+  max-width: 500px;
+}
+
+/* Small trust strip below the subtitle */
+.pco-feature-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.pco-feature-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-400);
+}
+
+.pco-feature-item [data-icon],
+.pco-feature-item svg {
+  color: var(--brand-400);
+  flex-shrink: 0;
+}
+
+/* Right-side CTA column */
+.pco-upload-banner-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* Size modifier for the primary CTA button in the banner */
+.pco-cta-lg {
+  padding: var(--space-4) var(--space-8) !important;
+  font-size: 15px !important;
+  white-space: nowrap;
+  letter-spacing: -0.1px;
+}
+
+.pco-cta-hint {
+  font-size: 11px;
+  color: var(--ink-500);
+  margin: 0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ========================================================= */
+/*  KPI Grid — 6-card responsive layout                      */
+/* ========================================================= */
+.pco-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+.pco-kpi-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  position: relative;
+  overflow: hidden;
+  transition:
+    border-color var(--dur-slow) var(--ease-out),
+    box-shadow var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
+}
+
+.pco-kpi-card:hover {
+  border-color: var(--border-2);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+/* Top accent stripe — colour coded per metric category */
+.pco-kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.pco-kpi--neutral::before { background: linear-gradient(90deg, var(--brand-600),  var(--brand-400));  }
+.pco-kpi--danger::before  { background: linear-gradient(90deg, var(--red-600),    var(--red-400));    }
+.pco-kpi--warning::before { background: linear-gradient(90deg, var(--amber-600),  var(--amber-400));  }
+.pco-kpi--alert::before   { background: linear-gradient(90deg, var(--orange-500), var(--orange-400)); }
+.pco-kpi--purple::before  { background: linear-gradient(90deg, var(--purple-500), var(--purple-400)); }
+.pco-kpi--brand::before   { background: linear-gradient(90deg, var(--brand-700),  var(--brand-500)); }
+
+/* Label + icon row */
+.pco-kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.pco-kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--ink-500);
+}
+
+.pco-kpi-icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pco-kpi--neutral .pco-kpi-icon-wrap { background: rgba(20, 184, 166, 0.10); }
+.pco-kpi--danger  .pco-kpi-icon-wrap { background: rgba(239,  68,  68, 0.10); }
+.pco-kpi--warning .pco-kpi-icon-wrap { background: rgba(245, 158,  11, 0.10); }
+.pco-kpi--alert   .pco-kpi-icon-wrap { background: rgba(249, 115,  22, 0.10); }
+.pco-kpi--purple  .pco-kpi-icon-wrap { background: rgba(168,  85, 247, 0.10); }
+.pco-kpi--brand   .pco-kpi-icon-wrap { background: rgba( 13, 148, 136, 0.12); }
+
+.pco-kpi-icon { width: 14px; height: 14px; }
+
+.pco-kpi--neutral .pco-kpi-icon { color: var(--brand-400);  }
+.pco-kpi--danger  .pco-kpi-icon { color: var(--red-400);    }
+.pco-kpi--warning .pco-kpi-icon { color: var(--amber-400);  }
+.pco-kpi--alert   .pco-kpi-icon { color: var(--orange-400); }
+.pco-kpi--purple  .pco-kpi-icon { color: var(--purple-400); }
+.pco-kpi--brand   .pco-kpi-icon { color: var(--brand-400);  }
+
+/* Large metric number */
+.pco-kpi-value {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -2px;
+  color: var(--color-heading);
+  margin-bottom: var(--space-2);
+}
+
+/* Coloured values for charged cards */
+.pco-kpi--danger  .pco-kpi-value { color: var(--red-400);    }
+.pco-kpi--warning .pco-kpi-value { color: var(--amber-400);  }
+.pco-kpi--alert   .pco-kpi-value { color: var(--orange-400); }
+.pco-kpi--purple  .pco-kpi-value { color: var(--purple-400); }
+
+/* Em-dash placeholder: muted, no negative letter-spacing */
+.pco-value-placeholder {
+  color: var(--ink-600) !important;
+  letter-spacing: 0 !important;
+  font-size: 32px !important;
+}
+
+.pco-kpi-desc {
+  font-size: 11px;
+  color: var(--ink-500);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ========================================================= */
+/*  Section headers                                          */
+/* ========================================================= */
+.pco-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.pco-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-heading);
+  letter-spacing: -0.3px;
+  margin: 0 0 var(--space-1);
+}
+
+/* Small teal action link (e.g. "New run") */
+.pco-section-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: var(--brand-400);
+  text-decoration: none;
+  padding: 5px 12px;
+  border: 1px solid rgba(20,184,166,0.22);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.pco-section-action:hover {
+  background: rgba(20,184,166,0.06);
+  border-color: rgba(20,184,166,0.38);
+}
+
+.pco-section-action svg { width: 13px; height: 13px; }
+
+/* Muted "coming soon" pill */
+.pco-coming-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ink-500);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ========================================================= */
+/*  Middle row — two-column layout                           */
+/* ========================================================= */
+.pco-middle-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+/* ========================================================= */
+/*  Empty states                                             */
+/* ========================================================= */
+.pco-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-10) var(--space-6);
+  gap: var(--space-2);
+}
+
+.pco-empty-icon-wrap {
+  color: var(--ink-600);
+  margin-bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pco-empty-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-400);
+  margin: 0;
+}
+
+.pco-empty-sub {
+  font-size: 12px;
+  color: var(--ink-500);
+  line-height: 1.55;
+  max-width: 240px;
+  margin: 0;
+}
+
+.pco-empty-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-5);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  color: var(--brand-400);
+  border: 1px solid rgba(20,184,166,0.25);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.pco-empty-cta:hover {
+  background: rgba(20,184,166,0.06);
+  border-color: rgba(20,184,166,0.42);
+}
+
+/* ========================================================= */
+/*  Supplier Risk table                                      */
+/* ========================================================= */
+.pco-supplier-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.pco-supplier-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.pco-supplier-table thead th {
+  padding: 10px var(--space-4);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--ink-500);
+  background: var(--surface-3);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.pco-th-num { text-align: right !important; }
+
+/* Empty message row */
+.pco-table-empty-cell {
+  padding: var(--space-10) var(--space-4);
+}
+
+.pco-table-empty-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  color: var(--ink-500);
+}
+
+.pco-table-empty-inner svg,
+.pco-table-empty-inner [data-icon] {
+  color: var(--ink-600);
+  flex-shrink: 0;
+}
+
+.pco-inline-link {
+  color: var(--brand-400);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.pco-inline-link:hover {
+  text-decoration: underline;
+}
+
+/* ========================================================= */
+/*  CTA primary button (shared, used in upload banner)       */
+/* ========================================================= */
+.procurement-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: var(--space-3) var(--space-6);
+  background: linear-gradient(135deg, var(--brand-600) 0%, var(--brand-700) 100%);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  box-shadow:
+    0 1px 3px rgba(20,184,166,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.10);
+  transition:
+    background var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.procurement-cta-primary:hover {
+  background: linear-gradient(135deg, var(--brand-700) 0%, var(--brand-800) 100%);
+  box-shadow:
+    0 4px 20px rgba(20,184,166,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.10);
+  transform: translateY(-1px);
+}
+
+.procurement-cta-icon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.85;
+}
+
+.procurement-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-3) var(--space-6);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  color: var(--ink-300);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  text-decoration: none;
+  transition:
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.procurement-cta-secondary:hover {
+  background: rgba(255,255,255,0.04);
+  color: var(--color-heading);
+  border-color: var(--border-3);
+}
+
+/* ========================================================= */
+/*  Responsive                                               */
+/* ========================================================= */
+@media (max-width: 900px) {
+  .pco-kpi-grid     { grid-template-columns: repeat(2, 1fr); }
+  .pco-middle-row   { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .pco-upload-banner-content { flex-direction: column; align-items: flex-start; }
+  .pco-upload-banner-actions { align-items: flex-start; width: 100%; }
+  .pco-cta-lg { width: 100%; justify-content: center; }
+  .pco-kpi-value { font-size: 32px !important; }
+}
+
+@media (max-width: 480px) {
+  .pco-kpi-grid { grid-template-columns: 1fr; }
+}

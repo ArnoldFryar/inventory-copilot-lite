@@ -34,13 +34,19 @@ async function createRun(req, res) {
     return res.status(403).json({ error: 'Saved history is a Pro plan feature.' });
   }
 
-  const { file_name, part_count, summary_json, results_json, plan_at_upload, source_type } = req.body || {};
+  const { file_name, part_count, summary_json, results_json, plan_at_upload, source_type, module_key } = req.body || {};
 
   if (!summary_json || !results_json) {
     return res.status(400).json({ error: 'summary_json and results_json are required.' });
   }
 
-  const sourceValid = source_type === 'sample' || source_type === 'manual';
+  const sourceValid    = source_type === 'sample' || source_type === 'manual';
+  // module_key identifies which product module produced this run.
+  // Defaults to 'inventory' so all existing rows and clients remain unaffected.
+  const VALID_MODULES  = new Set(['inventory', 'procurement']);
+  const resolvedModule = (typeof module_key === 'string' && VALID_MODULES.has(module_key))
+    ? module_key
+    : 'inventory';
 
   const { data, error } = await supabaseAdmin
     .from('analysis_runs')
@@ -51,9 +57,10 @@ async function createRun(req, res) {
       summary_json:   summary_json,
       results_json:   results_json,
       plan_at_upload: typeof plan_at_upload === 'string' ? plan_at_upload.slice(0, 16) : 'free',
-      source_type:    sourceValid ? source_type : 'manual'
+      source_type:    sourceValid ? source_type : 'manual',
+      module_key:     resolvedModule,
     })
-    .select('id, uploaded_at')
+    .select('id, uploaded_at, module_key')
     .single();
 
   if (error) {
@@ -83,7 +90,7 @@ async function listRuns(req, res) {
 
   const { data, error } = await supabaseAdmin
     .from('analysis_runs')
-    .select('id, file_name, uploaded_at, part_count, summary_json, plan_at_upload, source_type')
+    .select('id, file_name, uploaded_at, part_count, summary_json, plan_at_upload, source_type, module_key')
     .eq('user_id', req.user.id)
     .order('uploaded_at', { ascending: false })
     .limit(50);

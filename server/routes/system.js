@@ -129,4 +129,19 @@ router.get('/api/demo-analysis', (_req, res) => {
   }
 });
 
+// ---------------------------------------------------------------------------
+// GET /api/modules — lists enabled product modules.
+// ---------------------------------------------------------------------------
+const { getEnabledModules } = require('../lib/modules');
+
+router.get('/api/modules', (_req, res) => {
+  var modules = getEnabledModules().map(function (m) {
+    var mod = { key: m.key, name: m.name, shortName: m.shortName, icon: m.icon, path: m.path, description: m.description };
+    if (m.badge) mod.badge = m.badge;
+    if (m.subPages) mod.subPages = m.subPages;
+    return mod;
+  });
+  res.json({ modules: modules });
+});
+
 module.exports = router;

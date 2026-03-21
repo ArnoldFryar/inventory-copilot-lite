@@ -209,6 +209,10 @@ router.post('/upload', uploadLimiter, (req, res) => {
 
       result.preambleRowsSkipped = ingestMeta.preambleRowsSkipped;
       result.encodingDetected    = ingestMeta.encoding;
+      // module_key is carried through so the client can tag any auto-save
+      // it performs with the correct module.  Inventory upload always sets
+      // 'inventory'; procurement will override this when its route lands.
+      result.module_key          = 'inventory';
 
       return res.json(result);
     });
