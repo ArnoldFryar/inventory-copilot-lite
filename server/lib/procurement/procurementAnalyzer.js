@@ -150,6 +150,20 @@ function buildSupplierRollups(scoredLines, ctx) {
               : lines.some(l => l.severity === 'Medium') ? 'Medium'
               : 'Low';
 
+    // On-time rate: % of lines with a resolved delivery that arrived on or before confirmed date.
+    // Only lines with a confirmed_date and a final status (not 'pending') are counted.
+    const resolvedLines = lines.filter(l => l.confirmed_date && l.delivery_status !== 'pending');
+    const onTimeCount   = resolvedLines.filter(l => (l.days_variance ?? 0) <= 0).length;
+    const onTimeRatePct = resolvedLines.length > 0
+      ? parseFloat(((onTimeCount / resolvedLines.length) * 100).toFixed(1))
+      : null;
+
+    // Average days variance across lines that have a numeric days_variance.
+    const varianceLines = lines.filter(l => l.days_variance != null && isFinite(l.days_variance));
+    const avgDaysVariance = varianceLines.length > 0
+      ? parseFloat((varianceLines.reduce((s, l) => s + l.days_variance, 0) / varianceLines.length).toFixed(1))
+      : null;
+
     rollups.push({
       supplier,
       line_count:       lines.length,
@@ -157,6 +171,8 @@ function buildSupplierRollups(scoredLines, ctx) {
       item_count:       itemSet.size > 0 ? itemSet.size : null,
       total_spend:      totalSpend,
       spend_share_pct:  spendSharePct,
+      on_time_rate_pct: onTimeRatePct,
+      avg_days_variance: avgDaysVariance,
       overdue_count:    overdueCount,
       high_risk_count:  highRiskCount,
       flagged_count:    flaggedCount,

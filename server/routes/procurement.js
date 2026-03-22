@@ -93,6 +93,10 @@ router.get('/procurement/upload', (_req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'procurement-upload.html'));
 });
 
+router.get('/procurement/runs/:id', (_req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, 'procurement-run.html'));
+});
+
 // ---------------------------------------------------------------------------
 // POST /api/procurement/upload
 //
@@ -131,6 +135,9 @@ router.post('/api/procurement/upload', uploadLimiter, (req, res) => {
     ingestPOCsv(filePath, (result) => {
       // Always clean up the temp file immediately.
       fs.unlink(filePath, () => {});
+
+      // Guard against timeout handler having already sent a response.
+      if (res.headersSent) return;
 
       const { ok, errors, warnings, rows, meta, stats } = result;
 

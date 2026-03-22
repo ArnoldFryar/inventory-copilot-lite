@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpsCopilot · Run Detail</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/styles/procurement.css" />
+</head>
+<body>
+
+  <div class="app-layout">
+
+    <!-- ── Sidebar ────────────────────────────────────────────────── -->
+    <nav id="appSidebar" class="app-sidebar" aria-label="Application navigation"></nav>
+
+    <!-- ── App body ───────────────────────────────────────────────── -->
+    <div class="app-body">
+
+      <header class="app-header">
+        <div class="app-header-inner">
+          <a href="/" class="header-logo" aria-label="OpsCopilot home">
+            <img src="/assets/logo/opscopilot-mark-gradient.svg" class="header-logo-mark" width="24" height="24" alt="" aria-hidden="true" draggable="false">
+            <span class="header-logo-name">OpsCopilot</span>
+          </a>
+          <div class="header-logo-divider" aria-hidden="true"></div>
+          <div class="app-header-text">
+            <a href="/procurement" class="pco-breadcrumb-link">Procurement</a>
+            <span class="pco-breadcrumb-sep" aria-hidden="true">/</span>
+            <h1 id="runDetailTitle">Run Detail</h1>
+          </div>
+          <span class="header-method-pill">Early Access</span>
+          <div class="header-right-group">
+            <span id="planBadge" class="plan-badge hidden"></span>
+            <div id="accountMenu" class="account-menu hidden">
+              <span id="accountEmail" class="account-email"></span>
+              <button id="accountAvatarBtn" class="account-avatar-btn" type="button" aria-label="Account menu" aria-expanded="false" aria-haspopup="true">
+                <span id="accountInitial" class="account-initial" aria-hidden="true"></span>
+              </button>
+              <div id="accountDropdown" class="account-dropdown hidden" role="menu">
+                <span class="account-dropdown-email" id="accountDropdownEmail"></span>
+                <hr class="account-dropdown-sep" />
+                <button id="signOutBtn" class="account-dropdown-item" type="button" role="menuitem">Sign out</button>
+              </div>
+            </div>
+            <button id="signInBtn" class="sign-in-btn hidden" type="button">Sign in</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="app-main" id="runDetailMain">
+
+        <!-- ── Loading skeleton ──────────────────────────────────── -->
+        <div id="runLoadingState" class="pco-run-loading" aria-live="polite" aria-label="Loading run detail">
+          <div class="pco-skeleton-card">
+            <div class="pco-skel pco-skel--title"></div>
+            <div class="pco-skel pco-skel--line"></div>
+            <div class="pco-skel pco-skel--line pco-skel--short"></div>
+          </div>
+          <div class="pco-kpi-grid">
+            <div class="pco-skel pco-skel--kpi"></div>
+            <div class="pco-skel pco-skel--kpi"></div>
+            <div class="pco-skel pco-skel--kpi"></div>
+            <div class="pco-skel pco-skel--kpi"></div>
+            <div class="pco-skel pco-skel--kpi"></div>
+            <div class="pco-skel pco-skel--kpi"></div>
+          </div>
+        </div>
+
+        <!-- ── Error state ───────────────────────────────────────── -->
+        <div id="runErrorState" class="pco-empty-state card hidden" role="alert">
+          <span class="pco-empty-icon-wrap" aria-hidden="true">
+            <span data-icon="alert" data-icon-size="28"></span>
+          </span>
+          <p class="pco-empty-title" id="runErrorTitle">Could not load run</p>
+          <p class="pco-empty-sub" id="runErrorMsg">An unexpected error occurred. Please try again.</p>
+          <a href="/procurement" class="pco-empty-cta">Back to Procurement</a>
+        </div>
+
+        <!-- ── Run content (hidden until loaded) ─────────────────── -->
+        <div id="runContent" class="hidden">
+
+          <!-- ── Executive Summary card ────────────────────────── -->
+          <div class="pco-run-summary-card card" id="execSummaryCard">
+            <div class="pco-run-summary-header">
+              <div class="pco-run-summary-meta">
+                <div class="pco-run-file-row">
+                  <span data-icon="file" data-icon-size="15" data-icon-class="pco-run-file-icon" aria-hidden="true"></span>
+                  <span id="runFileName" class="pco-run-file-name"></span>
+                  <span id="runSeverityBadge" class="pco-severity-badge"></span>
+                </div>
+                <div class="pco-run-meta-row">
+                  <span class="pco-run-meta-item">
+                    <span data-icon="clock" data-icon-size="11" aria-hidden="true"></span>
+                    <span id="runDate"></span>
+                  </span>
+                  <span class="pco-run-meta-sep" aria-hidden="true">&middot;</span>
+                  <span class="pco-run-meta-item" id="runLineCountItem">
+                    <span data-icon="table" data-icon-size="11" aria-hidden="true"></span>
+                    <span id="runLineCount"></span>
+                  </span>
+                  <span class="pco-run-meta-sep" aria-hidden="true">&middot;</span>
+                  <span class="pco-run-meta-item" id="runSupplierCountItem">
+                    <span data-icon="user" data-icon-size="11" aria-hidden="true"></span>
+                    <span id="runSupplierCount"></span>
+                  </span>
+                </div>
+              </div>
+              <div class="pco-run-summary-actions">
+                <a href="/procurement" class="procurement-cta-secondary pco-run-back-btn">
+                  <span data-icon="arrow-left" data-icon-size="13" aria-hidden="true"></span>
+                  All Runs
+                </a>
+              </div>
+            </div>
+
+            <!-- Ingest warnings banner (shown if ingestWarnings present) -->
+            <div id="ingestWarningsBanner" class="pco-ingest-warn hidden">
+              <span data-icon="alert" data-icon-size="12" aria-hidden="true"></span>
+              <span id="ingestWarningsText"></span>
+            </div>
+          </div>
+
+          <!-- ── KPI Strip ──────────────────────────────────────── -->
+          <div class="pco-kpi-grid" role="list" aria-label="Run metrics">
+
+            <div class="pco-kpi-card pco-kpi--neutral" role="listitem">
+              <div class="pco-kpi-top">
+                <span class="pco-kpi-label">Total Lines</span>
+                <span class="pco-kpi-icon-wrap" aria-hidden="true">
+                  <span data-icon="table" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
+                </span>
+              </div>
+              <div id="kpiTotalLines" class="pco-kpi-value">&mdash;</div>
+              <div class="pco-kpi-desc">PO lines analysed</div>
+            </div>
+
+            <div class="pco-kpi-card pco-kpi--danger" role="listitem">
+              <div class="pco-kpi-top">
+                <span class="pco-kpi-label">Past Due Lines</span>
+                <span class="pco-kpi-icon-wrap" aria-hidden="true">
+                  <span data-icon="alert" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
+                </span>
+              </div>
+              <div id="kpiPastDue" class="pco-kpi-value">&mdash;</div>
+              <div class="pco-kpi-desc">Lines with missed delivery dates</div>
+            </div>
+
+            <div class="pco-kpi-card pco-kpi--warning" role="listitem">
+              <div class="pco-kpi-top">
+                <span class="pco-kpi-label">Past Due Dollars</span>
+                <span class="pco-kpi-icon-wrap" aria-hidden="true">
+                  <span data-icon="chart" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
+                </span>
+              </div>
+              <div id="kpiPastDueDollars" class="pco-kpi-value">&mdash;</div>
+              <div class="pco-kpi-desc">Open order value overdue</div>
+            </div>
+
+            <div class="pco-kpi-card pco-kpi--alert" role="listitem">
+              <div class="pco-kpi-top">
+                <span class="pco-kpi-label">Flagged Lines</span>
+                <span class="pco-kpi-icon-wrap" aria-hidden="true">
+                  <span data-icon="flag" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
+                </span>
+              </div>
+              <div id="kpiFlaggedLines" class="pco-kpi-value">&mdash;</div>
+              <div class="pco-kpi-desc">Lines with any risk flag</div>
+            </div>
+
+            <div class="pco-kpi-card pco-kpi--purple" role="listitem">
+              <div class="pco-kpi-top">
+                <span class="pco-kpi-label">High Risk Suppliers</span>
+                <span class="pco-kpi-icon-wrap" aria-hidden="true">
+                  <span data-icon="user" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
+                </span>
+              </div>
+              <div id="kpiHighRiskSuppliers" class="pco-kpi-value">&mdash;</div>
+              <div class="pco-kpi-desc">Flagged for follow-up</div>
+            </div>
+
+            <div class="pco-kpi-card pco-kpi--brand" role="listitem">
+              <div class="pco-kpi-top">
+                <span class="pco-kpi-label">Dollar Exposure</span>
+                <span class="pco-kpi-icon-wrap" aria-hidden="true">
+                  <span data-icon="chart" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
+                </span>
+              </div>
+              <div id="kpiDollarExposure" class="pco-kpi-value">&mdash;</div>
+              <div class="pco-kpi-desc">At-risk open order value</div>
+            </div>
+
+          </div><!-- /.pco-kpi-grid -->
+
+          <!-- ── AI Executive Summary ───────────────────────────── -->
+          <section id="aiSummarySection" class="card pco-ai-summary-card hidden" aria-labelledby="aiSummaryTitle">
+            <div class="pco-section-header">
+              <div>
+                <div class="pco-ai-title-row">
+                  <span class="pco-ai-sparkle" aria-hidden="true">&#10024;</span>
+                  <h2 id="aiSummaryTitle" class="pco-section-title">AI Executive Summary</h2>
+                </div>
+                <p class="card-sub">Generated from deterministic risk analysis — <a href="#insightsSection" class="pco-ai-link">view source data</a></p>
+              </div>
+              <span class="pco-ai-badge">AI-generated</span>
+            </div>
+            <div id="aiSummaryBody" class="pco-ai-summary-body"></div>
+            <div id="aiSummaryMeta" class="pco-ai-summary-meta hidden">
+              <span id="aiSummaryModel" class="pco-ai-meta-item"></span>
+              <span class="pco-ai-meta-sep" aria-hidden="true">&middot;</span>
+              <span id="aiSummaryDate" class="pco-ai-meta-item"></span>
+            </div>
+            <div class="pco-ai-disclaimer">
+              <span data-icon="alert" data-icon-size="11" aria-hidden="true"></span>
+              <span>AI-generated summary for human review. Verify all details before acting.</span>
+            </div>
+          </section>
+
+          <!-- ── Top Insights ───────────────────────────────────── -->
+          <section class="card pco-insights-card" aria-labelledby="insightsSectionTitle" id="insightsSection">
+            <div class="pco-section-header">
+              <div>
+                <h2 id="insightsSectionTitle" class="pco-section-title">Top Insights</h2>
+                <p class="card-sub">Risk-engine findings ranked by severity</p>
+              </div>
+              <span id="insightsBadge" class="pco-count-badge hidden"></span>
+            </div>
+            <div id="insightsList" class="pco-insights-list"></div>
+          </section>
+
+          <!-- ── Middle row: Action Queue + Supplier Rollups ────── -->
+          <div class="pco-middle-row">
+
+            <!-- Action Queue -->
+            <section class="pco-runs-card card" aria-labelledby="actionQueueTitle">
+              <div class="pco-section-header">
+                <div>
+                  <h2 id="actionQueueTitle" class="pco-section-title">Action Queue</h2>
+                  <p class="card-sub">Open tasks from this analysis</p>
+                </div>
+                <span id="actionBadge" class="pco-count-badge hidden"></span>
+              </div>
+              <div id="actionQueueBody"></div>
+            </section>
+
+            <!-- Supplier Rollups -->
+            <section class="pco-supplier-card card" aria-labelledby="supplierRollupTitle">
+              <div class="pco-section-header">
+                <div>
+                  <h2 id="supplierRollupTitle" class="pco-section-title">Supplier Risk Breakdown</h2>
+                  <p class="card-sub">Ranked by delivery risk and spend exposure</p>
+                </div>
+                <span id="supplierBadge" class="pco-count-badge hidden"></span>
+              </div>
+              <div class="pco-supplier-table-wrap">
+                <table class="pco-supplier-table" aria-labelledby="supplierRollupTitle">
+                  <thead>
+                    <tr>
+                      <th scope="col">Supplier</th>
+                      <th scope="col" class="pco-th-num">Lines</th>
+                      <th scope="col" class="pco-th-num">Overdue</th>
+                      <th scope="col" class="pco-th-num">Past Due $</th>
+                      <th scope="col" class="pco-th-num">Spend Share</th>
+                      <th scope="col">Severity</th>
+                    </tr>
+                  </thead>
+                  <tbody id="supplierRollupBody"></tbody>
+                </table>
+              </div>
+            </section>
+
+          </div><!-- /.pco-middle-row -->
+
+          <!-- ── PO Lines Risk Table ────────────────────────────── -->
+          <section class="pco-supplier-card card" aria-labelledby="poLinesSectionTitle">
+            <div class="pco-section-header">
+              <div>
+                <h2 id="poLinesSectionTitle" class="pco-section-title">PO Lines</h2>
+                <p class="card-sub">All lines scored by risk — showing flagged lines first</p>
+              </div>
+              <div class="pco-table-controls">
+                <span id="poLinesShowing" class="pco-table-count"></span>
+                <button id="poLinesToggle" class="pco-section-action hidden" type="button">Show all lines</button>
+              </div>
+            </div>
+            <div class="pco-supplier-table-wrap">
+              <table class="pco-supplier-table pco-po-lines-table" aria-labelledby="poLinesSectionTitle">
+                <thead>
+                  <tr>
+                    <th scope="col">PO / Line</th>
+                    <th scope="col">Supplier</th>
+                    <th scope="col">Description</th>
+                    <th scope="col" class="pco-th-num">Line Amount</th>
+                    <th scope="col" class="pco-th-num">Days Var.</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Severity</th>
+                    <th scope="col">Flags</th>
+                  </tr>
+                </thead>
+                <tbody id="poLinesBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+        </div><!-- /#runContent -->
+
+      </main>
+
+      <footer class="app-footer">
+        &copy; 2026 OpsCopilot &middot; Procurement Copilot
+      </footer>
+
+    </div><!-- /.app-body -->
+  </div><!-- /.app-layout -->
+
+  <!-- Shared scripts -->
+  <script src="/js/sidebarRenderer.js"></script>
+  <script src="/analytics.js"></script>
+  <script src="/auth.js"></script>
+  <script src="/js/Icon.js"></script>
+  <script src="/js/supportModal.js"></script>
+
+  <!-- Procurement bootstrap (auth wiring, icon hydration) -->
+  <script src="/js/procurement/procurementApp.js"></script>
+
+  <!-- Run detail logic -->
+  <script src="/js/procurement/procurementRunDetail.js"></script>
+
+  <!-- Toast container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+</body>
+</html>

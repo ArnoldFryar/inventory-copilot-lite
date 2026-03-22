@@ -1,0 +1,17 @@
+PO Number,Supplier,Line Amount,Due Date,Need Date,Line Number,Item Code,Description,Quantity Ordered,Quantity Received,Unit Price,Order Date,Buyer,Plant,Category
+PO-2026-001,Acme Industrial,12500.00,2026-04-15,2026-04-10,1,MTL-3041,Steel Bracket Assembly,50,0,250.00,2026-01-05,Jane Smith,Plant A,Raw Materials
+PO-2026-001,Acme Industrial,4800.00,2026-04-15,2026-04-10,2,MTL-3042,Seal Kit,200,200,24.00,2026-01-05,Jane Smith,Plant A,Raw Materials
+PO-2026-002,Precision Parts Co,9200.00,2026-03-01,2026-02-25,1,PRE-0891,Hydraulic Valve,100,0,92.00,2026-01-10,Mike Chen,Plant B,Components
+PO-2026-002,Precision Parts Co,1400.00,2026-03-01,2026-02-25,2,PRE-0892,Hose Assembly 6mm,600,600,2.33,2026-01-10,Mike Chen,Plant B,Components
+PO-2026-003,Global Fasteners,3200.00,2026-01-31,2026-01-25,1,GF-5500,M8 Bolt Box (500 pcs),2000,0,1.60,2026-01-08,Sara Lee,Plant A,Consumables
+PO-2026-003,Global Fasteners,800.00,2026-01-31,2026-01-25,2,GF-5510,M10 Washer Box (500 pcs),1000,1000,0.80,2026-01-08,Sara Lee,Plant A,Consumables
+PO-2026-004,Sterling Supply,22000.00,2026-05-15,2026-04-30,1,SS-7720,Drive Shaft Assembly,15,0,1466.67,2026-01-15,Bob Wright,Plant C,Subassemblies
+PO-2026-005,Precision Parts Co,6000.00,2026-03-28,2026-03-20,1,PRE-1100,Bearing SKF 6204,250,0,24.00,2026-01-12,Mike Chen,Plant B,Components
+PO-2026-005,Precision Parts Co,3750.00,2026-03-28,2026-03-20,2,PRE-1101,Spring Retainer,500,0,7.50,2026-01-12,Mike Chen,Plant B,Components
+PO-2026-006,Acme Industrial,5400.00,2026-04-10,2026-04-05,1,MTL-4020,Gasket Set,300,0,18.00,2026-01-18,Jane Smith,Plant A,Raw Materials
+PO-2026-007,Global Fasteners,960.00,2026-02-15,2026-02-10,1,GF-6600,Hex Cap Screw M6 (1000),4000,0,0.24,2026-01-20,Sara Lee,Plant A,Consumables
+PO-2026-008,Sterling Supply,18500.00,2026-06-01,2026-05-20,1,SS-8801,Gearbox Assembly,10,0,1850.00,2026-01-22,Bob Wright,Plant C,Subassemblies
+PO-2026-009,Acme Industrial,2200.00,2026-03-10,2026-03-05,1,MTL-2200,Rubber Seal Strip,500,0,4.40,2026-01-25,Jane Smith,Plant A,Raw Materials
+PO-2026-010,Precision Parts Co,11000.00,2026-04-20,2026-04-15,1,PRE-2200,Control Valve Assembly,20,0,550.00,2026-01-28,Mike Chen,Plant B,Components
+PO-2026-011,Global Fasteners,480.00,2026-02-20,2026-02-15,1,GF-7700,Split Pin M4 (500 pcs),2500,0,0.19,2026-01-30,Sara Lee,Plant A,Consumables
+PO-2026-012,Sterling Supply,9750.00,2026-04-30,2026-04-25,1,SS-9902,Planetary Gearset,5,0,1950.00,2026-02-01,Bob Wright,Plant C,Subassemblies

@@ -22,6 +22,7 @@
 
 const { getPlanForUser }               = require('../../plans');
 const { supabaseAdmin }                = require('../../supabaseClient');
+const { generateProcurementSummary }   = require('../ai/generateProcurementSummary');
 
 function logAccessDenied(route, userId, plan) {
   console.warn('[ACCESS_DENIED]', route, {
@@ -95,6 +96,28 @@ async function saveProcurementRun(req, res) {
       ingestErrors:   errors,
     };
 
+    // ── AI executive summary (non-blocking — run saves even if AI fails) ──
+    try {
+      const aiResult = await generateProcurementSummary({
+        summary,
+        lines,
+        supplierRollups,
+        insights,
+        actionCandidates,
+        fileName,
+      });
+      if (aiResult && aiResult.text) {
+        summaryJson.ai_summary = {
+          text:       aiResult.text,
+          model:      aiResult.model,
+          generated_at: new Date().toISOString(),
+          disclaimer: 'AI-generated summary for human review. Verify all details before acting.',
+        };
+      }
+    } catch (aiErr) {
+      console.error('[POST /api/procurement/runs] AI summary failed (non-blocking):', aiErr.message);
+    }
+
     const { data: run, error: runErr } = await supabaseAdmin
       .from('analysis_runs')
       .insert({
@@ -121,6 +144,7 @@ async function saveProcurementRun(req, res) {
     async function rollback(table, childErr) {
       console.error(`[POST /api/procurement/runs] ${table} insert:`, childErr.message);
       await supabaseAdmin.from('analysis_runs').delete().eq('id', runId);
+      if (res.headersSent) return;
       return res.status(500).json({ error: `Failed to save ${table}. Run was not persisted.` });
     }
 
@@ -321,13 +345,13 @@ async function getProcurementRun(req, res) {
     // Fetch child data in parallel.
     const [poRes, srRes, inRes, aiRes] = await Promise.all([
       supabaseAdmin.from('procurement_po_lines')
-        .select('*').eq('run_id', runId).order('row_index', { ascending: true }),
+        .select('*').eq('run_id', runId).eq('user_id', userId).order('row_index', { ascending: true }),
       supabaseAdmin.from('procurement_supplier_rollups')
-        .select('*').eq('run_id', runId).order('severity', { ascending: true }),
+        .select('*').eq('run_id', runId).eq('user_id', userId).order('severity', { ascending: true }),
       supabaseAdmin.from('procurement_insights')
-        .select('*').eq('run_id', runId).order('severity', { ascending: true }),
+        .select('*').eq('run_id', runId).eq('user_id', userId).order('severity', { ascending: true }),
       supabaseAdmin.from('procurement_action_items')
-        .select('*').eq('run_id', runId).order('created_at', { ascending: false }),
+        .select('*').eq('run_id', runId).eq('user_id', userId).order('created_at', { ascending: false }),
     ]);
 
     // Tolerate partial child-fetch failure — the run header is still useful.
@@ -358,6 +382,12 @@ async function deleteProcurementRun(req, res) {
     if (!plan.savedHistory) {
       logAccessDenied('DELETE /api/procurement/runs/:id', req.user.id, plan);
       return res.status(403).json({ error: 'Saved history is a Pro plan feature.' });
+    }
+
+    // Validate UUID format to return a clear 400 instead of a DB error.
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_RE.test(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid run ID format.' });
     }
 
     const { error } = await supabaseAdmin

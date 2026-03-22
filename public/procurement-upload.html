@@ -7,15 +7,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/styles/procurement.css" />
 </head>
 <body>
 
   <div class="app-layout">
 
-    <!-- ── Sidebar (rendered by sidebarRenderer.js) ──────────────────── -->
+    <!-- ── Sidebar ────────────────────────────────────────────────── -->
     <nav id="appSidebar" class="app-sidebar" aria-label="Application navigation"></nav>
 
-    <!-- ── App body ────────────────────────────────────────────────────── -->
+    <!-- ── App body ───────────────────────────────────────────────── -->
     <div class="app-body">
 
       <header class="app-header">
@@ -26,6 +27,8 @@
           </a>
           <div class="header-logo-divider" aria-hidden="true"></div>
           <div class="app-header-text">
+            <a href="/procurement" class="pco-breadcrumb-link">Procurement</a>
+            <span class="pco-breadcrumb-sep" aria-hidden="true">/</span>
             <h1>Upload PO Export</h1>
           </div>
           <span class="header-method-pill">Early Access</span>
@@ -49,43 +52,169 @@
 
       <main class="app-main">
 
-        <!-- ── Upload PO section ───────────────────────────────────────── -->
         <section class="upload-section card">
+
+          <!-- ── Hero ──────────────────────────────────────────────── -->
           <div class="hero-headline">
-            <span class="hero-eyebrow">Procurement Upload</span>
-            <h2 class="hero-title">Upload your purchase order&nbsp;export</h2>
-            <p class="hero-subtext">PO data will be analysed for spend patterns, delivery risk, and consolidation&nbsp;opportunities.</p>
+            <span class="hero-eyebrow">Procurement Copilot</span>
+            <h2 class="hero-title">Analyse your open purchase&nbsp;orders</h2>
+            <p class="hero-subtext">Upload your PO export. Delivery risks, spend exposure, and supplier flags surface in&nbsp;seconds.</p>
+            <div class="trust-strip">
+              <span class="trust-item">
+                <span class="trust-icon" aria-hidden="true"><span data-icon="check" data-icon-size="11"></span></span>
+                Column auto-detection
+              </span>
+              <span class="trust-item">
+                <span class="trust-icon" aria-hidden="true"><span data-icon="check" data-icon-size="11"></span></span>
+                Risk scored per line
+              </span>
+              <span class="trust-item">
+                <span class="trust-icon" aria-hidden="true"><span data-icon="check" data-icon-size="11"></span></span>
+                5&thinsp;MB &middot; CSV only
+              </span>
+            </div>
           </div>
 
+          <!-- ── Upload engine ──────────────────────────────────────── -->
           <div class="upload-engine-wrapper">
+
             <div class="upload-engine-header">
               <span class="upload-step-badge">Step 1</span>
               <h2>Select your PO export file</h2>
             </div>
+
             <p class="context-block">
-              Upload a CSV of purchase orders. Columns like PO Number, Supplier, Line Amount, and Delivery Date are auto-detected.
+              Columns are auto-detected from common ERP export formats (SAP, Oracle, Coupa, Ariba, NetSuite).
+              <strong>PO Number</strong>, <strong>Supplier</strong>, and <strong>Line Amount</strong> are required.
+              Adding a <strong>delivery date</strong> column enables overdue and at-risk signals.
             </p>
 
             <form id="poUploadForm" enctype="multipart/form-data">
-              <label class="file-label" for="pofile">
+
+              <!-- Dropzone -->
+              <label class="file-label" for="pofile" id="poDropZone" aria-label="Upload PO CSV — click or drag and drop">
                 <div class="file-label-ring" aria-hidden="true">
                   <span data-icon="upload" data-icon-size="28" data-icon-class="file-label-icon" aria-hidden="true"></span>
                 </div>
                 <span id="poFileLabel" class="file-label-text">Choose a PO CSV file&hellip;</span>
                 <span class="file-label-hint">or drag and drop &middot; .csv up to 5&thinsp;MB</span>
-                <input type="file" id="pofile" name="pofile" accept=".csv" disabled />
+                <!-- name="csvfile" matches the backend upload.single('csvfile') -->
+                <input type="file" id="pofile" name="csvfile" accept=".csv" />
               </label>
+
+              <!-- Analyse CTA -->
               <button type="submit" id="poSubmitBtn" class="analyze-cta" disabled>
                 <span data-icon="play" data-icon-size="16" data-icon-class="analyze-cta-icon" aria-hidden="true"></span>
                 <span id="poSubmitLabel">Analyse POs</span>
               </button>
+
             </form>
 
-            <div class="procurement-status-line" style="margin-top: var(--space-4);">
-              <span data-icon="info" data-icon-size="13" data-icon-class="procurement-status-icon"></span>
-              PO ingestion is not yet active. This page is a preview of the upcoming upload experience.
+            <!-- Utility row -->
+            <div class="demo-hint" style="margin-top: var(--space-4);">
+              <span class="demo-hint-label">No file ready?</span>
+              <a href="/sample-po.csv" id="poSampleDownload" class="link-btn" download="sample_po.csv">Download sample CSV template</a>
             </div>
-          </div>
+
+            <div class="upload-proof-line" aria-hidden="true">
+              <span data-icon="shield" data-icon-size="13" data-icon-class="upload-proof-icon"></span>
+              Files are processed server-side and not retained after analysis.
+            </div>
+
+            <!-- Validation / feedback area -->
+            <div id="poErrorBanner"   class="error-banner   hidden" role="alert"  aria-live="assertive"></div>
+            <div id="poWarningBanner" class="warning-banner hidden" role="status" aria-live="polite"></div>
+            <div id="poSuccessPanel"  class="pco-upload-result-panel hidden" role="status" aria-live="polite"></div>
+
+          </div><!-- /.upload-engine-wrapper -->
+
+          <!-- ── Column guide ──────────────────────────────────────── -->
+          <details class="file-requirements">
+            <summary>Required and optional columns</summary>
+            <div class="file-req-body">
+
+              <div class="pco-col-guide">
+
+                <div class="pco-col-guide-group">
+                  <p><strong>Required columns</strong> &mdash; analysis cannot run without these:</p>
+                  <ul>
+                    <li>
+                      <strong>PO Number</strong>
+                      <span class="pco-col-aliases"><code>PO Number</code> &middot; <code>PO No</code> &middot; <code>Order Number</code> &middot; <code>Purchase Order</code> &middot; <code>Doc Number</code></span>
+                    </li>
+                    <li>
+                      <strong>Supplier</strong>
+                      <span class="pco-col-aliases"><code>Supplier</code> &middot; <code>Vendor</code> &middot; <code>Vendor Name</code> &middot; <code>Creditor</code> &middot; <code>Source</code></span>
+                    </li>
+                    <li>
+                      <strong>Line Amount</strong>
+                      <span class="pco-col-aliases"><code>Line Amount</code> &middot; <code>Net Value</code> &middot; <code>Extended Amount</code> &middot; <code>Total Amount</code> &middot; <code>Value</code></span>
+                    </li>
+                  </ul>
+
+                  <p style="margin-top: var(--space-3);"><strong>Delivery Date</strong> &mdash; at least one is recommended:</p>
+                  <ul>
+                    <li>
+                      <strong>Due / Confirmed Date</strong>
+                      <span class="pco-col-aliases"><code>Due Date</code> &middot; <code>Delivery Date</code> &middot; <code>Promised Date</code> &middot; <code>Confirmed Date</code> &middot; <code>ETA</code> &middot; <code>Scheduled Date</code></span>
+                    </li>
+                    <li>
+                      <strong>Need By Date</strong>
+                      <span class="pco-col-aliases"><code>Need Date</code> &middot; <code>Need By</code> &middot; <code>Required Date</code> &middot; <code>Requested Date</code></span>
+                    </li>
+                  </ul>
+                </div><!-- /.pco-col-guide-group -->
+
+                <div class="pco-col-guide-group">
+                  <p><strong>Optional columns</strong> &mdash; enrich risk scoring when present:</p>
+                  <ul>
+                    <li><code>Line Number</code> / <code>Line No</code></li>
+                    <li><code>Item Code</code> / <code>Part Number</code> / <code>SKU</code> / <code>Material</code></li>
+                    <li><code>Description</code> / <code>Item Description</code></li>
+                    <li><code>Quantity Ordered</code> / <code>Qty Ordered</code></li>
+                    <li><code>Quantity Received</code> / <code>Qty Received</code></li>
+                    <li><code>Unit Price</code></li>
+                    <li><code>Order Date</code> / <code>PO Date</code></li>
+                    <li><code>Buyer</code> / <code>Purchasing Agent</code></li>
+                    <li><code>Plant</code> / <code>Site</code> / <code>Location</code></li>
+                    <li><code>Category</code> / <code>Commodity</code> / <code>Material Group</code></li>
+                  </ul>
+                </div><!-- /.pco-col-guide-group -->
+
+              </div><!-- /.pco-col-guide -->
+
+              <p class="file-req-not-supported">
+                <strong>File format:</strong> Comma-delimited CSV (.csv) only, up to 5&thinsp;MB.
+                UTF-8 or Windows-1252 encoding.
+                In Excel: <em>Save As &rarr; CSV (Comma delimited) (*.csv)</em> before uploading.
+              </p>
+
+            </div>
+          </details><!-- /.file-requirements -->
+
+          <!-- ── FAQ ──────────────────────────────────────────────── -->
+          <details class="faq-block">
+            <summary>Common upload errors and fixes</summary>
+            <div class="file-req-body">
+
+              <p class="faq-q">Error: &ldquo;missing required columns&rdquo;</p>
+              <p class="faq-a">No recognised column found for PO Number, Supplier, or Line Amount. Check the accepted names in the column guide above, or <a href="/sample-po.csv" download="sample_po.csv" class="pco-inline-link">download the sample CSV template</a> as a reference.</p>
+
+              <p class="faq-q">Error mentions semicolons, tabs, or pipes</p>
+              <p class="faq-a">Non-comma delimiter detected. In Excel: <em>Save As &rarr; CSV (Comma delimited) (*.csv)</em> and re-upload.</p>
+
+              <p class="faq-q">Delivery date columns not detected</p>
+              <p class="faq-a">Rename your date column to one of the accepted names (<em>Due Date</em>, <em>Delivery Date</em>, <em>ETA</em>, etc.) and ensure dates use a standard format: YYYY-MM-DD, MM/DD/YYYY, or DD/MM/YYYY.</p>
+
+              <p class="faq-q">Error: file is too large</p>
+              <p class="faq-a">Max 5&thinsp;MB. Narrow the export to a single plant, supplier group, or rolling date window and re-export.</p>
+
+              <p class="faq-q">Error: &ldquo;no data rows&rdquo;</p>
+              <p class="faq-a">File parsed but no rows found below the header. Confirm the export is not an empty or summary-only report.</p>
+
+            </div>
+          </details><!-- /.faq-block -->
+
         </section>
 
       </main>
@@ -103,6 +232,7 @@
   <script src="/js/Icon.js"></script>
   <script src="/js/supportModal.js"></script>
   <script src="/js/procurement/procurementApp.js"></script>
+  <script src="/js/procurement/procurementUploadController.js"></script>
 
   <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 </body>

@@ -11,10 +11,11 @@
 // ---------------------------------------------------------------------------
 
 const MODEL_MAP = {
-  expedite_email:         'gpt-4.1',
-  escalation_summary:     'gpt-4.1',
-  meeting_talking_points: 'gpt-4.1',
-  default:                'gpt-4.1',
+  expedite_email:              'gpt-4.1',
+  escalation_summary:          'gpt-4.1',
+  meeting_talking_points:      'gpt-4.1',
+  procurement_run_summary:     'gpt-4.1',
+  default:                     'gpt-4.1',
 };
 
 module.exports = { MODEL_MAP };

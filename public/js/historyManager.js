@@ -167,7 +167,7 @@
 
     try {
       var token = await window.authModule.getToken();
-      var res = await fetch('/api/runs', {
+      var res = await fetch('/api/runs?module=inventory', {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       if (!res.ok) throw new Error('fetch failed');
