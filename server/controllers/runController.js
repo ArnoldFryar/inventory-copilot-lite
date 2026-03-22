@@ -10,6 +10,10 @@
 const { getPlanForUser } = require('../../plans');
 const { supabaseAdmin }  = require('../../supabaseClient');
 const { compareRuns }    = require('../../comparator');
+const { MODULES }        = require('../lib/modules');
+
+// Derive valid module keys from the module registry — single source of truth.
+const VALID_MODULES = new Set(Object.keys(MODULES));
 
 // Temporary debug helper — logs whenever a Pro-gated route denies a request.
 function logAccessDenied(route, userId, plan) {
@@ -43,7 +47,6 @@ async function createRun(req, res) {
   const sourceValid    = source_type === 'sample' || source_type === 'manual';
   // module_key identifies which product module produced this run.
   // Defaults to 'inventory' so all existing rows and clients remain unaffected.
-  const VALID_MODULES  = new Set(['inventory', 'procurement']);
   const resolvedModule = (typeof module_key === 'string' && VALID_MODULES.has(module_key))
     ? module_key
     : 'inventory';
@@ -88,10 +91,18 @@ async function listRuns(req, res) {
     return res.status(403).json({ error: 'Saved history is a Pro plan feature.' });
   }
 
-  const { data, error } = await supabaseAdmin
+  // Optional ?module= filter so the procurement dashboard can request only its runs.
+  const moduleFilter = req.query.module;
+  let query = supabaseAdmin
     .from('analysis_runs')
     .select('id, file_name, uploaded_at, part_count, summary_json, plan_at_upload, source_type, module_key')
-    .eq('user_id', req.user.id)
+    .eq('user_id', req.user.id);
+
+  if (typeof moduleFilter === 'string' && VALID_MODULES.has(moduleFilter)) {
+    query = query.eq('module_key', moduleFilter);
+  }
+
+  const { data, error } = await query
     .order('uploaded_at', { ascending: false })
     .limit(50);
 

@@ -206,41 +206,17 @@ const VALID_ACTION_STATUSES = new Set([
 // }
 // ---------------------------------------------------------------------------
 
-// ===========================================================================
-// Column alias registry for procurement CSV auto-detection.
-//
-// Mirrors the ALIASES map in columnMap.js.  Used by the (future)
-// procurementColumnMap.js to resolve non-canonical header names from
-// common ERP exports (SAP ME21, Oracle iProcurement, Coupa, etc.).
-//
-// Keys are canonical field names (matching the POLine shape above).
-// Values are arrays of accepted alternate header strings (lowercased).
-// ===========================================================================
-const PROCUREMENT_COLUMN_ALIASES = {
-  po_number:          ['purchase order', 'po number', 'po no', 'po #', 'order number', 'po_no', 'ponumber', 'doc number', 'document number'],
-  line_number:        ['line', 'line no', 'line no.', 'item line', 'pos', 'line number', 'line_no'],
-  supplier:           ['vendor', 'vendor name', 'supplier name', 'creditor', 'sold by', 'source'],
-  item_code:          ['part number', 'part no', 'sku', 'material', 'item', 'item number', 'material number', 'product code'],
-  item_description:   ['description', 'desc', 'part description', 'item description', 'material description'],
-  quantity_ordered:   ['qty ordered', 'qty', 'quantity', 'order qty', 'order quantity', 'po qty'],
-  quantity_received:  ['qty received', 'received qty', 'qty rec', 'received', 'goods receipt qty', 'gr qty'],
-  unit_price:         ['unit price', 'price', 'net price', 'unit cost', 'price per unit'],
-  line_amount:        ['line total', 'line value', 'amount', 'net value', 'extended amount', 'total amount', 'po value', 'line amount'],
-  order_date:         ['order date', 'po date', 'creation date', 'document date', 'issue date'],
-  requested_date:     ['requested date', 'request date', 'need by date', 'required date', 'need date', 'delivery requested'],
-  confirmed_date:     ['confirmed date', 'confirm date', 'promised date', 'supplier confirm date', 'eta'],
-  actual_date:        ['actual date', 'delivery date', 'receipt date', 'goods receipt date', 'received date'],
-  category:           ['category', 'commodity', 'spend category', 'purchase category', 'gl account desc'],
-};
-
 // ---------------------------------------------------------------------------
 // Exported constants — runtime-accessible for validation and serialisation.
 // The shape definitions above are JSDoc-only (no runtime object needed).
+//
+// Column alias registry lives in procurementColumnMap.js (the authoritative
+// source for CSV header resolution).  It was previously duplicated here but
+// has been removed to avoid drift.
 // ---------------------------------------------------------------------------
 module.exports = {
   VALID_DELIVERY_STATUSES,
   VALID_RISK_FLAGS,
   VALID_INSIGHT_CATEGORIES,
   VALID_ACTION_STATUSES,
-  PROCUREMENT_COLUMN_ALIASES,
 };
