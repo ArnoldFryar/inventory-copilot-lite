@@ -233,14 +233,84 @@
 }
 
 /* ========================================================= */
+/*  Signed-out / guest banner                                */
+/* ========================================================= */
+.pco-guest-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(20,184,166,0.22);
+  background: rgba(20,184,166,0.04);
+}
+
+.pco-guest-banner-icon {
+  display: flex;
+  align-items: center;
+  color: var(--brand-400);
+  flex-shrink: 0;
+}
+
+.pco-guest-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.pco-guest-banner-text strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-300);
+}
+
+.pco-guest-banner-text span {
+  font-size: 12px;
+  color: var(--ink-500);
+  line-height: 1.5;
+}
+
+.pco-guest-banner-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-5);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  color: var(--brand-400);
+  border: 1px solid rgba(20,184,166,0.3);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.pco-guest-banner-cta:hover {
+  background: rgba(20,184,166,0.08);
+  border-color: rgba(20,184,166,0.48);
+}
+
+/* ========================================================= */
 /*  Section headers                                          */
 /* ========================================================= */
 .pco-section-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
   margin-bottom: var(--space-5);
+}
+
+/* Strip the standalone card-sub bottom margin when used inside a section
+   header — the header's own margin-bottom controls the gap below. Without
+   this the left column overhangs, breaking right-element vertical alignment. */
+.pco-section-header .card-sub {
+  margin-bottom: 0;
 }
 
 .pco-section-title {
@@ -302,7 +372,24 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-4);
-  align-items: start;
+  align-items: stretch;   /* both cards fill the row to the same height */
+}
+
+/* Make middle-row cards flex-column so the body region can grow to fill
+   available height, keeping empty states vertically centered in both cards. */
+.pco-runs-card,
+.pco-risks-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 280px;
+}
+
+/* Everything after the section header stretches to fill remaining card height.
+   This makes empty states and data lists occupy equal vertical space. */
+.pco-runs-card > *:not(.pco-section-header),
+.pco-risks-card > *:not(.pco-section-header) {
+  flex: 1;
+  min-height: 0;
 }
 
 /* ========================================================= */
@@ -1237,3 +1324,162 @@
   color: var(--ink-500);
   line-height: 1.5;
 }
+
+/* ========================================================= */
+/*  Dashboard — Recent Runs list                              */
+/* ========================================================= */
+.pco-runs-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pco-runs-item {
+  border-bottom: 1px solid var(--border);
+}
+
+.pco-runs-item:last-child { border-bottom: none; }
+
+.pco-runs-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--dur) var(--ease);
+}
+
+.pco-runs-link:hover {
+  background: var(--surface-2);
+}
+
+.pco-runs-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pco-runs-file {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-300);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pco-runs-date {
+  font-size: 11px;
+  color: var(--ink-500);
+}
+
+.pco-runs-item-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.pco-runs-lines {
+  font-size: 11px;
+  color: var(--ink-500);
+  white-space: nowrap;
+}
+
+/* ========================================================= */
+/*  Dashboard — Severity dot indicator                        */
+/* ========================================================= */
+.pco-sev-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pco-sev-dot--high   { background: var(--red-400); }
+.pco-sev-dot--medium { background: var(--amber-400); }
+.pco-sev-dot--low    { background: var(--brand-400); }
+
+/* ========================================================= */
+/*  Dashboard — Top Risks list                                */
+/* ========================================================= */
+.pco-risks-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+}
+
+.pco-risk-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+}
+
+.pco-risk-item--high   { border-left: 3px solid var(--red-400); }
+.pco-risk-item--medium { border-left: 3px solid var(--amber-400); }
+.pco-risk-item--low    { border-left: 3px solid var(--brand-400); }
+
+.pco-risk-sev {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.pco-risk-sev-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-500);
+}
+
+.pco-risk-body {
+  min-width: 0;
+}
+
+.pco-risk-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-300);
+  display: block;
+}
+
+.pco-risk-desc {
+  font-size: 12px;
+  color: var(--ink-500);
+  line-height: 1.5;
+  margin: 2px 0 0;
+}
+
+/* ========================================================= */
+/*  Dashboard — Severity pill (for supplier table)            */
+/* ========================================================= */
+.pco-sev-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pco-sev-pill--high   { background: rgba(239, 68, 68, 0.12); color: var(--red-400);   }
+.pco-sev-pill--medium { background: rgba(245,158, 11, 0.12); color: var(--amber-400); }
+.pco-sev-pill--low    { background: rgba( 20,184,166, 0.10); color: var(--brand-400); }

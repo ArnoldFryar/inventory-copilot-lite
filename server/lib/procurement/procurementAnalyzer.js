@@ -425,6 +425,8 @@ function buildSummary(scoredLines, supplierRollups, insights) {
   const highRiskSuppliers = supplierRollups.filter(r => r.severity === 'High').length;
   const pastDueLines     = scoredLines.filter(l => l.delivery_status === 'overdue');
   const pastDueDollars   = pastDueLines.reduce((s, l) => s + (l.line_amount || 0), 0);
+  const dueSoonLines     = scoredLines.filter(l => (l.risk_flags || []).includes('due_soon'));
+  const highRiskLines    = scoredLines.filter(l => l.severity === 'High');
 
   return {
     total_lines:           scoredLines.length,
@@ -434,6 +436,8 @@ function buildSummary(scoredLines, supplierRollups, insights) {
     currency:              'USD',   // MVP: assumed; detect from upload metadata in later pass
     flagged_lines:         flaggedLines.length,
     high_risk_suppliers:   highRiskSuppliers,
+    high_risk_lines:       highRiskLines.length,
+    due_soon_lines:        dueSoonLines.length,
     insights_count:        insights.length,
     past_due_lines:        pastDueLines.length,
     past_due_dollars:      pastDueDollars,
@@ -446,7 +450,8 @@ function buildEmptySummary() {
   return {
     total_lines: 0, total_po_count: 0, supplier_count: 0,
     total_spend: 0, currency: 'USD', flagged_lines: 0,
-    high_risk_suppliers: 0, insights_count: 0,
+    high_risk_suppliers: 0, high_risk_lines: 0, due_soon_lines: 0,
+    insights_count: 0,
     past_due_lines: 0, past_due_dollars: 0, dollar_exposure_at_risk: 0,
   };
 }

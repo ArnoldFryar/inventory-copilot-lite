@@ -1,0 +1,13 @@
+Part Number,Description,Supplier,Secondary Supplier,ABC Class,Replenishment Method,Lead Time Days,Min Qty,Max Qty,Pack Multiple,Unit of Measure,Unit Cost,Point of Use,Commodity Class,Reorder Point,Standard Pack
+MFG-1001-BRKT,Steel Bracket Assembly,Acme Industrial,,A,Kanban,30,100,500,25,EA,12.50,Line 3 Cell A,Fabrications,150,50
+MFG-1002-SEAL,Hydraulic Seal Kit,Precision Parts Co,Global Fasteners,A,Min-Max,14,200,800,50,EA,3.45,Line 1 Cell B,Seals,300,100
+MFG-1003-VALVE,Control Valve 3/4 in,Precision Parts Co,,A,MRP,45,20,60,5,EA,142.00,Assembly Bay 2,Valves,30,10
+MFG-1004-HOSE,Hose Assembly 6mm,Global Fasteners,,B,Kanban,7,500,2000,100,EA,2.33,Line 2 Cell C,Hose & Fittings,750,200
+MFG-1005-GASKET,Gasket Set (Viton),Acme Industrial,Sterling Supply,B,Min-Max,10,300,1200,50,EA,4.10,Line 1 Cell A,Seals,400,100
+MFG-1006-BOLT,M8 Hex Bolt (Box 500),Global Fasteners,,C,2-Bin,3,2000,8000,500,BOX,0.80,Fastener Crib,Fasteners,3000,500
+MFG-1007-BEARING,Bearing SKF 6204,Precision Parts Co,,A,MRP,21,80,300,10,EA,24.00,Line 3 Cell B,Bearings,120,20
+MFG-1008-SHAFT,Drive Shaft Assembly,Sterling Supply,,A,MRP,60,5,20,1,EA,1466.67,Assembly Bay 1,Shafts,8,1
+MFG-1009-SPRING,Spring Retainer,Sterling Supply,Precision Parts Co,B,Kanban,14,200,600,25,EA,7.50,Line 2 Cell A,Springs,300,50
+MFG-1010-WASHER,M10 Flat Washer (Box 1000),Global Fasteners,,C,2-Bin,3,4000,12000,1000,BOX,0.24,Fastener Crib,Fasteners,6000,1000
+MFG-1011-GEARBOX,Gearbox Sub-Assembly,,, A,MRP,90,2,8,1,EA,1850.00,Assembly Bay 1,Subassemblies,3,1
+MFG-1012-CLAMP,Hose Clamp 12mm,Sterling Supply,,C,2-Bin,5,500,2000,100,EA,0.65,Line 2 Cell C,Hose & Fittings,750,200

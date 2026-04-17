@@ -35,6 +35,14 @@
         { key: 'overview', name: 'Overview',   path: '/procurement',        icon: 'dashboard' },
         { key: 'upload',   name: 'Upload POs', path: '/procurement/upload', icon: 'upload' }
       ]
+    },
+    {
+      key: 'pfep', name: 'PFEP Register', shortName: 'PFEP',
+      icon: 'list', path: '/pfep', badge: 'New',
+      subPages: [
+        { key: 'register', name: 'Register',    path: '/pfep',        icon: 'summary' },
+        { key: 'upload',   name: 'Import PFEP', path: '/pfep/upload', icon: 'upload' }
+      ]
     }
   ];
 

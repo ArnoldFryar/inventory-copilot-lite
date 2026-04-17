@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpsCopilot · PFEP Register</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/styles/procurement.css" />
+</head>
+<body>
+
+  <div class="app-layout">
+
+    <!-- ── Sidebar (rendered by sidebarRenderer.js) ──────────────────── -->
+    <nav id="appSidebar" class="app-sidebar" aria-label="Application navigation"></nav>
+
+    <!-- ── App body (topbar + content) ─────────────────────────────────── -->
+    <div class="app-body">
+
+      <header class="app-header">
+        <div class="app-header-inner">
+          <a href="/" class="header-logo" aria-label="OpsCopilot home">
+            <img src="/assets/logo/opscopilot-mark-gradient.svg" class="header-logo-mark" width="24" height="24" alt="" aria-hidden="true" draggable="false">
+            <span class="header-logo-name">OpsCopilot</span>
+          </a>
+          <div class="header-logo-divider" aria-hidden="true"></div>
+          <div class="app-header-text">
+            <h1>PFEP Register</h1>
+          </div>
+          <span class="header-method-pill">Early Access</span>
+          <!-- Right-aligned cluster -->
+          <div class="header-right-group">
+            <span id="planBadge" class="plan-badge hidden"></span>
+            <div id="accountMenu" class="account-menu hidden">
+              <span id="accountEmail" class="account-email"></span>
+              <button id="accountAvatarBtn" class="account-avatar-btn" type="button" aria-label="Account menu" aria-expanded="false" aria-haspopup="true">
+                <span id="accountInitial" class="account-initial" aria-hidden="true"></span>
+              </button>
+              <div id="accountDropdown" class="account-dropdown hidden" role="menu">
+                <span class="account-dropdown-email" id="accountDropdownEmail"></span>
+                <hr class="account-dropdown-sep" />
+                <button id="signOutBtn" class="account-dropdown-item" type="button" role="menuitem">Sign out</button>
+              </div>
+            </div>
+            <button id="signInBtn" class="sign-in-btn hidden" type="button">Sign in</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="app-main">
+
+        <!-- ── Import CTA banner ─────────────────────────────────────────── -->
+        <section class="pco-upload-banner card">
+          <div class="pco-upload-banner-content">
+            <div class="pco-upload-banner-text">
+              <span class="hero-eyebrow">PFEP Register</span>
+              <h2 class="pco-upload-title">Your parts replenishment command&nbsp;centre</h2>
+              <p class="pco-upload-sub">Import a PFEP export to build a single source of truth for every part &mdash; suppliers, lead times, min/max, and data-quality&nbsp;alerts.</p>
+              <div class="pco-feature-strip">
+                <span class="pco-feature-item">
+                  <span data-icon="check" data-icon-size="11" aria-hidden="true"></span>
+                  Data gap detection
+                </span>
+                <span class="pco-feature-item">
+                  <span data-icon="check" data-icon-size="11" aria-hidden="true"></span>
+                  Parameter consistency checks
+                </span>
+                <span class="pco-feature-item">
+                  <span data-icon="check" data-icon-size="11" aria-hidden="true"></span>
+                  Secondary-supplier alerts
+                </span>
+              </div>
+            </div>
+            <div class="pco-upload-banner-actions">
+              <a href="/pfep/upload" class="procurement-cta-primary pco-cta-lg">
+                <span data-icon="upload" data-icon-size="18" data-icon-class="procurement-cta-icon" aria-hidden="true"></span>
+                Import PFEP CSV
+              </a>
+              <p class="pco-cta-hint">CSV from any ERP &middot; Results in under 3&thinsp;s</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Signed-out state banner (shown by pfepRegisterController.js) ──── -->
+        <div id="pfepGuestBanner" class="pco-guest-banner hidden" role="status" aria-live="polite">
+          <span class="pco-guest-banner-icon" aria-hidden="true">
+            <span data-icon="lock" data-icon-size="16"></span>
+          </span>
+          <div class="pco-guest-banner-text">
+            <strong>Sign in to access your PFEP register</strong>
+            <span>Import history and saved parts are linked to your account. Sign in to view your register data.</span>
+          </div>
+          <a href="/?signin=1" class="pco-guest-banner-cta">Sign in</a>
+        </div>
+
+        <!-- ── KPI Grid ──────────────────────────────────────────────────── -->
+        <div class="pco-kpi-grid" role="list" aria-label="Key PFEP register metrics">
+
+          <div class="pco-kpi-card pco-kpi--neutral" role="listitem">
+            <div class="pco-kpi-top">
+              <span class="pco-kpi-label">Total Parts</span>
+              <span class="pco-kpi-icon-wrap" aria-hidden="true">
+                <span data-icon="list" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
+              </span>
+            </div>
+            <div id="kpiTotalParts" class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
+            <div class="pco-kpi-desc">Unique parts in register</div>
+          </div>
+
+          <div class="pco-kpi-card pco-kpi--brand" role="listitem">
+            <div class="pco-kpi-top">
+              <span class="pco-kpi-label">A-Class Parts</span>
+              <span class="pco-kpi-icon-wrap" aria-hidden="true">
+                <span data-icon="summary" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
+              </span>
+            </div>
+            <div id="kpiAClassParts" class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
+            <div class="pco-kpi-desc">Highest velocity / criticality</div>
+          </div>
+
+          <div class="pco-kpi-card pco-kpi--danger" role="listitem">
+            <div class="pco-kpi-top">
+              <span class="pco-kpi-label">Missing Supplier</span>
+              <span class="pco-kpi-icon-wrap" aria-hidden="true">
+                <span data-icon="alert" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
+              </span>
+            </div>
+            <div id="kpiMissingSupplier" class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
+            <div class="pco-kpi-desc">Parts with no supplier assigned</div>
+          </div>
+
+          <div class="pco-kpi-card pco-kpi--warning" role="listitem">
+            <div class="pco-kpi-top">
+              <span class="pco-kpi-label">Missing Lead Time</span>
+              <span class="pco-kpi-icon-wrap" aria-hidden="true">
+                <span data-icon="summary" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
+              </span>
+            </div>
+            <div id="kpiMissingLeadTime" class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
+            <div class="pco-kpi-desc">Parts with no lead time</div>
+          </div>
+
+          <div class="pco-kpi-card pco-kpi--alert" role="listitem">
+            <div class="pco-kpi-top">
+              <span class="pco-kpi-label">Parameter Issues</span>
+              <span class="pco-kpi-icon-wrap" aria-hidden="true">
+                <span data-icon="flag" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
+              </span>
+            </div>
+            <div id="kpiParamIssues" class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
+            <div class="pco-kpi-desc">Min/max or pack-multiple conflicts</div>
+          </div>
+
+          <div class="pco-kpi-card pco-kpi--purple" role="listitem">
+            <div class="pco-kpi-top">
+              <span class="pco-kpi-label">Single Source (A)</span>
+              <span class="pco-kpi-icon-wrap" aria-hidden="true">
+                <span data-icon="user" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
+              </span>
+            </div>
+            <div id="kpiSingleSourceA" class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
+            <div class="pco-kpi-desc">A-class with no backup supplier</div>
+          </div>
+
+        </div><!-- /.pco-kpi-grid -->
+
+        <!-- ── Middle row: Import History + Data Quality Alerts ───────────── -->
+        <div class="pco-middle-row">
+
+          <!-- Import History -->
+          <section class="pco-runs-card card" aria-labelledby="pfepRecentRunsTitle">
+            <div class="pco-section-header">
+              <div>
+                <h2 id="pfepRecentRunsTitle" class="pco-section-title">Import History</h2>
+                <p class="card-sub">Your recent PFEP imports</p>
+              </div>
+              <a href="/pfep/upload" class="pco-section-action" aria-label="Import a new PFEP file">
+                <span data-icon="upload" data-icon-size="13" aria-hidden="true"></span>
+                New import
+              </a>
+            </div>
+            <!-- Populated by pfepRegisterController.js -->
+            <div id="pfepRunsList" class="hidden"></div>
+            <div id="pfepRunsEmpty" class="pco-empty-state">
+              <span class="pco-empty-icon-wrap" aria-hidden="true">
+                <span data-icon="history" data-icon-size="26"></span>
+              </span>
+              <p class="pco-empty-title">No imports yet</p>
+              <p class="pco-empty-sub">Upload a PFEP CSV to start tracking your import history here.</p>
+              <a href="/pfep/upload" class="pco-empty-cta">Import your first PFEP</a>
+            </div>
+            <div id="pfepRunsGuest" class="pco-empty-state hidden">
+              <span class="pco-empty-icon-wrap" aria-hidden="true">
+                <span data-icon="history" data-icon-size="26"></span>
+              </span>
+              <p class="pco-empty-title">Sign in to see your history</p>
+              <p class="pco-empty-sub">PFEP imports are saved to your account automatically. Sign in to view past imports.</p>
+              <a href="/?signin=1" class="pco-empty-cta">Sign in</a>
+            </div>
+          </section>
+
+          <!-- Data Quality Alerts -->
+          <section class="pco-risks-card card" aria-labelledby="pfepAlertsTitle">
+            <div class="pco-section-header">
+              <div>
+                <h2 id="pfepAlertsTitle" class="pco-section-title">Data Quality Alerts</h2>
+                <p class="card-sub">Issues flagged from your latest import</p>
+              </div>
+              <span id="pfepAlertsBadge" class="pco-count-badge hidden"></span>
+            </div>
+            <!-- Populated by pfepRegisterController.js -->
+            <div id="pfepAlertsList" class="hidden"></div>
+            <div id="pfepAlertsEmpty" class="pco-empty-state">
+              <span class="pco-empty-icon-wrap" aria-hidden="true">
+                <span data-icon="risk" data-icon-size="26"></span>
+              </span>
+              <p class="pco-empty-title">No active alerts</p>
+              <p class="pco-empty-sub">Data quality alerts surface automatically after your first PFEP import.</p>
+              <a href="/pfep/upload" class="pco-empty-cta">Run first import</a>
+            </div>
+            <div id="pfepAlertsGuest" class="pco-empty-state hidden">
+              <span class="pco-empty-icon-wrap" aria-hidden="true">
+                <span data-icon="lock" data-icon-size="26"></span>
+              </span>
+              <p class="pco-empty-title">Sign in to view alerts</p>
+              <p class="pco-empty-sub">Data quality findings from your saved imports are only visible to signed-in users.</p>
+              <a href="/?signin=1" class="pco-empty-cta">Sign in</a>
+            </div>
+          </section>
+
+        </div><!-- /.pco-middle-row -->
+
+        <!-- ── Parts Register Table ──────────────────────────────────────── -->
+        <section class="pco-supplier-card card" aria-labelledby="pfepRegisterTitle">
+          <div class="pco-section-header">
+            <div>
+              <h2 id="pfepRegisterTitle" class="pco-section-title">Parts Register</h2>
+              <p class="card-sub" id="pfepRegisterSubtext">Ranked by part number</p>
+            </div>
+            <span id="pfepPartsBadge" class="pco-count-badge hidden"></span>
+            <input
+              type="search"
+              id="pfepSearch"
+              class="pco-search-input"
+              placeholder="Filter by part, supplier…"
+              aria-label="Filter parts"
+            />
+          </div>
+          <div id="pfepTableWrap" class="pco-supplier-table-wrap">
+            <table class="pco-supplier-table" id="pfepTable" aria-label="PFEP parts register">
+              <thead>
+                <tr>
+                  <th scope="col">Part Number</th>
+                  <th scope="col">Description</th>
+                  <th scope="col">Supplier</th>
+                  <th scope="col">ABC</th>
+                  <th scope="col">Repl. Method</th>
+                  <th scope="col" class="pco-th-num">Lead Time</th>
+                  <th scope="col" class="pco-th-num">Min</th>
+                  <th scope="col" class="pco-th-num">Max</th>
+                  <th scope="col" class="pco-th-num">Pack Mult.</th>
+                  <th scope="col">UOM</th>
+                  <th scope="col" class="pco-th-num">Unit Cost</th>
+                  <th scope="col">Point of Use</th>
+                </tr>
+              </thead>
+              <tbody id="pfepTableBody">
+                <tr id="pfepTableEmpty">
+                  <td colspan="12" class="pco-td-empty">
+                    Import a PFEP CSV to populate the parts register.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="pfepTableGuest" class="pco-empty-state hidden" style="padding: var(--space-6) 0;">
+            <span class="pco-empty-icon-wrap" aria-hidden="true">
+              <span data-icon="lock" data-icon-size="26"></span>
+            </span>
+            <p class="pco-empty-title">Sign in to view your parts register</p>
+            <p class="pco-empty-sub">Your PFEP data is linked to your account.</p>
+            <a href="/?signin=1" class="pco-empty-cta">Sign in</a>
+          </div>
+        </section>
+
+      </main>
+
+      <footer class="app-footer">
+        &copy; 2026 OpsCopilot &middot; PFEP Register
+      </footer>
+
+    </div><!-- /.app-body -->
+  </div><!-- /.app-layout -->
+
+  <script src="/js/sidebarRenderer.js"></script>
+  <script src="/analytics.js"></script>
+  <script src="/auth.js"></script>
+  <script src="/js/Icon.js"></script>
+  <script src="/js/supportModal.js"></script>
+  <script src="/js/pfep/pfepApp.js"></script>
+  <script src="/js/pfep/pfepRegisterController.js"></script>
+
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+</body>
+</html>

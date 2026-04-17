@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpsCopilot · Import PFEP Register</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/styles/procurement.css" />
+</head>
+<body>
+
+  <div class="app-layout">
+
+    <!-- ── Sidebar ────────────────────────────────────────────────── -->
+    <nav id="appSidebar" class="app-sidebar" aria-label="Application navigation"></nav>
+
+    <!-- ── App body ───────────────────────────────────────────────── -->
+    <div class="app-body">
+
+      <header class="app-header">
+        <div class="app-header-inner">
+          <a href="/" class="header-logo" aria-label="OpsCopilot home">
+            <img src="/assets/logo/opscopilot-mark-gradient.svg" class="header-logo-mark" width="24" height="24" alt="" aria-hidden="true" draggable="false">
+            <span class="header-logo-name">OpsCopilot</span>
+          </a>
+          <div class="header-logo-divider" aria-hidden="true"></div>
+          <div class="app-header-text">
+            <a href="/pfep" class="pco-breadcrumb-link">PFEP Register</a>
+            <span class="pco-breadcrumb-sep" aria-hidden="true">/</span>
+            <h1>Import PFEP</h1>
+          </div>
+          <span class="header-method-pill">Early Access</span>
+          <div class="header-right-group">
+            <span id="planBadge" class="plan-badge hidden"></span>
+            <div id="accountMenu" class="account-menu hidden">
+              <span id="accountEmail" class="account-email"></span>
+              <button id="accountAvatarBtn" class="account-avatar-btn" type="button" aria-label="Account menu" aria-expanded="false" aria-haspopup="true">
+                <span id="accountInitial" class="account-initial" aria-hidden="true"></span>
+              </button>
+              <div id="accountDropdown" class="account-dropdown hidden" role="menu">
+                <span class="account-dropdown-email" id="accountDropdownEmail"></span>
+                <hr class="account-dropdown-sep" />
+                <button id="signOutBtn" class="account-dropdown-item" type="button" role="menuitem">Sign out</button>
+              </div>
+            </div>
+            <button id="signInBtn" class="sign-in-btn hidden" type="button">Sign in</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="app-main">
+
+        <section class="upload-section card">
+
+          <!-- ── Hero ──────────────────────────────────────────────── -->
+          <div class="hero-headline">
+            <span class="hero-eyebrow">PFEP Register</span>
+            <h2 class="hero-title">Import your Plan For Every&nbsp;Part</h2>
+            <p class="hero-subtext">Upload a PFEP CSV export. Replenishment parameters, lead times, and data-quality alerts surface in&nbsp;seconds.</p>
+            <div class="trust-strip">
+              <span class="trust-item">
+                <span class="trust-icon" aria-hidden="true"><span data-icon="check" data-icon-size="11"></span></span>
+                Column auto-detection
+              </span>
+              <span class="trust-item">
+                <span class="trust-icon" aria-hidden="true"><span data-icon="check" data-icon-size="11"></span></span>
+                Idempotent re-import
+              </span>
+              <span class="trust-item">
+                <span class="trust-icon" aria-hidden="true"><span data-icon="check" data-icon-size="11"></span></span>
+                5&thinsp;MB &middot; CSV only
+              </span>
+            </div>
+          </div>
+
+          <!-- ── Upload engine ──────────────────────────────────────── -->
+          <div class="upload-engine-wrapper">
+
+            <div class="upload-engine-header">
+              <span class="upload-step-badge">Step 1</span>
+              <h2>Select your PFEP export file</h2>
+            </div>
+
+            <p class="context-block">
+              Columns are auto-detected from common PFEP templates (Excel, SAP MM, Oracle Inventory, NetSuite, Epicor).
+              Only <strong>Part Number</strong> is required. All other columns enrich data quality scoring and cross-referencing.
+            </p>
+
+            <form id="pfepUploadForm" enctype="multipart/form-data">
+
+              <!-- Dropzone -->
+              <label class="file-label" for="pfepfile" id="pfepDropZone" aria-label="Upload PFEP CSV — click or drag and drop">
+                <div class="file-label-ring" aria-hidden="true">
+                  <span data-icon="upload" data-icon-size="28" data-icon-class="file-label-icon" aria-hidden="true"></span>
+                </div>
+                <span id="pfepFileLabel" class="file-label-text">Choose a PFEP CSV file&hellip;</span>
+                <span class="file-label-hint">or drag and drop &middot; .csv up to 5&thinsp;MB</span>
+                <!-- name="csvfile" matches backend upload.single('csvfile') -->
+                <input type="file" id="pfepfile" name="csvfile" accept=".csv" />
+              </label>
+
+              <!-- Import CTA -->
+              <button type="submit" id="pfepSubmitBtn" class="analyze-cta" disabled>
+                <span data-icon="play" data-icon-size="16" data-icon-class="analyze-cta-icon" aria-hidden="true"></span>
+                <span id="pfepSubmitLabel">Import PFEP</span>
+              </button>
+
+            </form>
+
+            <!-- Utility row -->
+            <div class="demo-hint" style="margin-top: var(--space-4);">
+              <span class="demo-hint-label">No file ready?</span>
+              <a href="/sample-pfep.csv" id="pfepSampleDownload" class="link-btn" download="sample_pfep.csv">Download sample PFEP template</a>
+            </div>
+
+            <div class="upload-proof-line" aria-hidden="true">
+              <span data-icon="shield" data-icon-size="13" data-icon-class="upload-proof-icon"></span>
+              Files are processed server-side and not retained after analysis.
+            </div>
+
+            <!-- Validation / feedback area -->
+            <div id="pfepErrorBanner"   class="error-banner   hidden" role="alert"  aria-live="assertive"></div>
+            <div id="pfepWarningBanner" class="warning-banner hidden" role="status" aria-live="polite"></div>
+            <div id="pfepSuccessPanel"  class="pco-upload-result-panel hidden" role="status" aria-live="polite"></div>
+
+          </div><!-- /.upload-engine-wrapper -->
+
+          <!-- ── Column guide ──────────────────────────────────────── -->
+          <details class="file-requirements">
+            <summary>Required and optional columns</summary>
+            <div class="file-req-body">
+
+              <div class="pco-col-guide">
+
+                <div class="pco-col-guide-group">
+                  <p><strong>Required column</strong> &mdash; import cannot proceed without this:</p>
+                  <ul>
+                    <li>
+                      <strong>Part Number</strong>
+                      <span class="pco-col-aliases"><code>Part Number</code> &middot; <code>Part No</code> &middot; <code>Item Number</code> &middot; <code>SKU</code> &middot; <code>Material</code> &middot; <code>Item Code</code></span>
+                    </li>
+                  </ul>
+
+                  <p style="margin-top: var(--space-3);"><strong>Recommended columns</strong> &mdash; enable data quality alerts:</p>
+                  <ul>
+                    <li>
+                      <strong>Supplier</strong>
+                      <span class="pco-col-aliases"><code>Supplier</code> &middot; <code>Vendor</code> &middot; <code>Vendor Name</code> &middot; <code>Manufacturer</code></span>
+                    </li>
+                    <li>
+                      <strong>Lead Time</strong>
+                      <span class="pco-col-aliases"><code>Lead Time Days</code> &middot; <code>Lead Time</code> &middot; <code>LT</code> &middot; <code>Supplier Lead Time</code></span>
+                    </li>
+                    <li>
+                      <strong>Min / Max Quantities</strong>
+                      <span class="pco-col-aliases"><code>Min Qty</code> &middot; <code>Min</code> &middot; <code>MOQ</code> &middot; <code>Max Qty</code> &middot; <code>Max</code></span>
+                    </li>
+                    <li>
+                      <strong>Pack Multiple</strong>
+                      <span class="pco-col-aliases"><code>Pack Multiple</code> &middot; <code>Order Multiple</code> &middot; <code>Lot Multiple</code></span>
+                    </li>
+                    <li>
+                      <strong>ABC Class</strong>
+                      <span class="pco-col-aliases"><code>ABC Class</code> &middot; <code>ABC</code> &middot; <code>Velocity Class</code> &middot; <code>ABC Code</code></span>
+                    </li>
+                  </ul>
+                </div><!-- /.pco-col-guide-group -->
+
+                <div class="pco-col-guide-group">
+                  <p><strong>Optional columns</strong> &mdash; enrich the register:</p>
+                  <ul>
+                    <li><code>Part Description</code> / <code>Description</code></li>
+                    <li><code>Secondary Supplier</code> / <code>Alternate Supplier</code> / <code>Backup Supplier</code></li>
+                    <li><code>Supplier Part Number</code> / <code>Vendor Part No</code></li>
+                    <li><code>Replenishment Method</code> / <code>Planning Method</code></li>
+                    <li><code>Reorder Point</code> / <code>ROP</code> / <code>Safety Stock</code></li>
+                    <li><code>Standard Pack</code> / <code>Package Size</code></li>
+                    <li><code>Unit Of Measure</code> / <code>UOM</code></li>
+                    <li><code>Unit Cost</code> / <code>Std Cost</code></li>
+                    <li><code>Annual Usage</code> / <code>Annual Demand</code></li>
+                    <li><code>Point Of Use</code> / <code>POU</code> / <code>Bin Location</code></li>
+                    <li><code>Plant</code> / <code>Facility</code> / <code>Site</code></li>
+                    <li><code>Commodity Class</code> / <code>Commodity</code></li>
+                    <li><code>Notes</code> / <code>Comments</code></li>
+                  </ul>
+                </div><!-- /.pco-col-guide-group -->
+
+              </div><!-- /.pco-col-guide -->
+
+              <p class="file-req-not-supported">
+                <strong>File format:</strong> Comma-delimited CSV (.csv) only, up to 5&thinsp;MB.
+                UTF-8 or Windows-1252 encoding.
+                In Excel: <em>Save As &rarr; CSV (Comma delimited) (*.csv)</em> before uploading.
+                Re-importing the same part numbers updates existing records &mdash; no duplicates are created.
+              </p>
+
+            </div>
+          </details><!-- /.file-requirements -->
+
+          <!-- ── FAQ ──────────────────────────────────────────────── -->
+          <details class="faq-block">
+            <summary>Common import errors and fixes</summary>
+            <div class="file-req-body">
+
+              <p class="faq-q">Error: &ldquo;missing required columns&rdquo;</p>
+              <p class="faq-a">No recognised column found for Part Number. Check the accepted names in the column guide above, or <a href="/sample-pfep.csv" download="sample_pfep.csv" class="pco-inline-link">download the sample PFEP template</a> as a reference.</p>
+
+              <p class="faq-q">Error mentions semicolons, tabs, or pipes</p>
+              <p class="faq-a">Non-comma delimiter detected. In Excel: <em>Save As &rarr; CSV (Comma delimited) (*.csv)</em> and re-upload.</p>
+
+              <p class="faq-q">Some rows were skipped</p>
+              <p class="faq-a">Rows without a Part Number value are silently skipped. Ensure every row has a Part Number filled in.</p>
+
+              <p class="faq-q">Error: file is too large</p>
+              <p class="faq-a">Max 5&thinsp;MB. Split the PFEP into smaller per-plant or per-commodity batches and re-import.</p>
+
+              <p class="faq-q">Duplicate parts after re-import?</p>
+              <p class="faq-a">No &mdash; re-importing the same Part Number updates the existing record. The register uses upsert semantics, so re-imports are safe and idempotent.</p>
+
+            </div>
+          </details><!-- /.faq-block -->
+
+        </section>
+
+      </main>
+
+      <footer class="app-footer">
+        &copy; 2026 OpsCopilot &middot; PFEP Register
+      </footer>
+
+    </div><!-- /.app-body -->
+  </div><!-- /.app-layout -->
+
+  <script src="/js/sidebarRenderer.js"></script>
+  <script src="/analytics.js"></script>
+  <script src="/auth.js"></script>
+  <script src="/js/Icon.js"></script>
+  <script src="/js/supportModal.js"></script>
+  <script src="/js/pfep/pfepApp.js"></script>
+  <script src="/js/pfep/pfepUploadController.js"></script>
+
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+</body>
+</html>

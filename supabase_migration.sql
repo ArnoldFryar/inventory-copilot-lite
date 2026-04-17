@@ -493,3 +493,119 @@ DROP POLICY IF EXISTS "Users can delete own action_items" ON procurement_action_
 CREATE POLICY "Users can delete own action_items"
   ON procurement_action_items FOR DELETE
   USING (auth.uid() = user_id);
+
+-- ============================================================================
+-- PFEP (Plan For Every Part) — master parts register
+--
+-- The PFEP register stores per-part replenishment parameters: supplier(s),
+-- lead time, pack multiple, min/max quantities, point-of-use, and ABC class.
+-- It is the data layer that bridges inventory triage and procurement analysis —
+-- a stable source of truth for how each part should be sourced and stocked.
+--
+-- Design decisions:
+--   • UNIQUE (user_id, part_number) enables upsert semantics — importing the
+--     same PFEP file twice is idempotent.  Updated parts overwrite old values.
+--   • source_run_id links back to the analysis_runs row for the import that
+--     last set this part's values.  ON DELETE SET NULL so parts survive if the
+--     import event is purged from history.
+--   • replenishment_method uses a closed-set CHECK; mirrors pfepColumnMap.js.
+--   • abc_class uses a CHECK; null is permitted for unclassified parts.
+--   • Monetary / quantity values use numeric (not integer) for decimal fidelity.
+--
+-- Run this section after the procurement schema has been applied.
+-- ============================================================================
+
+-- ── Extend module_key CHECK to include 'pfep' ────────────────────────────────
+-- The original ADD COLUMN constrained module_key to ('inventory','procurement').
+-- Drop and re-add the constraint to include 'pfep'.  Safe to re-run.
+ALTER TABLE analysis_runs
+  DROP CONSTRAINT IF EXISTS analysis_runs_module_key_check;
+
+ALTER TABLE analysis_runs
+  ADD CONSTRAINT analysis_runs_module_key_check
+    CHECK (module_key IN ('inventory', 'procurement', 'pfep'));
+
+-- ── pfep_parts ───────────────────────────────────────────────────────────────
+-- One row per unique part number per user.  Upserted on every PFEP CSV import.
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS pfep_parts (
+  id                   uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id              uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+
+  -- Identity
+  part_number          text        NOT NULL,
+  part_description     text,
+  commodity_class      text,
+  abc_class            text        CHECK (abc_class IN ('A', 'B', 'C')),
+
+  -- Supplier(s)
+  supplier             text,
+  secondary_supplier   text,
+  supplier_part_number text,
+
+  -- Replenishment parameters
+  replenishment_method text        NOT NULL DEFAULT 'min_max'
+    CHECK (replenishment_method IN (
+      'min_max', 'kanban', 'mrp', 'consignment', 'jit', 'reorder_point', 'other'
+    )),
+  lead_time_days       integer,
+  reorder_point        numeric,
+  min_qty              numeric,
+  max_qty              numeric,
+  pack_multiple        numeric,
+  standard_pack        numeric,
+  unit_of_measure      text,
+
+  -- Cost & demand
+  unit_cost            numeric,
+  annual_usage         numeric,
+
+  -- Location
+  point_of_use         text,
+  plant                text,
+
+  -- Free-form
+  notes                text,
+
+  -- Import provenance
+  source_run_id        uuid        REFERENCES analysis_runs(id) ON DELETE SET NULL,
+  imported_at          timestamptz NOT NULL DEFAULT now(),
+  created_at           timestamptz NOT NULL DEFAULT now(),
+  updated_at           timestamptz NOT NULL DEFAULT now()
+);
+
+-- Unique constraint: one part row per user.  Drives ON CONFLICT upsert.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_pfep_parts_user_part
+  ON pfep_parts (user_id, part_number);
+
+-- Fast per-user listing sorted by most-recently updated.
+CREATE INDEX IF NOT EXISTS idx_pfep_parts_user
+  ON pfep_parts (user_id, updated_at DESC);
+
+-- Supports supplier-level cross-referencing with procurement data.
+CREATE INDEX IF NOT EXISTS idx_pfep_parts_supplier
+  ON pfep_parts (user_id, supplier);
+
+ALTER TABLE pfep_parts ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can read own pfep_parts" ON pfep_parts;
+CREATE POLICY "Users can read own pfep_parts"
+  ON pfep_parts FOR SELECT
+  USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert own pfep_parts" ON pfep_parts;
+CREATE POLICY "Users can insert own pfep_parts"
+  ON pfep_parts FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update own pfep_parts" ON pfep_parts;
+CREATE POLICY "Users can update own pfep_parts"
+  ON pfep_parts FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete own pfep_parts" ON pfep_parts;
+CREATE POLICY "Users can delete own pfep_parts"
+  ON pfep_parts FOR DELETE
+  USING (auth.uid() = user_id);

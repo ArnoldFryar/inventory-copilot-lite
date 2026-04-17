@@ -43,6 +43,20 @@ const MODULES = {
       { key: 'upload',    name: 'Upload POs',  path: '/procurement/upload',    icon: 'upload' },
     ],
   },
+  pfep: {
+    key:         'pfep',
+    name:        'PFEP Register',
+    shortName:   'PFEP',
+    icon:        'list',
+    path:        '/pfep',
+    enabled:     true,
+    badge:       'New',
+    description: 'Manage your Plan For Every Part register — replenishment parameters, lead times, and supplier data for every SKU.',
+    subPages: [
+      { key: 'register', name: 'Register',    path: '/pfep',         icon: 'summary' },
+      { key: 'upload',   name: 'Import PFEP', path: '/pfep/upload',  icon: 'upload' },
+    ],
+  },
 };
 
 /**

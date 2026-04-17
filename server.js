@@ -137,6 +137,7 @@ app.use(require('./server/routes/upload'));
 app.use(require('./server/routes/events'));
 app.use(require('./server/routes/support'));
 app.use(require('./server/routes/procurement'));
+app.use(require('./server/routes/pfep'));
 
 // ---------------------------------------------------------------------------
 // Global error handler â€” catches unhandled throws in async routes.

@@ -83,6 +83,18 @@
           </div>
         </section>
 
+        <!-- ── Signed-out state banner (shown by procurementDashboard.js) ──── -->
+        <div id="dashboardGuestBanner" class="pco-guest-banner hidden" role="status" aria-live="polite">
+          <span class="pco-guest-banner-icon" aria-hidden="true">
+            <span data-icon="lock" data-icon-size="16"></span>
+          </span>
+          <div class="pco-guest-banner-text">
+            <strong>Sign in to access your dashboard history</strong>
+            <span>Analysis results are saved to your account. Sign in to view KPIs, past runs, risk flags, and supplier data.</span>
+          </div>
+          <a href="/?signin=1" class="pco-guest-banner-cta">Sign in</a>
+        </div>
+
         <!-- ── KPI Grid ──────────────────────────────────────────────────── -->
         <div class="pco-kpi-grid" role="list" aria-label="Key procurement metrics">
 
@@ -93,7 +105,7 @@
                 <span data-icon="table" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
               </span>
             </div>
-            <div class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
+            <div id="kpiOpenPoLines" class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
             <div class="pco-kpi-desc">Active lines across all suppliers</div>
           </div>
 
@@ -104,7 +116,7 @@
                 <span data-icon="alert" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
               </span>
             </div>
-            <div class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
+            <div id="kpiPastDueLines" class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
             <div class="pco-kpi-desc">Delivery date already passed</div>
           </div>
 
@@ -115,7 +127,7 @@
                 <span data-icon="summary" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
               </span>
             </div>
-            <div class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
+            <div id="kpiDueSoon" class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
             <div class="pco-kpi-desc">Due within 7 days</div>
           </div>
 
@@ -126,7 +138,7 @@
                 <span data-icon="flag" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
               </span>
             </div>
-            <div class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
+            <div id="kpiHighRiskLines" class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
             <div class="pco-kpi-desc">Single-source or high variance</div>
           </div>
 
@@ -137,7 +149,7 @@
                 <span data-icon="user" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
               </span>
             </div>
-            <div class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
+            <div id="kpiSuppliersAtRisk" class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
             <div class="pco-kpi-desc">Flagged for follow-up</div>
           </div>
 
@@ -148,7 +160,7 @@
                 <span data-icon="chart" data-icon-size="14" data-icon-class="pco-kpi-icon"></span>
               </span>
             </div>
-            <div class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
+            <div id="kpiDollarExposure" class="pco-kpi-value pco-value-placeholder" aria-label="No data yet">&mdash;</div>
             <div class="pco-kpi-desc">At-risk open order value</div>
           </div>
 
@@ -169,13 +181,23 @@
                 New run
               </a>
             </div>
-            <div class="pco-empty-state">
+            <!-- Populated by procurementDashboard.js -->
+            <div id="recentRunsList" class="hidden"></div>
+            <div id="recentRunsEmpty" class="pco-empty-state">
               <span class="pco-empty-icon-wrap" aria-hidden="true">
                 <span data-icon="history" data-icon-size="26"></span>
               </span>
               <p class="pco-empty-title">No runs yet</p>
               <p class="pco-empty-sub">Upload a PO CSV to start tracking your analysis history here.</p>
               <a href="/procurement/upload" class="pco-empty-cta">Upload your first report</a>
+            </div>
+            <div id="recentRunsGuest" class="pco-empty-state hidden">
+              <span class="pco-empty-icon-wrap" aria-hidden="true">
+                <span data-icon="history" data-icon-size="26"></span>
+              </span>
+              <p class="pco-empty-title">Sign in to see your history</p>
+              <p class="pco-empty-sub">Analysis runs are saved to your account automatically. Sign in to view and revisit past reports.</p>
+              <a href="/?signin=1" class="pco-empty-cta">Sign in</a>
             </div>
           </section>
 
@@ -184,17 +206,27 @@
             <div class="pco-section-header">
               <div>
                 <h2 id="pcoTopRisksTitle" class="pco-section-title">Top Risks</h2>
-                <p class="card-sub">Highest-priority action items</p>
+                <p class="card-sub">Highest-priority action items from your latest run</p>
               </div>
-              <span class="pco-coming-pill">Coming soon</span>
+              <span id="topRisksBadge" class="pco-count-badge hidden"></span>
             </div>
-            <div class="pco-empty-state">
+            <!-- Populated by procurementDashboard.js -->
+            <div id="topRisksList" class="hidden"></div>
+            <div id="topRisksEmpty" class="pco-empty-state">
               <span class="pco-empty-icon-wrap" aria-hidden="true">
                 <span data-icon="risk" data-icon-size="26"></span>
               </span>
               <p class="pco-empty-title">No active risks</p>
               <p class="pco-empty-sub">Risk flags surface automatically after your first PO analysis.</p>
               <a href="/procurement/upload" class="pco-empty-cta">Run first analysis</a>
+            </div>
+            <div id="topRisksGuest" class="pco-empty-state hidden">
+              <span class="pco-empty-icon-wrap" aria-hidden="true">
+                <span data-icon="lock" data-icon-size="26"></span>
+              </span>
+              <p class="pco-empty-title">Sign in to view risk flags</p>
+              <p class="pco-empty-sub">Risk findings from your saved runs are only visible to signed-in users.</p>
+              <a href="/?signin=1" class="pco-empty-cta">Sign in</a>
             </div>
           </section>
 
@@ -207,10 +239,10 @@
               <h2 id="pcoSupplierTitle" class="pco-section-title">Supplier Risk Breakdown</h2>
               <p class="card-sub">Ranked by delivery risk and open-order exposure</p>
             </div>
-            <span class="pco-coming-pill">Coming soon</span>
+            <span id="supplierBadge" class="pco-count-badge hidden"></span>
           </div>
-          <div class="pco-supplier-table-wrap">
-            <table class="pco-supplier-table" aria-label="Supplier risk table — no data yet">
+          <div id="supplierTableWrap" class="pco-supplier-table-wrap">
+            <table class="pco-supplier-table" aria-label="Supplier risk table">
               <thead>
                 <tr>
                   <th scope="col">Supplier</th>
@@ -221,12 +253,20 @@
                   <th scope="col">Status</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
+              <tbody id="supplierTableBody">
+                <tr id="supplierEmptyRow">
                   <td colspan="6" class="pco-table-empty-cell">
                     <div class="pco-table-empty-inner">
                       <span data-icon="user" data-icon-size="20" aria-hidden="true"></span>
                       <span>No supplier data yet &mdash; <a href="/procurement/upload" class="pco-inline-link">upload a PO report</a> to populate this table.</span>
+                    </div>
+                  </td>
+                </tr>
+                <tr id="supplierGuestRow" class="hidden">
+                  <td colspan="6" class="pco-table-empty-cell">
+                    <div class="pco-table-empty-inner">
+                      <span data-icon="lock" data-icon-size="20" aria-hidden="true"></span>
+                      <span>Supplier risk data is saved to your account. <a href="/?signin=1" class="pco-inline-link">Sign in</a> to view your saved breakdowns.</span>
                     </div>
                   </td>
                 </tr>
@@ -253,6 +293,7 @@
 
   <!-- Procurement page bootstrap -->
   <script src="/js/procurement/procurementApp.js"></script>
+  <script src="/js/procurement/procurementDashboard.js"></script>
 
   <!-- Toast container -->
   <div id="toastContainer" class="toast-container" aria-live="polite"></div>
