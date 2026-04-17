@@ -303,6 +303,22 @@ CREATE TABLE IF NOT EXISTS procurement_po_lines (
   row_index          integer     NOT NULL DEFAULT 0
 );
 
+-- Reconcile older deployments where the table already existed before newer
+-- procurement fields were added. CREATE TABLE IF NOT EXISTS does not evolve an
+-- existing table shape, so these ALTERs are required for safe re-runs.
+ALTER TABLE procurement_po_lines
+  ADD COLUMN IF NOT EXISTS buyer text,
+  ADD COLUMN IF NOT EXISTS plant text,
+  ADD COLUMN IF NOT EXISTS quantity_received numeric,
+  ADD COLUMN IF NOT EXISTS confirmed_date date,
+  ADD COLUMN IF NOT EXISTS actual_date date,
+  ADD COLUMN IF NOT EXISTS applied_rules jsonb NOT NULL DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS category text,
+  ADD COLUMN IF NOT EXISTS risk_flags text[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS risk_score integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS severity text NOT NULL DEFAULT 'Low',
+  ADD COLUMN IF NOT EXISTS row_index integer NOT NULL DEFAULT 0;
+
 CREATE INDEX IF NOT EXISTS idx_po_lines_run
   ON procurement_po_lines (run_id);
 
@@ -367,6 +383,15 @@ CREATE TABLE IF NOT EXISTS procurement_supplier_rollups (
     CHECK (severity IN ('High', 'Medium', 'Low'))
 );
 
+ALTER TABLE procurement_supplier_rollups
+  ADD COLUMN IF NOT EXISTS item_count integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS flagged_count integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS due_soon_count integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS past_due_dollars numeric NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS max_days_overdue integer,
+  ADD COLUMN IF NOT EXISTS risk_flags text[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS severity text NOT NULL DEFAULT 'Low';
+
 CREATE INDEX IF NOT EXISTS idx_supplier_rollups_run
   ON procurement_supplier_rollups (run_id);
 
@@ -419,6 +444,14 @@ CREATE TABLE IF NOT EXISTS procurement_insights (
   rule_details        jsonb       NOT NULL DEFAULT '{}'::jsonb
 );
 
+ALTER TABLE procurement_insights
+  ADD COLUMN IF NOT EXISTS affected_items text[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS metric_value numeric,
+  ADD COLUMN IF NOT EXISTS metric_label text,
+  ADD COLUMN IF NOT EXISTS risk_flags text[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS recommended_action text,
+  ADD COLUMN IF NOT EXISTS rule_details jsonb NOT NULL DEFAULT '{}'::jsonb;
+
 CREATE INDEX IF NOT EXISTS idx_insights_run
   ON procurement_insights (run_id);
 
@@ -464,6 +497,14 @@ CREATE TABLE IF NOT EXISTS procurement_action_items (
   created_at   timestamptz NOT NULL DEFAULT now(),
   updated_at   timestamptz NOT NULL DEFAULT now()
 );
+
+ALTER TABLE procurement_action_items
+  ADD COLUMN IF NOT EXISTS insight_id uuid REFERENCES procurement_insights(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS assignee text,
+  ADD COLUMN IF NOT EXISTS due_date date,
+  ADD COLUMN IF NOT EXISTS note text,
+  ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now(),
+  ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
 
 CREATE INDEX IF NOT EXISTS idx_action_items_run
   ON procurement_action_items (run_id);
