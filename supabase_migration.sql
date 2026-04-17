@@ -307,11 +307,21 @@ CREATE TABLE IF NOT EXISTS procurement_po_lines (
 -- procurement fields were added. CREATE TABLE IF NOT EXISTS does not evolve an
 -- existing table shape, so these ALTERs are required for safe re-runs.
 ALTER TABLE procurement_po_lines
+  ADD COLUMN IF NOT EXISTS line_number text,
+  ADD COLUMN IF NOT EXISTS item_code text,
+  ADD COLUMN IF NOT EXISTS item_description text,
+  ADD COLUMN IF NOT EXISTS quantity_ordered numeric,
   ADD COLUMN IF NOT EXISTS buyer text,
   ADD COLUMN IF NOT EXISTS plant text,
   ADD COLUMN IF NOT EXISTS quantity_received numeric,
+  ADD COLUMN IF NOT EXISTS unit_price numeric,
+  ADD COLUMN IF NOT EXISTS line_amount numeric NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS order_date date,
+  ADD COLUMN IF NOT EXISTS requested_date date,
   ADD COLUMN IF NOT EXISTS confirmed_date date,
   ADD COLUMN IF NOT EXISTS actual_date date,
+  ADD COLUMN IF NOT EXISTS delivery_status text NOT NULL DEFAULT 'pending',
+  ADD COLUMN IF NOT EXISTS days_variance integer,
   ADD COLUMN IF NOT EXISTS applied_rules jsonb NOT NULL DEFAULT '[]'::jsonb,
   ADD COLUMN IF NOT EXISTS category text,
   ADD COLUMN IF NOT EXISTS risk_flags text[] NOT NULL DEFAULT '{}',
@@ -384,7 +394,14 @@ CREATE TABLE IF NOT EXISTS procurement_supplier_rollups (
 );
 
 ALTER TABLE procurement_supplier_rollups
+  ADD COLUMN IF NOT EXISTS po_count integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS total_spend numeric NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS spend_share_pct numeric,
+  ADD COLUMN IF NOT EXISTS on_time_rate_pct numeric,
+  ADD COLUMN IF NOT EXISTS avg_days_variance numeric,
   ADD COLUMN IF NOT EXISTS item_count integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS overdue_count integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS high_risk_count integer NOT NULL DEFAULT 0,
   ADD COLUMN IF NOT EXISTS flagged_count integer NOT NULL DEFAULT 0,
   ADD COLUMN IF NOT EXISTS due_soon_count integer NOT NULL DEFAULT 0,
   ADD COLUMN IF NOT EXISTS past_due_dollars numeric NOT NULL DEFAULT 0,
@@ -445,6 +462,8 @@ CREATE TABLE IF NOT EXISTS procurement_insights (
 );
 
 ALTER TABLE procurement_insights
+  ADD COLUMN IF NOT EXISTS description text,
+  ADD COLUMN IF NOT EXISTS affected_supplier text,
   ADD COLUMN IF NOT EXISTS affected_items text[] NOT NULL DEFAULT '{}',
   ADD COLUMN IF NOT EXISTS metric_value numeric,
   ADD COLUMN IF NOT EXISTS metric_label text,
@@ -500,6 +519,8 @@ CREATE TABLE IF NOT EXISTS procurement_action_items (
 
 ALTER TABLE procurement_action_items
   ADD COLUMN IF NOT EXISTS insight_id uuid REFERENCES procurement_insights(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS title text,
+  ADD COLUMN IF NOT EXISTS status text NOT NULL DEFAULT 'open',
   ADD COLUMN IF NOT EXISTS assignee text,
   ADD COLUMN IF NOT EXISTS due_date date,
   ADD COLUMN IF NOT EXISTS note text,
