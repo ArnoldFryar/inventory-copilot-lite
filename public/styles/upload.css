@@ -178,6 +178,94 @@
   margin-bottom: var(--space-3);
 }
 
+.quick-start-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: center;
+  margin-bottom: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid rgba(20,184,166,0.18);
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(20,184,166,0.08) 0%, rgba(13,148,136,0.03) 100%);
+}
+
+.quick-start-label {
+  display: inline-block;
+  margin-bottom: var(--space-2);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--brand-400);
+}
+
+.quick-start-text {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink-300);
+}
+
+.quick-start-actions {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.quick-start-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 46px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    transform var(--dur-fast) var(--ease-out),
+    opacity var(--dur) var(--ease);
+}
+
+.quick-start-btn:active {
+  transform: translateY(0.5px) scale(0.99);
+  transition-duration: var(--dur-fast);
+}
+
+.quick-start-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.quick-start-btn-primary {
+  background: linear-gradient(135deg, var(--brand-600) 0%, var(--brand-700) 100%);
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(20,184,166,0.18);
+}
+
+.quick-start-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--brand-700) 0%, var(--brand-800) 100%);
+  box-shadow: 0 8px 24px rgba(20,184,166,0.24);
+  transform: translateY(-1px);
+}
+
+.quick-start-btn-secondary {
+  background: rgba(255,255,255,0.03);
+  color: var(--ink-200);
+  border-color: var(--border-2);
+}
+
+.quick-start-btn-secondary:hover:not(:disabled) {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(20,184,166,0.28);
+  transform: translateY(-1px);
+}
+
 .hint code {
   background: rgba(255,255,255,0.05);
   border: 1px solid var(--border-2);
@@ -469,6 +557,72 @@
   color: var(--ink-600);
 }
 
+.next-step-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid rgba(20,184,166,0.18);
+  background: linear-gradient(135deg, rgba(20,184,166,0.08) 0%, rgba(13,148,136,0.03) 100%);
+}
+
+.next-step-label {
+  margin-bottom: var(--space-2);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand-400);
+}
+
+.next-step-card h2 {
+  margin-bottom: var(--space-2);
+}
+
+.next-step-text {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink-300);
+}
+
+.next-step-actions {
+  flex-shrink: 0;
+}
+
+.next-step-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 190px;
+  min-height: 44px;
+  padding: 0 var(--space-5);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--brand-600) 0%, var(--brand-700) 100%);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition:
+    background var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    transform var(--dur-fast) var(--ease-out);
+  box-shadow: 0 4px 18px rgba(20,184,166,0.18);
+}
+
+.next-step-btn:hover {
+  background: linear-gradient(135deg, var(--brand-700) 0%, var(--brand-800) 100%);
+  box-shadow: 0 8px 24px rgba(20,184,166,0.24);
+  transform: translateY(-1px);
+}
+
+.next-step-btn:active {
+  transform: translateY(0.5px) scale(0.99);
+  transition-duration: var(--dur-fast);
+}
+
 /* ========================================================= */
 /*  Upload proof/trust line                                  */
 /* ========================================================= */
@@ -565,10 +719,10 @@ details[open].faq-block > summary::before { content: '\25be  '; }
 /* ========================================================= */
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ========================================================= */
-/*  Section labels (reused across sections)                  */
-   Left-border accent reinforces the color coding visually
-   ======================================================= */
+/* =========================================================
+  Section labels (reused across sections)
+  Left-border accent reinforces the color coding visually
+  ======================================================= */
 .section-label {
   display: inline-block;
   font-size: 10px;
@@ -598,6 +752,10 @@ details[open].faq-block > summary::before { content: '\25be  '; }
   .file-label-ring { width: 44px; height: 44px; }
   .trust-strip { flex-wrap: wrap; gap: var(--space-3); justify-content: center; }
   .upload-engine-wrapper { padding: var(--space-4); border-radius: var(--radius-md); }
+  .quick-start-panel { grid-template-columns: 1fr; padding: var(--space-4); }
+  .next-step-card { flex-direction: column; align-items: flex-start; }
+  .next-step-actions,
+  .next-step-btn { width: 100%; }
   .upload-proof-line { font-size: 10px; }
 }
 

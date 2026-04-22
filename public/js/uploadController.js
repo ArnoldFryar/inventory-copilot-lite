@@ -6,6 +6,7 @@
   var dom   = App.dom;
   var state = App.state;
   var track = App.track;
+  var SAMPLE_BUTTON_LABEL = 'Run sample analysis';
 
   // ── File selection ────────────────────────────────────────────────────────
   dom.fileInput.addEventListener('change', function () {
@@ -26,6 +27,7 @@
   // ── Form submit ───────────────────────────────────────────────────────────
   dom.form.addEventListener('submit', async function (event) {
     event.preventDefault();
+    var priorSource = state.analysisSource;
     App.hideError();
     App.hideResults();
     if (dom.demoBadge) dom.demoBadge.classList.add('hidden');
@@ -47,6 +49,11 @@
 
     // Prevent double-submit
     if (state.inFlight) return;
+    if (priorSource === 'sample') {
+      state.analysisSource = 'sample';
+    } else {
+      state.analysisSource = 'upload';
+    }
     state.inFlight = true;
     App.setLoading(true);
     track('upload_started');
@@ -108,6 +115,7 @@
 
       // Sync the label and submit button state, then auto-submit
       dom.fileInput.dispatchEvent(new Event('change'));
+      state.analysisSource = 'sample';
       track('sample_loaded');
       dom.form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
 
@@ -115,7 +123,7 @@
       App.showError(err.message || 'Failed to load sample data.');
     } finally {
       dom.loadSampleBtn.disabled    = false;
-      dom.loadSampleBtn.textContent = 'Load sample data';
+      dom.loadSampleBtn.textContent = SAMPLE_BUTTON_LABEL;
     }
   });
 
@@ -134,11 +142,13 @@
         App.showError('An upload is already in progress. Please wait for it to complete.');
         return;
       }
+      state.analysisSource = 'demo';
       state.inFlight = true;
       dom.liveDemoBtn.disabled    = true;
       dom.liveDemoBtn.textContent = 'Loading\u2026';
       App.hideError();
       App.hideResults();
+      state.analysisSource = 'demo';
       if (dom.demoBadge) dom.demoBadge.classList.add('hidden');
 
       try {
@@ -156,6 +166,18 @@
         state.inFlight = false;
         dom.liveDemoBtn.disabled    = false;
         dom.liveDemoBtn.textContent = '\u25B6 Try Live Demo';
+      }
+    });
+  }
+
+  if (dom.nextStepUploadBtn) {
+    dom.nextStepUploadBtn.addEventListener('click', function () {
+      var uploadSection = document.querySelector('.upload-section');
+      if (uploadSection) uploadSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (dom.fileInput) {
+        window.setTimeout(function () {
+          dom.fileInput.click();
+        }, 180);
       }
     });
   }

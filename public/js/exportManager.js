@@ -206,9 +206,12 @@
 
   // Wire all [data-upgrade] buttons (static and dynamic)
   document.addEventListener('click', function (e) {
-    if (e.target.closest('[data-upgrade]')) {
+    var upgradeBtn = e.target.closest('[data-upgrade]');
+    if (upgradeBtn) {
       e.preventDefault();
-      track('upgrade_btn_clicked');
+      track('upgrade_btn_clicked', {
+        source: upgradeBtn.getAttribute('data-upgrade-source') || 'unknown'
+      });
       startCheckout();
     }
   });
@@ -242,6 +245,7 @@
           csvBtn.type = 'button';
           csvBtn.className = 'upgrade-callout-btn';
           csvBtn.setAttribute('data-upgrade', '');
+          csvBtn.setAttribute('data-upgrade-source', 'results_csv_export');
           csvBtn.textContent = 'Export Full Triage as CSV \u2192';
           dom.exportUpgrade.appendChild(csvBtn);
         }
@@ -267,6 +271,7 @@
           pdfBtn2.type = 'button';
           pdfBtn2.className = 'upgrade-callout-btn';
           pdfBtn2.setAttribute('data-upgrade', '');
+          pdfBtn2.setAttribute('data-upgrade-source', 'results_pdf_export');
           pdfBtn2.textContent = 'Export Triage Report as PDF \u2192';
           dom.pdfUpgrade.appendChild(pdfBtn2);
         }

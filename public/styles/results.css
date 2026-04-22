@@ -408,6 +408,113 @@
   font-weight: 500;
 }
 
+.premium-upgrade-section {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  background: linear-gradient(145deg, rgba(20,184,166,0.07) 0%, rgba(15,23,42,0.96) 50%, rgba(15,23,42,1) 100%);
+  border: 1px solid rgba(20,184,166,0.16);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.28);
+}
+
+.premium-upgrade-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--brand-700) 0%, var(--brand-500) 50%, var(--brand-300) 100%);
+}
+
+.premium-upgrade-header {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+}
+
+.premium-upgrade-title {
+  margin: 0 0 var(--space-2);
+  color: var(--color-heading);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.premium-upgrade-intro {
+  margin: 0;
+  color: var(--ink-400);
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.premium-upgrade-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  position: relative;
+  z-index: 1;
+}
+
+.premium-upgrade-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.05);
+  color: var(--ink-200);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.premium-upgrade-chip-urgent {
+  border-color: rgba(239,68,68,0.24);
+  background: rgba(239,68,68,0.10);
+  color: var(--red-300);
+}
+
+.premium-upgrade-chip-risk {
+  border-color: rgba(245,158,11,0.24);
+  background: rgba(245,158,11,0.10);
+  color: var(--amber-300);
+}
+
+.premium-upgrade-chip-excess {
+  border-color: rgba(249,115,22,0.22);
+  background: rgba(249,115,22,0.10);
+  color: var(--orange-300);
+}
+
+.premium-upgrade-chip-hidden {
+  border-color: rgba(20,184,166,0.24);
+  background: rgba(20,184,166,0.10);
+  color: var(--brand-300);
+}
+
+.premium-upgrade-section .upsell-cta {
+  align-items: flex-start;
+  text-align: left;
+  padding: var(--space-6);
+  background: rgba(15,23,42,0.52);
+}
+
+.premium-upgrade-section .upsell-cta-body {
+  max-width: none;
+}
+
+.premium-upgrade-section .upsell-cta-features {
+  justify-content: flex-start;
+}
+
+.premium-upgrade-section .upsell-cta-value-anchor {
+  font-style: normal;
+  color: var(--ink-300);
+}
+
 /* ========================================================= */
 /*  3 · SUMMARY METRICS  –  scannable metric cards           */
 /* ========================================================= */
@@ -1401,6 +1508,8 @@ tbody tr.row-selected:hover {
   .priority-item::before { display: none; }
   .filter-input          { min-width: 0; }
   .comparison-export-btn { margin-left: 0; }
+  .premium-upgrade-title { font-size: 20px; }
+  .premium-upgrade-section .upsell-cta { padding: var(--space-5); }
 }
 
 @media (max-width: 480px) {

@@ -4,7 +4,7 @@
  *   - Only enumerated event names and aggregate numeric / boolean props are sent.
  *   - No user identifiers, session IDs, file names, part numbers, or IP addresses
  *     are logged by this module.
- *   - All events are sent to the same-origin endpoint /api/event only.
+ *   - All events are sent to the same-origin endpoint /api/events only.
  *   - Fire-and-forget: telemetry never blocks UI interaction or fails loudly.
  *
  * Usage (from script.js):
@@ -15,37 +15,46 @@
 (function () {
   'use strict';
 
+  function postEvent(body, token) {
+    var headers = { 'Content-Type': 'application/json' };
+
+    if (!token && navigator.sendBeacon) {
+      try {
+        if (navigator.sendBeacon('/api/events', new Blob([body], { type: 'application/json' }))) {
+          return;
+        }
+      } catch (_) { /* silent */ }
+    }
+
+    if (token) {
+      headers.Authorization = 'Bearer ' + token;
+    }
+
+    fetch('/api/events', {
+      method: 'POST',
+      headers: headers,
+      body: body,
+      keepalive: true
+    }).catch(function () { /* telemetry failures are always silent */ });
+  }
+
   /**
    * Fire a telemetry event.
    *
    * @param {string} event  - Short snake_case event name (max 64 chars).
    * @param {object} [props] - Flat object of enumerated / numeric properties.
+   * @param {string} [token] - Optional auth token for signed-in requests.
    *                           Must contain no PII. Callers are responsible
    *                           for passing only safe, pre-categorised values.
    */
-  function track(event, props) {
+  function track(event, props, token) {
     if (typeof event !== 'string' || !event) return;
 
-    var payload = JSON.stringify({ event: event, props: props || {} });
-
-    // Prefer sendBeacon: non-blocking, survives page unload (e.g. PDF print).
-    // Blob wrapper sets Content-Type to application/json for the server.
-    if (navigator.sendBeacon) {
-      try {
-        navigator.sendBeacon('/api/event', new Blob([payload], { type: 'application/json' }));
-      } catch (_) { /* silent */ }
-      return;
-    }
-
-    // Fallback: keepalive fetch so in-flight tab-closes still deliver the event.
-    fetch('/api/event', {
-      method:    'POST',
-      headers:   { 'Content-Type': 'application/json' },
-      body:      payload,
-      keepalive: true
-    }).catch(function () { /* telemetry failures are always silent */ });
+    var payload = JSON.stringify({ event: event, properties: props || {} });
+    postEvent(payload, token || '');
   }
 
+  window.postEventTelemetry = postEvent;
   // Expose to other scripts on the same page.
   window.track = track;
 

@@ -32,7 +32,7 @@
       <!-- Right-aligned cluster: plan + upgrade + account -->
       <div class="header-right-group">
         <span id="planBadge" class="plan-badge hidden"></span>
-        <button id="upgradeToProBtn" class="upgrade-to-pro-btn hidden" type="button" data-upgrade="">Upgrade to Pro · $49/mo</button>
+        <button id="upgradeToProBtn" class="upgrade-to-pro-btn hidden" type="button" data-upgrade="" data-upgrade-source="header_upgrade">Upgrade to Pro · $49/mo</button>
         <!-- Account area — avatar trigger + dropdown -->
         <div id="accountMenu" class="account-menu hidden">
           <span id="accountEmail" class="account-email"></span>
@@ -91,6 +91,16 @@
       <p class="context-block">
         Parts are scored by days-of-stock vs. lead time &mdash; seven categories, zero&nbsp;guesswork.
       </p>
+      <div class="quick-start-panel" aria-label="Quick start options">
+        <div class="quick-start-copy">
+          <span class="quick-start-label">Fastest way to see value</span>
+          <p class="quick-start-text">Run a bundled sample first to see the full triage flow, then upload your own ERP export once the output format is clear.</p>
+        </div>
+        <div class="quick-start-actions">
+          <button id="loadSampleBtn" class="quick-start-btn quick-start-btn-primary" type="button">Run sample analysis</button>
+          <button id="liveDemoBtn" class="quick-start-btn quick-start-btn-secondary" type="button">&#9654; Try live demo</button>
+        </div>
+      </div>
       <p class="hint">
         Columns auto-detected: <code>Part No</code>, <code>QTY ON HAND</code>,
         <code>Avg Daily Usage</code>, <code>Lead Time</code> (calendar days).
@@ -132,16 +142,12 @@
         </button>
       </form>
       <div class="demo-hint">
-        <span class="demo-hint-label">No file handy?</span>
-        <button id="liveDemoBtn" class="demo-btn" type="button">&#9654; Try Live Demo</button>
-        <span class="demo-hint-sep">&middot;</span>
-        <button id="loadSampleBtn" class="link-btn" type="button">Load sample data</button>
-        <span class="demo-hint-sep">&middot;</span>
+        <span class="demo-hint-label">Prefer to validate your file format first?</span>
         <a href="/sample-data" id="sampleDownloadLink" class="link-btn" download="sample_inventory.csv">Download sample CSV</a>
       </div>
       <div class="upload-proof-line" aria-hidden="true">
         <span data-icon="shield" data-icon-size="13" data-icon-class="upload-proof-icon"></span>
-        Your data is processed locally and never stored on our servers.
+        Uploaded securely for analysis. Saved history is optional and only created when you choose to save a run.
       </div>
       </div><!-- /.upload-engine-wrapper -->
 
@@ -239,6 +245,18 @@
     -->
     <div id="warningBanner" class="warning-banner hidden" role="status" aria-live="polite"></div>
 
+    <!-- ── First-run handoff ───────────────────────────────────────────── -->
+    <section id="nextStepSection" class="next-step-card card hidden" aria-label="Next step guidance">
+      <div class="next-step-copy">
+        <p class="next-step-label">Next step</p>
+        <h2 id="nextStepTitle">Upload your own ERP export next</h2>
+        <p id="nextStepText" class="next-step-text">You have seen the full triage flow. Use your own file to replace the sample results with live shortage and excess signals from your inventory.</p>
+      </div>
+      <div class="next-step-actions">
+        <button id="nextStepUploadBtn" class="next-step-btn" type="button">Choose your CSV file</button>
+      </div>
+    </section>
+
     <!-- ── Executive Summary ─────────────────────────────────────────────── -->
     <section id="execSummarySection" class="exec-summary-section card hidden" aria-label="Executive summary">
       <p class="section-label section-label-exec">Executive Summary</p>
@@ -290,6 +308,8 @@
       <button id="saveRunBtn" class="save-run-btn hidden" type="button">Save to History</button>
       <button id="pdfBtn" class="pdf-btn" type="button">Print / Save as PDF</button>
     </div>
+
+    <section id="premiumUpgradeSection" class="premium-upgrade-section card hidden" aria-label="Pro follow-through"></section>
 
     <!-- ── Top priority panel ───────────────────────────────────────────── -->
     <!--

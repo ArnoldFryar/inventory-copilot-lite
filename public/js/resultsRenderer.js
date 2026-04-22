@@ -12,6 +12,136 @@
   var state = App.state;
   var track = App.track;
 
+  function clearNode(node) {
+    while (node && node.firstChild) {
+      node.removeChild(node.firstChild);
+    }
+  }
+
+  function addPremiumChip(container, value, label, modifier) {
+    if (!container || !value) return;
+    var chip = document.createElement('span');
+    chip.className = 'premium-upgrade-chip' + (modifier ? ' premium-upgrade-chip-' + modifier : '');
+    chip.textContent = value + ' ' + label;
+    container.appendChild(chip);
+  }
+
+  function renderPremiumUpgrade(data) {
+    if (!dom.premiumUpgradeSection) return;
+
+    var isAdmin = state.currentProfile && state.currentProfile.is_admin === true;
+    var planKey = (data.plan && data.plan.key) || (state.currentPlan && state.currentPlan.plan) || 'free';
+    if (planKey === 'pro' || isAdmin) {
+      dom.premiumUpgradeSection.classList.add('hidden');
+      clearNode(dom.premiumUpgradeSection);
+      return;
+    }
+
+    var summary = data.summary || {};
+    var urgent = summary.urgent_stockout || 0;
+    var risk = summary.stockout_risk || 0;
+    var excessExposure = (summary.excess || 0) + (summary.dead_stock || 0);
+    var shown = Array.isArray(data.results) ? data.results.length : 0;
+    var beforeTruncation = data.totalBeforeTruncation || shown;
+    var hiddenCount = data.resultsTruncated ? Math.max(beforeTruncation - shown, 0) : 0;
+
+    var titleText = 'Turn this triage into a repeatable materials review';
+    var introText = 'Pro keeps the follow-through attached to this run: full export, saved history, run comparison, and AI drafting for the next buyer or leadership conversation.';
+
+    if (hiddenCount > 0) {
+      titleText = 'Unlock the rest of this report';
+      introText = 'Free is showing ' + shown + ' of ' + beforeTruncation + ' parts in this run. Pro unlocks the remaining ' + hiddenCount + ', exports the full review, and saves this baseline for the next comparison.';
+    } else if (urgent > 0) {
+      titleText = 'Move from triage to supplier-ready follow-through';
+      introText = 'This run surfaced ' + urgent + ' urgent item' + (urgent === 1 ? '' : 's') + ' and ' + risk + ' additional stockout-risk part' + (risk === 1 ? '' : 's') + '. Pro helps your team save the run, export it, and draft the next supplier or leadership update without reworking the report.';
+    } else if (excessExposure > 0) {
+      titleText = 'Track whether the working-capital cleanup actually sticks';
+      introText = 'This run flagged ' + excessExposure + ' excess or dead-stock position' + (excessExposure === 1 ? '' : 's') + '. Pro makes it easy to save this baseline, compare the next review, and show whether exposure is actually coming down.';
+    }
+
+    clearNode(dom.premiumUpgradeSection);
+
+    var header = document.createElement('div');
+    header.className = 'premium-upgrade-header';
+
+    var label = document.createElement('p');
+    label.className = 'section-label section-label-neutral';
+    label.textContent = 'Pro Follow-Through';
+    header.appendChild(label);
+
+    var title = document.createElement('h2');
+    title.className = 'premium-upgrade-title';
+    title.textContent = titleText;
+    header.appendChild(title);
+
+    var intro = document.createElement('p');
+    intro.className = 'premium-upgrade-intro';
+    intro.textContent = introText;
+    header.appendChild(intro);
+    dom.premiumUpgradeSection.appendChild(header);
+
+    var stats = document.createElement('div');
+    stats.className = 'premium-upgrade-stats';
+    addPremiumChip(stats, urgent, 'urgent', 'urgent');
+    addPremiumChip(stats, risk, 'at risk', 'risk');
+    addPremiumChip(stats, excessExposure, 'excess / dead', 'excess');
+    addPremiumChip(stats, hiddenCount, 'hidden on Free', 'hidden');
+    if (stats.childNodes.length > 0) {
+      dom.premiumUpgradeSection.appendChild(stats);
+    }
+
+    var features = [];
+    if (hiddenCount > 0) {
+      features.push('Unlock the remaining ' + hiddenCount + ' part' + (hiddenCount === 1 ? '' : 's') + ' in this run');
+    }
+    features.push('CSV and PDF export for buyers and leadership');
+    features.push('Saved run history with run-to-run comparison');
+    if (urgent > 0) {
+      features.push('AI follow-up drafts for ' + urgent + ' urgent part' + (urgent === 1 ? '' : 's'));
+    } else if (excessExposure > 0) {
+      features.push('Track whether ' + excessExposure + ' exposure item' + (excessExposure === 1 ? '' : 's') + ' improve next cycle');
+    } else {
+      features.push('Reusable weekly review record for future runs');
+    }
+
+    dom.premiumUpgradeSection.appendChild(App.buildUpsellCta({
+      icon: '\u2728',
+      headline: titleText,
+      description: introText,
+      features: features,
+      valueAnchor: hiddenCount > 0
+        ? 'Right now this report is truncated on Free. Pro turns this one upload into a complete review packet.'
+        : urgent > 0
+          ? 'This run already contains the signal. Pro unlocks the follow-through.'
+          : 'The first run is the baseline. Pro makes the second run measurable.',
+      showBtn: !!state.billingConfigured,
+      btnText: 'Upgrade for Full Follow-Through \u2014 $49/mo \u2192',
+      upgradeSource: 'results_follow_through'
+    }));
+
+    dom.premiumUpgradeSection.classList.remove('hidden');
+  }
+
+  function renderNextStep(source) {
+    if (!dom.nextStepSection || !dom.nextStepTitle || !dom.nextStepText) return;
+
+    if (source === 'sample') {
+      dom.nextStepTitle.textContent = 'Upload your own ERP export next';
+      dom.nextStepText.textContent = 'You have seen the full triage flow on bundled sample data. Replace it with your own export to surface live shortage risk, excess exposure, and the parts your team should review first.';
+      dom.nextStepSection.classList.remove('hidden');
+      return;
+    }
+
+    if (source === 'demo') {
+      dom.nextStepTitle.textContent = 'Now run the same triage on your own file';
+      dom.nextStepText.textContent = 'The demo shows the report layout only. Upload your ERP export to generate a live risk view from your own parts, lead times, and usage data.';
+      dom.nextStepSection.classList.remove('hidden');
+      return;
+    }
+
+    dom.nextStepSection.classList.add('hidden');
+  }
+
   // ── Executive summary renderer ─────────────────────────────────────────
 
   function renderExecSummary(data) {
@@ -85,6 +215,7 @@
     renderSummary(data.summary);
     renderLeadershipSummary(data.summary, data.topPriority, data.analyzedAt, data.thresholds, data.columnAliases);
     renderPriorityPanel(data.topPriority);
+    renderNextStep(state.analysisSource);
 
     // Data quality warnings (non-blocking — analysis succeeded but something
     // in the data warrants the user's attention before acting on results).
@@ -151,6 +282,7 @@
     dom.actionBarTimestamp.textContent =
       'Analysis complete \u00b7 ' + total + ' row' + (total !== 1 ? 's' : '') + ' processed \u00b7 ' + ts;
     dom.actionBar.classList.remove('hidden');
+    renderPremiumUpgrade(data);
 
     // Plan-aware truncation notice
     var isAdmin = state.currentProfile && state.currentProfile.is_admin === true;
@@ -158,9 +290,10 @@
       if (data.resultsTruncated && data.plan && !isAdmin) {
         var shown = data.results.length;
         var beforeTrunc = data.totalBeforeTruncation;
+        var hidden = Math.max(beforeTrunc - shown, 0);
         dom.tableLimitNotice.textContent =
-          'Free plan: showing ' + shown + ' of ' + beforeTrunc + ' parts. ' +
-          'Upgrade to Pro ($49/mo) for full results, CSV/PDF export, and run history.';
+          'Free plan: showing ' + shown + ' of ' + beforeTrunc + ' parts (' + hidden + ' hidden). ' +
+          'Upgrade to Pro for the full run, export, and run-to-run history.';
         dom.tableLimitNotice.classList.remove('hidden');
       } else {
         dom.tableLimitNotice.textContent = '';

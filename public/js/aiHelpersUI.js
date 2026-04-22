@@ -17,6 +17,7 @@
     // ── No analysis yet: hide everything ───────────────────────────────────
     if (!hasAnalysis) {
       dom.aiHelpersSection.classList.add('hidden');
+      if (dom.aiHelpersLockedCta) dom.aiHelpersLockedCta.classList.add('hidden');
       if (dom.comparisonLockedCta) dom.comparisonLockedCta.classList.add('hidden');
       return;
     }
@@ -36,7 +37,36 @@
     dom.aiHelpersSection.classList.add('ai-helpers-locked');
     if (dom.aiHelpersActions) dom.aiHelpersActions.classList.remove('hidden');
     if (dom.aiHelperResult) dom.aiHelperResult.classList.add('hidden');
-    if (dom.aiHelpersLockedCta) dom.aiHelpersLockedCta.classList.add('hidden');
+
+    var summary = state.lastResponse && state.lastResponse.summary ? state.lastResponse.summary : {};
+    var urgent = summary.urgent_stockout || 0;
+    var risk = summary.stockout_risk || 0;
+    var excessExposure = (summary.excess || 0) + (summary.dead_stock || 0);
+
+    if (dom.aiHelpersLockedCta) {
+      dom.aiHelpersLockedCta.classList.remove('hidden');
+      while (dom.aiHelpersLockedCta.firstChild) {
+        dom.aiHelpersLockedCta.removeChild(dom.aiHelpersLockedCta.firstChild);
+      }
+      dom.aiHelpersLockedCta.appendChild(App.buildUpsellCta({
+        icon: '\u2728',
+        headline: urgent > 0 ? 'Draft supplier follow-up from this run' : 'Turn this report into leadership-ready follow-up',
+        description: urgent > 0
+          ? 'This run already identified ' + urgent + ' urgent item' + (urgent === 1 ? '' : 's') + ' and ' + risk + ' additional risk item' + (risk === 1 ? '' : 's') + '. Pro drafts expedite emails, escalation summaries, and meeting talking points grounded in the current analysis.'
+          : 'Pro drafts buyer, supplier, and leadership follow-up from the same deterministic report your team is already reviewing.',
+        features: [
+          'Expedite email drafts tied to current urgent items',
+          'Leadership-ready escalation summary',
+          excessExposure > 0 ? 'Talking points for excess and dead-stock cleanup' : 'Meeting talking points for the next materials review'
+        ],
+        valueAnchor: urgent > 0
+          ? 'The risky parts are already flagged. Pro turns them into ready-to-edit communications.'
+          : 'Use the same report as the source for every follow-up message.',
+        showBtn: !!state.billingConfigured,
+        btnText: 'Unlock AI Follow-Up \u2014 $49/mo \u2192',
+        upgradeSource: 'ai_helpers_locked'
+      }));
+    }
 
     // Comparison locked CTA — teaser for run-to-run comparison
     if (dom.comparisonLockedCta) {
@@ -49,8 +79,12 @@
         headline: 'Prove Progress to Leadership',
         description: 'Compare this run to any prior analysis. Surface new urgent items, confirm resolved risks, and show measurable improvement \u2014 with data, not gut feel.',
         features: ['New urgent items flagged instantly', 'Resolved risks confirmed', 'Status shift deltas', 'Run-over-run trend visibility'],
-        showBtn: state.billingConfigured !== false,
+        valueAnchor: urgent > 0
+          ? 'Save this run now so the next upload shows exactly what changed for today\'s urgent items.'
+          : 'The first saved run becomes the baseline for every future review.',
+        showBtn: !!state.billingConfigured,
         btnText: 'Unlock Trend Comparison \u2014 $49/mo \u2192',
+        upgradeSource: 'comparison_locked'
       });
       dom.comparisonLockedCta.appendChild(cmpCta);
     }

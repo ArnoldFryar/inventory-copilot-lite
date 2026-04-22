@@ -23,21 +23,19 @@
     try {
       var payload = { event: eventName, properties: (properties && typeof properties === 'object') ? properties : {} };
       console.debug('[track]', eventName, payload.properties);
-      var body    = JSON.stringify(payload);
-      var headers = { 'Content-Type': 'application/json' };
       // Attach auth token when the user is signed in
       if (window.authModule && typeof window.authModule.getToken === 'function') {
         Promise.resolve(window.authModule.getToken()).then(function (token) {
-          if (token) headers['Authorization'] = 'Bearer ' + token;
-          fetch('/api/events', { method: 'POST', headers: headers, body: body })
-            .catch(function () {});
+          if (typeof window.track === 'function') {
+            window.track(eventName, payload.properties, token || '');
+          }
         }).catch(function () {
-          fetch('/api/events', { method: 'POST', headers: headers, body: body })
-            .catch(function () {});
+          if (typeof window.track === 'function') {
+            window.track(eventName, payload.properties);
+          }
         });
-      } else {
-        fetch('/api/events', { method: 'POST', headers: headers, body: body })
-          .catch(function () {});
+      } else if (typeof window.track === 'function') {
+        window.track(eventName, payload.properties);
       }
     } catch (_) {}
   };
@@ -64,6 +62,7 @@
     allResults:         [],
     lastResponse:       null,
     lastComparison:     null,
+    analysisSource:     null,
     inFlight:           false,
     currentPlan:        null,
     aiHelpersAvailable: false,
@@ -87,6 +86,10 @@
     submitLabel:     $('submitLabel'),
     loadSampleBtn:   $('loadSampleBtn'),
     liveDemoBtn:     $('liveDemoBtn'),
+    nextStepSection: $('nextStepSection'),
+    nextStepTitle:   $('nextStepTitle'),
+    nextStepText:    $('nextStepText'),
+    nextStepUploadBtn: $('nextStepUploadBtn'),
     demoBadge:       $('demoBadge'),
     errorBanner:     $('errorBanner'),
     warningBanner:   $('warningBanner'),
@@ -186,6 +189,7 @@
     exportBtn:        $('exportBtn'),
     exportUpgrade:    $('exportUpgrade'),
     tableLimitNotice: $('tableLimitNotice'),
+    premiumUpgradeSection: $('premiumUpgradeSection'),
     selectAllParts:   $('selectAllParts'),
     planBadge:        $('planBadge'),
     upgradeToProBtn:  $('upgradeToProBtn'),
@@ -342,6 +346,9 @@
       btn.type = 'button';
       btn.className = 'upsell-cta-btn';
       btn.setAttribute('data-upgrade', '');
+      if (config.upgradeSource) {
+        btn.setAttribute('data-upgrade-source', config.upgradeSource);
+      }
       btn.textContent = config.btnText || 'Upgrade to Pro \u2014 $49/mo \u2192';
       wrap.appendChild(btn);
     }
@@ -370,7 +377,10 @@
   App.hideResults = function () {
     App.state.allResults   = [];
     App.state.lastResponse = null;
+    App.state.analysisSource = null;
     if (App.dom.execSummarySection) App.dom.execSummarySection.classList.add('hidden');
+    if (App.dom.nextStepSection) App.dom.nextStepSection.classList.add('hidden');
+    if (App.dom.premiumUpgradeSection) App.dom.premiumUpgradeSection.classList.add('hidden');
     App.dom.summarySection.classList.add('hidden');
     App.dom.leadershipSection.classList.add('hidden');
     App.dom.prioritySection.classList.add('hidden');

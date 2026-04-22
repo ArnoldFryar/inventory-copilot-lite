@@ -18,6 +18,8 @@ const { supabaseAdmin, verifyToken } = require('../../supabaseClient');
 // Allowlist of event names accepted from the client.
 // Any unrecognised name is rejected with 400 to prevent log spam.
 const VALID_EVENTS = new Set([
+  // Navigation / lifecycle
+  'page_load',
   // Paywall
   'helper_access_attempt',
   'upgrade_btn_clicked',
@@ -46,7 +48,7 @@ const VALID_EVENTS = new Set([
 ]);
 
 router.post('/api/events', async (req, res) => {
-  const { event, properties } = req.body || {};
+  const { event, properties, props } = req.body || {};
 
   if (!event || typeof event !== 'string') {
     return res.status(400).json({ error: 'event is required.' });
@@ -55,8 +57,10 @@ router.post('/api/events', async (req, res) => {
     return res.status(400).json({ error: 'Unknown event.' });
   }
   // properties must be an object (or absent)
-  const props = (properties && typeof properties === 'object' && !Array.isArray(properties))
+  const payloadProps = (properties && typeof properties === 'object' && !Array.isArray(properties))
     ? properties
+    : (props && typeof props === 'object' && !Array.isArray(props))
+      ? props
     : {};
 
   // Attempt to resolve user_id from optional Bearer token
@@ -68,14 +72,14 @@ router.post('/api/events', async (req, res) => {
     if (user) userId = user.id;
   }
 
-  console.log('[event]', event, JSON.stringify({ user_id: userId, ...props }));
+  console.log('[event]', event, JSON.stringify({ user_id: userId, ...payloadProps }));
 
   if (supabaseAdmin) {
     // fire-and-forget — don't block the response on DB write
     supabaseAdmin.from('events').insert({
       user_id:    userId,
       event_name: event,
-      properties: props,
+      properties: payloadProps,
     }).then(({ error }) => {
       if (error) console.error('[event] DB write error:', error.message);
     });
