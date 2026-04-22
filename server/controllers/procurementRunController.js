@@ -22,6 +22,7 @@
 
 const { getPlanForUser }               = require('../../plans');
 const { supabaseAdmin }                = require('../../supabaseClient');
+const { deriveSupplierRollups }        = require('../lib/procurement/procurementAnalyzer');
 const { generateProcurementSummary }   = require('../ai/generateProcurementSummary');
 
 function logAccessDenied(route, userId, plan) {
@@ -188,6 +189,8 @@ async function saveProcurementRun(req, res) {
     }
 
     // ── 3. procurement_supplier_rollups ───────────────────────────────────
+    // Non-blocking: if this child table is out of date in production, keep the
+    // run itself and rebuild rollups from saved PO lines when the detail page is read.
     if (supplierRollups.length > 0) {
       const rollupRows = supplierRollups.map(r => ({
         run_id:           runId,
@@ -213,7 +216,9 @@ async function saveProcurementRun(req, res) {
       const { error: srErr } = await supabaseAdmin
         .from('procurement_supplier_rollups')
         .insert(rollupRows);
-      if (srErr) return rollback('procurement_supplier_rollups', srErr);
+      if (srErr) {
+        console.error('[POST /api/procurement/runs] procurement_supplier_rollups insert (non-blocking):', srErr.message);
+      }
     }
 
     // ── 4. procurement_insights ───────────────────────────────────────────
@@ -355,10 +360,21 @@ async function getProcurementRun(req, res) {
     ]);
 
     // Tolerate partial child-fetch failure — the run header is still useful.
+    // Older environments may persist PO lines successfully while rollup-table
+    // inserts fail due to schema drift; rebuild rollups from the stored lines.
+    let supplierRollups = srRes.data || [];
+    if (supplierRollups.length === 0 && Array.isArray(poRes.data) && poRes.data.length > 0) {
+      try {
+        supplierRollups = deriveSupplierRollups(poRes.data);
+      } catch (rollupErr) {
+        console.error('[GET /api/procurement/runs/:id] supplier rollup fallback failed:', rollupErr.message);
+      }
+    }
+
     res.json({
       ...run,
       po_lines:         poRes.data  || [],
-      supplier_rollups: srRes.data  || [],
+      supplier_rollups: supplierRollups,
       insights:         inRes.data  || [],
       action_items:     aiRes.data  || [],
     });

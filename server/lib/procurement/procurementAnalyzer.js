@@ -76,10 +76,7 @@ function analyzeRows(rows) {
   });
 
   // ── 2. Per-supplier rollups ─────────────────────────────────────────────
-  const supplierRollups = buildSupplierRollups(lines, ctx);
-
-  // ── 3. Concentration flags on rollups ───────────────────────────────────
-  applyConcentrationFlags(supplierRollups);
+  const supplierRollups = deriveSupplierRollups(lines, ctx.today);
 
   // ── 4. Insights ─────────────────────────────────────────────────────────
   const insights = generateInsights(lines, supplierRollups, ctx);
@@ -91,6 +88,17 @@ function analyzeRows(rows) {
   const summary = buildSummary(lines, supplierRollups, insights);
 
   return { lines, supplierRollups, insights, actionCandidates, summary };
+}
+
+function deriveSupplierRollups(scoredLines, today) {
+  if (!Array.isArray(scoredLines) || scoredLines.length === 0) {
+    return [];
+  }
+
+  const ctx = { today: today || todayISO() };
+  const supplierRollups = buildSupplierRollups(scoredLines, ctx);
+  applyConcentrationFlags(supplierRollups);
+  return supplierRollups;
 }
 
 // ---------------------------------------------------------------------------
@@ -480,4 +488,4 @@ const have    = count => count === 1 ? 'has' : 'have';
 const are     = count => count === 1 ? 'is'  : 'are';
 const their   = count => count === 1 ? 'its' : 'their';
 
-module.exports = { analyzeRows };
+module.exports = { analyzeRows, deriveSupplierRollups };
