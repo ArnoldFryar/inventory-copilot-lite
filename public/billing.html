@@ -39,6 +39,27 @@
 
   <main class="billing-main">
 
+    <!-- Section 0 — Pro value framing -->
+    <section class="billing-card billing-value-card" aria-label="Pro operating value">
+      <p class="billing-eyebrow">Pro operating loop</p>
+      <h2>Keep every materials review moving after the first upload.</h2>
+      <p class="billing-value-copy">Pro is built for the repeat cadence: save each baseline, export the review packet, compare the next run, and draft the follow-up your team needs to act.</p>
+      <div class="billing-value-grid" aria-label="Pro outcomes">
+        <div>
+          <strong>Unlimited triage</strong>
+          <span>Analyze full ERP exports without the Free row cap.</span>
+        </div>
+        <div>
+          <strong>Saved baselines</strong>
+          <span>Turn each run into a searchable audit trail.</span>
+        </div>
+        <div>
+          <strong>Trend proof</strong>
+          <span>Show new, resolved, improved, and worsened risks.</span>
+        </div>
+      </div>
+    </section>
+
     <!-- Loading state -->
     <div id="billingLoading" class="billing-loading">
       <div class="billing-spinner"></div>
@@ -102,7 +123,7 @@
               <li>Full results table, CSV &amp; PDF export</li>
               <li>Saved analysis history</li>
               <li>Run-over-run comparison</li>
-              <li>AI-powered action suggestions</li>
+              <li>AI-powered follow-up drafts grounded in the current run</li>
             </ul>
           </div>
         </div>
@@ -117,6 +138,7 @@
 
   <!-- Auth module (shared with main app) -->
   <script src="auth.js"></script>
+  <script src="analytics.js"></script>
   <script src="billing.js"></script>
 
 </body>

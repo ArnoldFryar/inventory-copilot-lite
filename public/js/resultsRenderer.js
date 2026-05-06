@@ -26,6 +26,57 @@
     container.appendChild(chip);
   }
 
+  function appendProWorkflow(container, hiddenCount, urgent, excessExposure) {
+    var workflow = document.createElement('div');
+    workflow.className = 'premium-upgrade-workflow';
+
+    var steps = [
+      {
+        label: 'Today',
+        title: hiddenCount > 0 ? 'Unlock full run' : 'Save the baseline',
+        text: hiddenCount > 0
+          ? 'Review every part in the export, not only the Free sample.'
+          : 'Keep this analysis attached to the file, date, and result set.'
+      },
+      {
+        label: 'This week',
+        title: urgent > 0 ? 'Send follow-up' : 'Assign review work',
+        text: urgent > 0
+          ? 'Export the risk list or draft supplier escalation from the run.'
+          : 'Turn the report into a repeatable materials review packet.'
+      },
+      {
+        label: 'Next run',
+        title: excessExposure > 0 ? 'Measure cleanup' : 'Compare movement',
+        text: excessExposure > 0
+          ? 'Show whether excess and dead-stock exposure is coming down.'
+          : 'See new urgent items, resolved risks, and status changes.'
+      }
+    ];
+
+    steps.forEach(function (step) {
+      var item = document.createElement('div');
+      item.className = 'premium-upgrade-workflow-step';
+
+      var label = document.createElement('span');
+      label.className = 'premium-upgrade-workflow-label';
+      label.textContent = step.label;
+      item.appendChild(label);
+
+      var title = document.createElement('strong');
+      title.textContent = step.title;
+      item.appendChild(title);
+
+      var text = document.createElement('span');
+      text.textContent = step.text;
+      item.appendChild(text);
+
+      workflow.appendChild(item);
+    });
+
+    container.appendChild(workflow);
+  }
+
   function renderPremiumUpgrade(data) {
     if (!dom.premiumUpgradeSection) return;
 
@@ -89,6 +140,8 @@
     if (stats.childNodes.length > 0) {
       dom.premiumUpgradeSection.appendChild(stats);
     }
+
+    appendProWorkflow(dom.premiumUpgradeSection, hiddenCount, urgent, excessExposure);
 
     var features = [];
     if (hiddenCount > 0) {

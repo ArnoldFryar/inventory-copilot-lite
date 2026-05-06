@@ -37,6 +37,13 @@
   // ── State ───────────────────────────────────────────────────────────
   var _redirecting = false;
 
+  function track(eventName, properties) {
+    if (typeof window.track !== 'function') return;
+    try {
+      window.track(eventName, properties || {});
+    } catch (_) {}
+  }
+
   // ── Helpers ─────────────────────────────────────────────────────────
   function show(el) { el.classList.remove('hidden'); }
   function hide(el) { el.classList.add('hidden'); }
@@ -114,6 +121,7 @@
     // Show content
     hide($loading);
     show($content);
+    track('billing_plan_loaded', { plan: plan, status: status });
   }
 
   // ── Fetch billing data ─────────────────────────────────────────────
@@ -152,12 +160,13 @@
     _redirecting = true;
     $upgradeBtn.disabled = true;
     show($actionSpinner);
+    track('upgrade_btn_clicked', { source: 'billing_page' });
 
     try {
       var headers = await getAuthHeaders();
       if (!headers) throw new Error('Not authenticated.');
 
-      var res = await fetch('/api/billing/create-checkout-session', {
+      var res = await fetch('/api/billing/checkout', {
         method: 'POST',
         headers: headers
       });
@@ -169,6 +178,7 @@
 
       var data = await res.json();
       if (data.url) {
+        track('checkout_started', { source: 'billing_page' });
         window.location.href = data.url;
         return; // page will navigate away
       }
@@ -187,12 +197,13 @@
     _redirecting = true;
     $manageBtn.disabled = true;
     show($actionSpinner);
+    track('billing_portal_clicked', { source: 'billing_page' });
 
     try {
       var headers = await getAuthHeaders();
       if (!headers) throw new Error('Not authenticated.');
 
-      var res = await fetch('/api/billing/create-portal-session', {
+      var res = await fetch('/api/billing/portal', {
         method: 'POST',
         headers: headers
       });

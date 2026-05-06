@@ -101,6 +101,17 @@
           <button id="liveDemoBtn" class="quick-start-btn quick-start-btn-secondary" type="button">&#9654; Try live demo</button>
         </div>
       </div>
+      <div class="review-loop-panel" aria-label="Pro review loop">
+        <div class="review-loop-copy">
+          <span class="review-loop-label">Built for repeat reviews</span>
+          <p class="review-loop-title">The first upload finds today&rsquo;s risk. Pro turns it into the baseline for next week.</p>
+        </div>
+        <ol class="review-loop-steps">
+          <li><strong>Triage</strong><span>Rank shortage and excess exposure.</span></li>
+          <li><strong>Save</strong><span>Keep an audit trail for the run.</span></li>
+          <li><strong>Compare</strong><span>Show what improved next cycle.</span></li>
+        </ol>
+      </div>
       <p class="hint">
         Columns auto-detected: <code>Part No</code>, <code>QTY ON HAND</code>,
         <code>Avg Daily Usage</code>, <code>Lead Time</code> (calendar days).
@@ -723,7 +734,11 @@
       <p id="historyCount" class="history-count hidden"></p>
       <ul id="historyList" class="history-list"></ul>
       <p id="historyEmpty" class="history-empty hidden">No analysis runs saved yet. Upload a CSV to create your first&nbsp;one.</p>
-      <p id="historySignIn" class="history-sign-in hidden">Sign in to build an audit trail. Every analysis is saved automatically for trend tracking.</p>
+      <div id="historySignIn" class="history-sign-in hidden">
+        <strong>Build a repeatable review trail</strong>
+        <span>Sign in to save analyses, keep baselines, and track what changes after each upload.</span>
+        <button id="historySignInBtn" class="history-sign-in-btn" type="button">Sign in to save runs</button>
+      </div>
       <div id="historyUpgrade" class="history-upgrade hidden"></div>
     </section>
 
@@ -741,7 +756,7 @@
     <div class="auth-modal">
       <button id="authModalClose" class="auth-modal-close" type="button" aria-label="Close">&times;</button>
       <h2 id="authModalTitle">Sign in</h2>
-      <p class="auth-modal-hint">Sign in to save every analysis, track trends, and build an audit trail for leadership.</p>
+      <p id="authModalHint" class="auth-modal-hint">Sign in to save every analysis, track trends, and build an audit trail for leadership.</p>
       <form id="authForm" autocomplete="on">
         <label for="authEmail" class="auth-label">Email</label>
         <input type="email" id="authEmail" class="auth-input" required autocomplete="email" />
@@ -762,32 +777,32 @@
     <div class="upgrade-modal">
       <button id="upgradeModalClose" class="auth-modal-close" type="button" aria-label="Close">&times;</button>
       <span class="upgrade-modal-icon" aria-hidden="true">🚀</span>
-      <h2>Unlock AI Copilot</h2>
-      <p class="upgrade-modal-subtitle">Generate executive summaries, supplier emails, and meeting prep in seconds</p>
+      <h2>Upgrade the whole review loop</h2>
+      <p class="upgrade-modal-subtitle">Unlock full exports, saved history, run comparison, and AI follow-up from the same deterministic triage report.</p>
       <ul class="upgrade-modal-benefits">
         <li>
           <span class="upgrade-benefit-icon" aria-hidden="true">⚡</span>
           <div>
-            <strong>Unlimited AI helpers</strong>
-            <span>Expedite emails, escalation briefs, and talking points on demand</span>
+            <strong>Full analysis packets</strong>
+            <span>Unlimited parts, CSV export, and print-ready PDF reports</span>
           </div>
         </li>
         <li>
           <span class="upgrade-benefit-icon" aria-hidden="true">🎯</span>
           <div>
-            <strong>Faster decision-making</strong>
-            <span>Go from raw data to leadership-ready output in under 60 seconds</span>
+            <strong>Saved review history</strong>
+            <span>Keep every run as a baseline for trend tracking and leadership follow-up</span>
           </div>
         </li>
         <li>
           <span class="upgrade-benefit-icon" aria-hidden="true">💾</span>
           <div>
-            <strong>Save and reuse outputs</strong>
-            <span>Draft history, refinement, and one-click copy for every result</span>
+            <strong>AI follow-through</strong>
+            <span>Draft supplier emails, escalation briefs, and meeting prep from the current run</span>
           </div>
         </li>
       </ul>
-      <button id="upgradeModalBtn" class="upgrade-modal-cta" type="button" data-upgrade>Upgrade to Pro</button>
+      <button id="upgradeModalBtn" class="upgrade-modal-cta" type="button" data-upgrade data-upgrade-source="upgrade_modal">Upgrade to Pro</button>
       <p class="upgrade-modal-price">$49/month · Cancel anytime</p>
     </div>
   </div>

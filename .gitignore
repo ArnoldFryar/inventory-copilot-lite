@@ -9,6 +9,9 @@ node_modules/
 # ── Runtime uploads (transient user data) ────────────────────────────────────
 uploads/
 
+# ── Supabase CLI local metadata ──────────────────────────────────────────────
+supabase/.temp/
+
 # ── Generated exports ────────────────────────────────────────────────────────
 exports/
 *.csv.out

@@ -5,12 +5,11 @@
   var App   = window.App;
   var dom   = App.dom;
   var state = App.state;
+  var DEFAULT_AUTH_HINT = 'Sign in to save every analysis, track trends, and build an audit trail for leadership.';
 
   // ── Open auth modal ───────────────────────────────────────────────────────
   dom.signInBtn.addEventListener('click', function () {
-    setAuthMode('signin');
-    dom.authModal.classList.remove('hidden');
-    dom.authEmail.focus();
+    openAuthModal('signin');
   });
 
   // ── Close auth modal ──────────────────────────────────────────────────────
@@ -22,6 +21,10 @@
   function closeAuthModal() {
     dom.authModal.classList.add('hidden');
     dom.authError.classList.add('hidden');
+    if (dom.authModalHint) {
+      dom.authModalHint.textContent = DEFAULT_AUTH_HINT;
+      dom.authModalHint.removeAttribute('data-contextual');
+    }
     dom.authForm.reset();
   }
 
@@ -45,7 +48,22 @@
       dom.authToggleBtn.textContent = 'Create one';
       dom.authPassword.setAttribute('autocomplete', 'current-password');
     }
+    if (dom.authModalHint && !dom.authModalHint.getAttribute('data-contextual')) {
+      dom.authModalHint.textContent = DEFAULT_AUTH_HINT;
+    }
     dom.authError.classList.add('hidden');
+  }
+
+  function openAuthModal(mode, options) {
+    options = options || {};
+    setAuthMode(mode || 'signin');
+    if (dom.authModalHint) {
+      dom.authModalHint.textContent = options.hint || DEFAULT_AUTH_HINT;
+      if (options.hint) dom.authModalHint.setAttribute('data-contextual', 'true');
+      else dom.authModalHint.removeAttribute('data-contextual');
+    }
+    dom.authModal.classList.remove('hidden');
+    dom.authEmail.focus();
   }
 
   // ── Submit auth form ──────────────────────────────────────────────────────
@@ -157,9 +175,7 @@
       // Auto-open sign-in modal when redirected from another page
       var params = new URLSearchParams(window.location.search);
       if (params.get('signin') === '1') {
-        setAuthMode('signin');
-        dom.authModal.classList.remove('hidden');
-        dom.authEmail.focus();
+        openAuthModal('signin');
         history.replaceState(null, '', window.location.pathname);
       }
     }
@@ -168,5 +184,6 @@
   App.authUI = {
     onAuthStateChanged: onAuthStateChanged,
     updateAccountUI:    updateAccountUI,
+    openAuthModal:      openAuthModal,
   };
 })();

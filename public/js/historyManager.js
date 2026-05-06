@@ -13,6 +13,17 @@
   var _searchTerm = '';
   var _sortOrder  = 'newest';
 
+  if (dom.historySignInBtn) {
+    dom.historySignInBtn.addEventListener('click', function () {
+      track('history_signin_clicked');
+      if (App.authUI && typeof App.authUI.openAuthModal === 'function') {
+        App.authUI.openAuthModal('signup', {
+          hint: 'Create an account or sign in to start saving baselines for trend comparison.'
+        });
+      }
+    });
+  }
+
   // â”€â”€ Save to History â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   dom.saveRunBtn.addEventListener('click', async function () {

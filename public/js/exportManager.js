@@ -6,6 +6,7 @@
   var dom   = App.dom;
   var state = App.state;
   var track = App.track;
+  var checkoutInFlight = false;
 
   // ── Comparison CSV export ──────────────────────────────────────────────
 
@@ -123,7 +124,7 @@
   // ── Export button ───────────────────────────────────────────────────────────
   dom.exportBtn.addEventListener('click', function () {
     if (state.currentPlan && !state.currentPlan.entitlements.csvExport) {
-      if (state.billingConfigured) { startCheckout(); }
+      if (state.billingConfigured) { startCheckout('results_csv_export'); }
       else { App.showError('CSV export is available on the Pro plan.'); }
       return;
     }
@@ -141,7 +142,7 @@
   // User selects 'Save as PDF' in the print dialog.
   dom.pdfBtn.addEventListener('click', function () {
     if (state.currentPlan && !state.currentPlan.entitlements.pdfExport) {
-      if (state.billingConfigured) { startCheckout(); }
+      if (state.billingConfigured) { startCheckout('results_pdf_export'); }
       else { App.showError('PDF export is available on the Pro plan.'); }
       return;
     }
@@ -151,12 +152,30 @@
 
   // ── Billing helpers ───────────────────────────────────────────────────────
 
-  async function startCheckout() {
-    if (!state.currentUser || !window.authModule) {
-      // Prompt sign-in first
-      if (dom.authModal) dom.authModal.classList.remove('hidden');
+  async function startCheckout(source, options) {
+    source = source || 'unknown';
+    options = options || {};
+
+    if (!state.billingConfigured) {
+      App.showError('Online checkout is not configured yet. Contact support to upgrade.');
       return;
     }
+
+    if (!state.currentUser || !window.authModule) {
+      state.pendingCheckoutSource = source;
+      track('upgrade_auth_required', { source: source });
+      if (App.authUI && typeof App.authUI.openAuthModal === 'function') {
+        App.authUI.openAuthModal('signup', {
+          hint: 'Create an account or sign in to continue to Pro checkout. Your upgrade will resume automatically after authentication.'
+        });
+      } else if (dom.authModal) {
+        dom.authModal.classList.remove('hidden');
+      }
+      return;
+    }
+
+    if (checkoutInFlight) return;
+    checkoutInFlight = true;
     try {
       var token = await window.authModule.getToken();
       var res = await fetch('/api/billing/checkout', {
@@ -171,10 +190,29 @@
         throw new Error(d.error || 'Checkout failed');
       }
       var data = await res.json();
+      if (!options.resuming) track('checkout_started', { source: source });
       window.location.href = data.url;
     } catch (err) {
+      checkoutInFlight = false;
       App.showError(err.message || 'Could not start checkout. Please try again.');
     }
+  }
+
+  function resumePendingCheckout() {
+    var source = state.pendingCheckoutSource;
+    if (!source || !state.currentUser || !state.billingConfigured) return;
+
+    var isPro = state.currentPlan && state.currentPlan.plan === 'pro';
+    if (isPro) {
+      state.pendingCheckoutSource = null;
+      return;
+    }
+
+    state.pendingCheckoutSource = null;
+    window.setTimeout(function () {
+      track('upgrade_checkout_resumed', { source: source });
+      startCheckout(source, { resuming: true });
+    }, 120);
   }
 
   async function openBillingPortal() {
@@ -212,7 +250,7 @@
       track('upgrade_btn_clicked', {
         source: upgradeBtn.getAttribute('data-upgrade-source') || 'unknown'
       });
-      startCheckout();
+      startCheckout(upgradeBtn.getAttribute('data-upgrade-source') || 'unknown');
     }
   });
 
@@ -304,6 +342,7 @@
     App.aiHelpersUI.showAiHelpersPanel();
     // Refresh Start Your Day card
     if (App.startYourDay) App.startYourDay.refresh();
+    resumePendingCheckout();
   }
 
   // Fetches the plan from the server, optionally with auth token for per-user plans.

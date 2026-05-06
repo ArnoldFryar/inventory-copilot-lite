@@ -71,6 +71,7 @@
     currentProfile:     null,
     autoSaveInFlight:   false,
     billingConfigured:  false,
+    pendingCheckoutSource: null,
     selectedParts:      new Set(),   // indices into allResults for part selection
   };
 
@@ -129,6 +130,7 @@
     authError:       $('authError'),
     authSubmitBtn:   $('authSubmitBtn'),
     authModalTitle:  $('authModalTitle'),
+    authModalHint:   $('authModalHint'),
     authToggleText:  $('authToggleText'),
     authToggleBtn:   $('authToggleBtn'),
     upgradeModal:      $('upgradeModal'),
@@ -139,6 +141,7 @@
     historyList:     $('historyList'),
     historyEmpty:    $('historyEmpty'),
     historySignIn:   $('historySignIn'),
+    historySignInBtn: $('historySignInBtn'),
     historyUpgrade:  $('historyUpgrade'),
     historyToolbar:  $('historyToolbar'),
     historySearch:   $('historySearch'),

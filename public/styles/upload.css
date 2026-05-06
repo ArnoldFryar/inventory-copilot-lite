@@ -266,6 +266,86 @@
   transform: translateY(-1px);
 }
 
+.review-loop-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.35fr);
+  gap: var(--space-5);
+  align-items: center;
+  margin-bottom: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,0.025);
+}
+
+.review-loop-label {
+  display: inline-block;
+  margin-bottom: var(--space-2);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.review-loop-title {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-200);
+  font-weight: 600;
+}
+
+.review-loop-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  list-style: none;
+  counter-reset: review-step;
+}
+
+.review-loop-steps li {
+  position: relative;
+  min-height: 74px;
+  padding: var(--space-3) var(--space-3) var(--space-3) 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  counter-increment: review-step;
+}
+
+.review-loop-steps li::before {
+  content: counter(review-step);
+  position: absolute;
+  left: var(--space-3);
+  top: var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(20,184,166,0.12);
+  color: var(--brand-400);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.review-loop-steps strong {
+  display: block;
+  color: var(--ink-100);
+  font-size: 12px;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.review-loop-steps span {
+  display: block;
+  color: var(--ink-500);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .hint code {
   background: rgba(255,255,255,0.05);
   border: 1px solid var(--border-2);
@@ -753,6 +833,9 @@ details[open].faq-block > summary::before { content: '\25be  '; }
   .trust-strip { flex-wrap: wrap; gap: var(--space-3); justify-content: center; }
   .upload-engine-wrapper { padding: var(--space-4); border-radius: var(--radius-md); }
   .quick-start-panel { grid-template-columns: 1fr; padding: var(--space-4); }
+  .review-loop-panel { grid-template-columns: 1fr; padding: var(--space-4); }
+  .review-loop-steps { grid-template-columns: 1fr; }
+  .review-loop-steps li { min-height: auto; }
   .next-step-card { flex-direction: column; align-items: flex-start; }
   .next-step-actions,
   .next-step-btn { width: 100%; }
