@@ -17,9 +17,12 @@
   dom.authModal.addEventListener('click', function (e) {
     if (e.target === dom.authModal) closeAuthModal();
   });
+  dom.authModal.addEventListener('keydown', function (e) {
+    App.modalManager.handleKeydown(e, dom.authModal, closeAuthModal);
+  });
 
   function closeAuthModal() {
-    dom.authModal.classList.add('hidden');
+    App.modalManager.close(dom.authModal);
     dom.authError.classList.add('hidden');
     if (dom.authModalHint) {
       dom.authModalHint.textContent = DEFAULT_AUTH_HINT;
@@ -62,8 +65,7 @@
       if (options.hint) dom.authModalHint.setAttribute('data-contextual', 'true');
       else dom.authModalHint.removeAttribute('data-contextual');
     }
-    dom.authModal.classList.remove('hidden');
-    dom.authEmail.focus();
+    App.modalManager.open(dom.authModal, dom.authEmail);
   }
 
   // ── Submit auth form ──────────────────────────────────────────────────────

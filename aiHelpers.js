@@ -93,6 +93,11 @@ function shapeInput({ summary, results, topPriority, analyzedAt, thresholds }, b
     ? 'Context:\n' + contextLines.map(l => '- ' + l).join('\n')
     : '';
 
+  const selectedParts = Array.isArray(bc.selectedParts)
+    ? bc.selectedParts.slice(0, 100).map(simplifyRow)
+    : null;
+  const supplierGroups = sanitizeSupplierGroups(bc.supplierGroups);
+
   return {
     analyzedAt:   analyzedAt || new Date().toISOString(),
     total:        summary?.total        ?? 0,
@@ -109,24 +114,46 @@ function shapeInput({ summary, results, topPriority, analyzedAt, thresholds }, b
     thresholds,
     contextBlock,
     // Pass through client-selected parts and supplier groups (if any)
-    selectedParts:  bc.selectedParts  || null,
-    supplierGroups: bc.supplierGroups || null,
+    selectedParts,
+    supplierGroups,
   };
+}
+
+function safeText(value, maxLength) {
+  return value === undefined || value === null
+    ? ''
+    : String(value).slice(0, maxLength);
+}
+
+function safeNumber(value) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 /** Strip a RowResult down to the fields the LLM needs. */
 function simplifyRow(r) {
+  r = r || {};
   return {
-    part_number: r.part_number,
-    supplier:    r.supplier || '',
-    status:      r.status,
-    severity:    r.severity,
-    coverage:    r.coverage,
-    on_hand:     r.on_hand,
-    daily_usage: r.daily_usage,
-    lead_time:   r.lead_time,
-    reason:      r.reason,
+    part_number: safeText(r.part_number, 100),
+    supplier:    safeText(r.supplier, 100),
+    status:      safeText(r.status, 60),
+    severity:    safeText(r.severity, 20),
+    coverage:    safeNumber(r.coverage),
+    on_hand:     safeNumber(r.on_hand),
+    daily_usage: safeNumber(r.daily_usage),
+    lead_time:   safeNumber(r.lead_time),
+    reason:      safeText(r.reason, 500),
   };
+}
+
+function sanitizeSupplierGroups(groups) {
+  if (!groups || typeof groups !== 'object' || Array.isArray(groups)) return null;
+
+  const clean = Object.create(null);
+  Object.entries(groups).slice(0, 25).forEach(([supplier, parts]) => {
+    if (!Array.isArray(parts)) return;
+    clean[safeText(supplier, 100)] = parts.slice(0, 100).map(simplifyRow);
+  });
+  return Object.keys(clean).length ? clean : null;
 }
 
 // ---------------------------------------------------------------------------

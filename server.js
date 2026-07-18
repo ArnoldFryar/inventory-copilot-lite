@@ -18,6 +18,9 @@ const { stripeWebhookHandler } = require('./server/controllers/billingController
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
+// Avoid advertising the framework in every response.
+app.disable('x-powered-by');
+
 // ---------------------------------------------------------------------------
 // Trust proxy — Railway (and most PaaS hosts) terminate TLS at a reverse
 // proxy that injects X-Forwarded-For / X-Forwarded-Proto headers.
@@ -33,7 +36,14 @@ app.set('trust proxy', 1);
 // ---------------------------------------------------------------------------
 app.use((_req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
 
   // script-src: always allow jsdelivr (Supabase browser SDK loaded from CDN)
   // and Tailwind Play CDN (used on ops.html marketing page)
@@ -100,12 +110,14 @@ app.get('/', (req, res) => {
 // Diagnostic endpoint — confirm hostname resolution in production
 // Remove or gate behind an env flag once DNS is verified.
 // ---------------------------------------------------------------------------
-app.get('/health/host', (req, res) => {
-  res.json({
-    hostname:   req.hostname,
-    hostHeader: req.headers.host,
+if (process.env.ENABLE_HOST_DIAGNOSTICS === 'true') {
+  app.get('/health/host', (req, res) => {
+    res.json({
+      hostname:   req.hostname,
+      hostHeader: req.headers.host,
+    });
   });
-});
+}
 
 // ---------------------------------------------------------------------------
 // Static files
@@ -140,9 +152,18 @@ app.use(require('./server/routes/procurement'));
 app.use(require('./server/routes/pfep'));
 
 // ---------------------------------------------------------------------------
-// Global error handler â€” catches unhandled throws in async routes.
+// Global error handler for parser errors and errors forwarded by route code.
 // ---------------------------------------------------------------------------
 app.use((err, _req, res, _next) => {
+  if (err && (err.type === 'entity.parse.failed' ||
+              (err instanceof SyntaxError && err.status === 400 && 'body' in err))) {
+    return res.status(400).json({ error: 'Invalid JSON request body.' });
+  }
+
+  if (err && err.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'Request body is too large.' });
+  }
+
   console.error('[Unhandled route error]', err.message || err);
   if (!res.headersSent) {
     res.status(500).json({ error: 'An unexpected server error occurred.' });
@@ -157,32 +178,43 @@ if (!fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }
 
-// Fail fast if either root-served HTML file is missing.
-[APP_HTML, LANDING_HTML].forEach((f) => {
-  if (!fs.existsSync(f)) {
-    console.error(`[startup] FATAL: required file not found: ${f}`);
+function validateRequiredFiles() {
+  [APP_HTML, LANDING_HTML].forEach((f) => {
+    if (!fs.existsSync(f)) {
+      throw new Error(`Required file not found: ${f}`);
+    }
+  });
+}
+
+function startServer(port = PORT) {
+  validateRequiredFiles();
+  return app.listen(port, () => {
+    console.log(`OpsCopilot-Lite running at http://localhost:${port}`);
+  });
+}
+
+if (require.main === module) {
+  if (!SUPABASE_URL) {
+    console.warn('[startup] SUPABASE_URL is not set — auth and database features will be unavailable.');
+  }
+  const { stripeConfigured } = require('./plans');
+  if (!stripeConfigured) {
+    console.warn('[startup] STRIPE_SECRET_KEY or STRIPE_PRO_PRICE_ID not set — billing features will be unavailable.');
+  }
+
+  try {
+    startServer(PORT);
+  } catch (err) {
+    console.error(`[startup] FATAL: ${err.message}`);
     process.exit(1);
   }
-});
 
-if (!SUPABASE_URL) {
-  console.warn('[startup] SUPABASE_URL is not set — auth and database features will be unavailable.');
-}
-const { stripeConfigured } = require('./plans');
-if (!stripeConfigured) {
-  console.warn('[startup] STRIPE_SECRET_KEY or STRIPE_PRO_PRICE_ID not set — billing features will be unavailable.');
+  // Express 4 does not automatically forward rejected async handlers.
+  // Route-level try/catch remains primary; this logs any final escape.
+  process.on('unhandledRejection', (reason) => {
+    console.error('[unhandledRejection]', reason);
+  });
 }
 
-app.listen(PORT, () => {
-  console.log(`OpsCopilot-Lite running at http://localhost:${PORT}`);
-});
-
-// Prevent unhandled promise rejections from crashing the process.
-// Express 4 does not automatically forward async route errors to the
-// error-handling middleware — a rejected promise leaves the request hanging
-// until the proxy times out (502). The try/catch wrappers in each route
-// handler are the primary defence; this is the last-resort safety net.
-process.on('unhandledRejection', (reason) => {
-  console.error('[unhandledRejection]', reason);
-});
+module.exports = { app, startServer };
 

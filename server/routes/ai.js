@@ -7,13 +7,15 @@
 // GET  /api/ai-helper/types — list available helper types
 // ---------------------------------------------------------------------------
 
-const express  = require('express');
-const router   = express.Router();
+const express   = require('express');
+const rateLimit = require('express-rate-limit');
+const router    = express.Router();
 
 const requireAuth  = require('../middleware/requireAuth');
 const { getPlanForUser }                              = require('../../plans');
 const { supabaseAdmin }                               = require('../../supabaseClient');
 const { MODEL_MAP }                                   = require('../ai/config');
+const { validateAiPayload }                           = require('../lib/aiRequestPolicy');
 const {
   generateHelper,
   aiConfigured,
@@ -21,11 +23,35 @@ const {
   HELPER_TYPES
 }                                                     = require('../../aiHelpers');
 
+function positiveInt(value, fallback) {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+const AI_RATE_MAX = positiveInt(process.env.AI_RATE_MAX, 20);
+const AI_RATE_WINDOW = positiveInt(process.env.AI_RATE_WINDOW, 15);
+
+// Authentication runs first, so each account gets its own allowance even
+// when many users share a corporate network.
+const aiLimiter = rateLimit({
+  windowMs:        AI_RATE_WINDOW * 60 * 1000,
+  max:             AI_RATE_MAX,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  keyGenerator:    req => req.user.id,
+  handler: (_req, res) => {
+    res.status(429).json({
+      error: `AI helper limit reached. Try again in ${AI_RATE_WINDOW} minutes.`,
+    });
+  },
+});
+
 // ---------------------------------------------------------------------------
 // POST /api/ai-helper — generate a premium AI helper draft.
 // Requires Pro plan. AI output is downstream of the deterministic engine.
 // ---------------------------------------------------------------------------
-router.post('/api/ai-helper', requireAuth, async (req, res) => {
+router.post('/api/ai-helper', requireAuth, aiLimiter, async (req, res) => {
+  try {
   const plan = await getPlanForUser(req.user.id, supabaseAdmin);
   if (plan.key !== 'pro') {
     console.warn('[ACCESS_DENIED] POST /api/ai-helper', {
@@ -49,8 +75,9 @@ router.post('/api/ai-helper', requireAuth, async (req, res) => {
     });
   }
 
-  if (!runData || !runData.summary || !Array.isArray(runData.results)) {
-    return res.status(400).json({ error: 'runData with summary and results is required.' });
+  const policyError = validateAiPayload({ runData, context, refinement });
+  if (policyError) {
+    return res.status(policyError.status).json({ error: policyError.error });
   }
 
   // Model selection — all requests that reach this point are Pro or admin.
@@ -61,8 +88,7 @@ router.post('/api/ai-helper', requireAuth, async (req, res) => {
 
   console.log('[AI ROUTE]', { helperType, model, isPro });
 
-  try {
-    const result = await generateHelper(helperType, runData, { model, context, refinement });
+  const result = await generateHelper(helperType, runData, { model, context, refinement });
 
     // Telemetry — log which helper was used (no PII, no content)
     const safe = {
@@ -90,7 +116,7 @@ router.post('/api/ai-helper', requireAuth, async (req, res) => {
     const errCategory = isTimeout ? 'timeout' : isNetwork ? 'network' : 'api_error';
 
     console.error('AI_HELPER_ERROR', {
-      helperType,
+      helperType: req.body?.helperType || 'unknown',
       category:  errCategory,
       error:     err.message,
       stack:     err.stack,

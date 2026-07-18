@@ -14,38 +14,7 @@
 const express       = require('express');
 const router        = express.Router();
 const { supabaseAdmin, verifyToken } = require('../../supabaseClient');
-
-// Allowlist of event names accepted from the client.
-// Any unrecognised name is rejected with 400 to prevent log spam.
-const VALID_EVENTS = new Set([
-  // Navigation / lifecycle
-  'page_load',
-  // Paywall
-  'helper_access_attempt',
-  'upgrade_btn_clicked',
-  // AI helpers
-  'ai_helper_used',
-  'ai_helper_error',
-  // Upload / analysis
-  'upload_started',
-  'upload_failed',
-  'sample_loaded',
-  'sample_csv_downloaded',
-  'demo_loaded',
-  'analysis_completed',
-  // Export
-  'export_csv_clicked',
-  'export_comparison_csv_clicked',
-  'print_clicked',
-  // History
-  'run_saved',
-  'run_auto_saved',
-  'history_run_loaded',
-  'history_run_deleted',
-  'history_compare_clicked',
-  // Comparison
-  'comparison_shown',
-]);
+const { VALID_EVENTS, sanitizeProperties } = require('../lib/telemetryEvents');
 
 router.post('/api/events', async (req, res) => {
   const { event, properties, props } = req.body || {};
@@ -56,12 +25,7 @@ router.post('/api/events', async (req, res) => {
   if (!VALID_EVENTS.has(event)) {
     return res.status(400).json({ error: 'Unknown event.' });
   }
-  // properties must be an object (or absent)
-  const payloadProps = (properties && typeof properties === 'object' && !Array.isArray(properties))
-    ? properties
-    : (props && typeof props === 'object' && !Array.isArray(props))
-      ? props
-    : {};
+  const payloadProps = sanitizeProperties(properties || props);
 
   // Attempt to resolve user_id from optional Bearer token
   let userId = null;

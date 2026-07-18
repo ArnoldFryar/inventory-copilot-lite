@@ -1813,6 +1813,85 @@ test('SUBSCRIPTION_EVENTS is at module level in billingController (not inside ha
 // Health endpoint unit tests  (response-shape only — no HTTP server started)
 // ═══════════════════════════════════════════════════════════════════════════════
 
+console.log('\n[Premium hardening] telemetry, AI request policy, and modal accessibility');
+
+test('all literal client telemetry events are accepted by the shared contract', () => {
+  const fs   = require('fs');
+  const path = require('path');
+  const { VALID_EVENTS } = require('./server/lib/telemetryEvents');
+  const publicDir = path.join(__dirname, 'public');
+  const scriptPaths = fs.readdirSync(publicDir)
+    .filter(name => name.endsWith('.js'))
+    .map(name => path.join(publicDir, name))
+    .concat(
+      fs.readdirSync(path.join(publicDir, 'js'))
+        .filter(name => name.endsWith('.js'))
+        .map(name => path.join(publicDir, 'js', name))
+    );
+  const sources = scriptPaths
+    .map(file => fs.readFileSync(file, 'utf8'))
+    .join('\n')
+    .replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
+  const emitted = [...sources.matchAll(/\btrack\(\s*['"]([a-z0-9_]+)['"]/g)]
+    .map(match => match[1]);
+  const rejected = [...new Set(emitted)].filter(event => !VALID_EVENTS.has(event));
+  assert.deepEqual(rejected, []);
+  assert.ok(emitted.includes('checkout_started'));
+  assert.ok(emitted.includes('billing_plan_loaded'));
+});
+
+test('telemetry properties drop nested and suspicious values', () => {
+  const { sanitizeProperties } = require('./server/lib/telemetryEvents');
+  const clean = sanitizeProperties({
+    source: 'upgrade_modal',
+    item_count: 12,
+    configured: true,
+    nested: { sku: 'secret' },
+    list: ['secret'],
+    'bad-key': 'drop',
+    long_text: 'x'.repeat(140),
+  });
+  assert.deepEqual(Object.keys(clean).sort(), ['configured', 'item_count', 'long_text', 'source']);
+  assert.equal(clean.long_text.length, 100);
+});
+
+test('AI request policy accepts a bounded analysis payload', () => {
+  const { validateAiPayload } = require('./server/lib/aiRequestPolicy');
+  assert.equal(validateAiPayload({
+    runData: { summary: { total: 1 }, results: [{ part_number: 'A-1' }] },
+    context: { selectedParts: [{ part_number: 'A-1' }] },
+    refinement: { instruction: 'Make it concise.' },
+  }), null);
+});
+
+test('AI request policy rejects oversized and malformed context', () => {
+  const { AI_LIMITS, validateAiPayload } = require('./server/lib/aiRequestPolicy');
+  const base = { runData: { summary: {}, results: [] } };
+  assert.equal(
+    validateAiPayload({ ...base, context: { selectedParts: new Array(AI_LIMITS.selectedParts + 1) } }).status,
+    413
+  );
+  assert.equal(
+    validateAiPayload({ ...base, refinement: { instruction: 'x'.repeat(AI_LIMITS.refinementChars + 1) } }).status,
+    413
+  );
+  assert.equal(validateAiPayload({ runData: { summary: {}, results: {} } }).status, 400);
+});
+
+test('auth and upgrade dialogs use the shared keyboard modal manager', () => {
+  const fs   = require('fs');
+  const path = require('path');
+  const stateStore = fs.readFileSync(path.join(__dirname, 'public', 'js', 'stateStore.js'), 'utf8');
+  const authUI = fs.readFileSync(path.join(__dirname, 'public', 'js', 'authUI.js'), 'utf8');
+  const html = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
+  assert.ok(stateStore.includes('App.modalManager'));
+  assert.ok(stateStore.includes("event.key === 'Escape'"));
+  assert.ok(stateStore.includes("event.key !== 'Tab'"));
+  assert.ok(authUI.includes('App.modalManager.open(dom.authModal, dom.authEmail)'));
+  assert.ok(html.includes('aria-labelledby="authModalTitle"'));
+  assert.ok(html.includes('aria-labelledby="upgradeModalTitle"'));
+});
+
 console.log('\n[Health] /api/health and /api/health/deps response shape');
 
 // Minimal req/res stubs so we can test the handlers without starting Express.

@@ -752,7 +752,7 @@
   </div><!-- /.app-layout -->
 
   <!-- ── Auth modal ─────────────────────────────────────────────────────── -->
-  <div id="authModal" class="auth-modal-backdrop hidden" role="dialog" aria-modal="true" aria-label="Sign in">
+  <div id="authModal" class="auth-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="authModalTitle" aria-hidden="true">
     <div class="auth-modal">
       <button id="authModalClose" class="auth-modal-close" type="button" aria-label="Close">&times;</button>
       <h2 id="authModalTitle">Sign in</h2>
@@ -773,11 +773,11 @@
   </div>
 
   <!-- ── Upgrade modal ───────────────────────────────────────────────────── -->
-  <div id="upgradeModal" class="upgrade-modal-backdrop hidden" role="dialog" aria-modal="true" aria-label="Upgrade to Pro">
+  <div id="upgradeModal" class="upgrade-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="upgradeModalTitle" aria-hidden="true">
     <div class="upgrade-modal">
       <button id="upgradeModalClose" class="auth-modal-close" type="button" aria-label="Close">&times;</button>
       <span class="upgrade-modal-icon" aria-hidden="true">🚀</span>
-      <h2>Upgrade the whole review loop</h2>
+      <h2 id="upgradeModalTitle">Upgrade the whole review loop</h2>
       <p class="upgrade-modal-subtitle">Unlock full exports, saved history, run comparison, and AI follow-up from the same deterministic triage report.</p>
       <ul class="upgrade-modal-benefits">
         <li>

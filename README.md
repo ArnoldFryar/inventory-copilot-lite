@@ -7,7 +7,7 @@ OpsCopilot-Lite — a lightweight inventory triage tool that ingests a CSV expor
 ```bash
 npm install
 npm start          # starts on http://localhost:3000
-npm test           # runs the regression suite
+npm test           # runs regression and HTTP integration suites
 ```
 
 Upload a CSV file with the following columns (aliases and mixed-case headers are auto-resolved):
@@ -50,7 +50,8 @@ inventory-copilot-lite/          ← repo root
 │
 ├── uploads/                     ← Transient upload staging (gitignored)
 │
-└── _test_regression.js          ← Node regression suite (95 tests); run with `npm test`
+├── _test_regression.js          ← Deterministic regression and policy checks
+└── _test_http.js                ← HTTP security and route-contract checks
 ```
 
 ### What was removed and why
@@ -67,6 +68,21 @@ inventory-copilot-lite/          ← repo root
 ## Configuration
 
 All classification thresholds are centralised in [`config.js`](config.js). Adjust values there; do not hard-code thresholds in `analyzer.js`.
+
+AI helpers are authenticated and rate limited per account. The defaults in
+`.env.example` cap requests at 20 per 15 minutes and bound the analysis,
+selection, supplier-group, and refinement payload sizes before provider calls.
+Tune the `AI_RATE_*` and `AI_MAX_*` values for the capacity of your deployment.
+
+The hostname diagnostic route is off by default. Set
+`ENABLE_HOST_DIAGNOSTICS=true` only while actively troubleshooting routing.
+
+## Quality Gates
+
+`npm test` runs both the core regression suite and live HTTP integration checks.
+The HTTP suite verifies the security-header baseline, safe JSON errors,
+telemetry event compatibility, disabled diagnostics, and authentication order
+for premium AI requests.
 
 ## Deployment
 

@@ -277,11 +277,80 @@
   };
 
   // ── Upgrade modal helpers ─────────────────────────────────────────────────
+  var modalReturnFocus = new WeakMap();
+  var MODAL_FOCUSABLE = [
+    'a[href]',
+    'button:not([disabled])',
+    'input:not([disabled])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])',
+  ].join(',');
+
+  function modalFocusableElements(container) {
+    return Array.prototype.slice.call(container.querySelectorAll(MODAL_FOCUSABLE))
+      .filter(function (element) {
+        return element.getAttribute('aria-hidden') !== 'true';
+      });
+  }
+
+  App.modalManager = {
+    open: function (container, initialFocus) {
+      if (!container) return;
+      var active = document.activeElement;
+      if (active && active !== document.body && !container.contains(active)) {
+        modalReturnFocus.set(container, active);
+      }
+      container.classList.remove('hidden');
+      container.setAttribute('aria-hidden', 'false');
+      window.requestAnimationFrame(function () {
+        var target = initialFocus || modalFocusableElements(container)[0];
+        if (target && typeof target.focus === 'function') target.focus();
+      });
+    },
+
+    close: function (container) {
+      if (!container) return;
+      container.classList.add('hidden');
+      container.setAttribute('aria-hidden', 'true');
+      var returnTarget = modalReturnFocus.get(container);
+      modalReturnFocus.delete(container);
+      if (returnTarget && returnTarget.isConnected && typeof returnTarget.focus === 'function') {
+        returnTarget.focus();
+      }
+    },
+
+    handleKeydown: function (event, container, close) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      var focusable = modalFocusableElements(container);
+      if (!focusable.length) {
+        event.preventDefault();
+        return;
+      }
+
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    },
+  };
+
   App.openUpgradeModal = function () {
-    if (App.dom.upgradeModal) App.dom.upgradeModal.classList.remove('hidden');
+    App.modalManager.open(App.dom.upgradeModal, App.dom.upgradeModalClose);
   };
   App.closeUpgradeModal = function () {
-    if (App.dom.upgradeModal) App.dom.upgradeModal.classList.add('hidden');
+    App.modalManager.close(App.dom.upgradeModal);
   };
 
   // Wire close button + backdrop click
@@ -291,6 +360,9 @@
   if (App.dom.upgradeModal) {
     App.dom.upgradeModal.addEventListener('click', function (e) {
       if (e.target === App.dom.upgradeModal) App.closeUpgradeModal();
+    });
+    App.dom.upgradeModal.addEventListener('keydown', function (e) {
+      App.modalManager.handleKeydown(e, App.dom.upgradeModal, App.closeUpgradeModal);
     });
   }
 

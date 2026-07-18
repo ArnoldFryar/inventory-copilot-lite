@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node server.js",
-    "test": "node _test_regression.js"
+    "test": "node _test_regression.js && node _test_http.js"
   },
   "dependencies": {
     "@sendgrid/mail": "^8.1.6",
