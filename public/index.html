@@ -50,6 +50,12 @@
         <button id="signInBtn" class="sign-in-btn hidden" type="button">Sign in</button>
       </div>
     </div>
+    <nav class="mobile-workspace-nav" aria-label="Mobile workspace navigation">
+      <a href="/" aria-current="page">Triage</a>
+      <a href="#historySection">History</a>
+      <a href="#aiHelpersSection">AI Helpers</a>
+      <a href="/billing.html">Plan</a>
+    </nav>
   </header>
 
   <main class="app-main">
@@ -81,6 +87,17 @@
           <span class="trust-item"><span class="trust-icon" aria-hidden="true"><span data-icon="check" data-icon-size="11"></span></span> Deterministic rules, zero hallucination</span>
           <span class="trust-item"><span class="trust-icon" aria-hidden="true"><span data-icon="check" data-icon-size="11"></span></span> Results in under 3&thinsp;s</span>
         </div>
+        <div class="hero-output-preview" aria-label="Analysis output">
+          <div class="hero-output-topline">
+            <span class="hero-output-status"><span aria-hidden="true"></span> Decision-ready output</span>
+            <span class="hero-output-time">One upload</span>
+          </div>
+          <div class="hero-output-grid">
+            <div><span>01</span><strong>Rank risk</strong><small>Coverage vs. lead time</small></div>
+            <div><span>02</span><strong>Focus action</strong><small>Urgent through healthy</small></div>
+            <div><span>03</span><strong>Share proof</strong><small>Exportable audit trail</small></div>
+          </div>
+        </div>
       </div>
 
       <div class="upload-engine-wrapper">
@@ -91,6 +108,28 @@
       <p class="context-block">
         Parts are scored by days-of-stock vs. lead time &mdash; seven categories, zero&nbsp;guesswork.
       </p>
+      <form id="uploadForm" enctype="multipart/form-data">
+        <label class="file-label" for="csvfile">
+          <div class="file-label-ring" aria-hidden="true">
+            <span data-icon="upload" data-icon-size="28" data-icon-class="file-label-icon" aria-hidden="true"></span>
+          </div>
+          <span id="fileLabel" class="file-label-text">Choose a CSV file&hellip;</span>
+          <span class="file-label-hint">or drag and drop &middot; .csv up to 5&thinsp;MB</span>
+          <input type="file" id="csvfile" name="csvfile" accept=".csv" />
+        </label>
+        <button type="submit" id="submitBtn" class="analyze-cta" disabled>
+          <span data-icon="play" data-icon-size="16" data-icon-class="analyze-cta-icon" aria-hidden="true"></span>
+          <span id="submitLabel">Analyze Inventory</span>
+        </button>
+      </form>
+      <div class="demo-hint">
+        <span class="demo-hint-label">Need a format reference?</span>
+        <a href="/sample-data" id="sampleDownloadLink" class="link-btn" download="sample_inventory.csv">Download sample CSV</a>
+      </div>
+      <div class="upload-proof-line">
+        <span data-icon="shield" data-icon-size="13" data-icon-class="upload-proof-icon" aria-hidden="true"></span>
+        Secure processing. History is only saved when you choose to save a run.
+      </div>
       <div class="quick-start-panel" aria-label="Quick start options">
         <div class="quick-start-copy">
           <span class="quick-start-label">Fastest way to see value</span>
@@ -138,28 +177,6 @@
         </div>
       </details>
 
-      <form id="uploadForm" enctype="multipart/form-data">
-        <label class="file-label" for="csvfile">
-          <div class="file-label-ring" aria-hidden="true">
-            <span data-icon="upload" data-icon-size="28" data-icon-class="file-label-icon" aria-hidden="true"></span>
-          </div>
-          <span id="fileLabel" class="file-label-text">Choose a CSV file&hellip;</span>
-          <span class="file-label-hint">or drag and drop &middot; .csv up to 5&thinsp;MB</span>
-          <input type="file" id="csvfile" name="csvfile" accept=".csv" />
-        </label>
-        <button type="submit" id="submitBtn" class="analyze-cta" disabled>
-          <span data-icon="play" data-icon-size="16" data-icon-class="analyze-cta-icon" aria-hidden="true"></span>
-          <span id="submitLabel">Analyze Inventory</span>
-        </button>
-      </form>
-      <div class="demo-hint">
-        <span class="demo-hint-label">Prefer to validate your file format first?</span>
-        <a href="/sample-data" id="sampleDownloadLink" class="link-btn" download="sample_inventory.csv">Download sample CSV</a>
-      </div>
-      <div class="upload-proof-line" aria-hidden="true">
-        <span data-icon="shield" data-icon-size="13" data-icon-class="upload-proof-icon"></span>
-        Uploaded securely for analysis. Saved history is optional and only created when you choose to save a run.
-      </div>
       </div><!-- /.upload-engine-wrapper -->
 
       <details class="faq-block">

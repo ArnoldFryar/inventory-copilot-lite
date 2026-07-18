@@ -1892,6 +1892,26 @@ test('auth and upgrade dialogs use the shared keyboard modal manager', () => {
   assert.ok(html.includes('aria-labelledby="upgradeModalTitle"'));
 });
 
+test('premium dashboard refresh exposes compact desktop and mobile navigation', () => {
+  const fs   = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
+  const manifest = fs.readFileSync(path.join(__dirname, 'public', 'style.css'), 'utf8');
+  assert.ok(html.includes('class="mobile-workspace-nav"'));
+  assert.ok(html.includes('class="hero-output-preview"'));
+  assert.ok(manifest.includes('@import "./styles/premium-refresh.css";'));
+});
+
+test('premium dashboard refresh protects responsive and table-density contracts', () => {
+  const fs   = require('fs');
+  const path = require('path');
+  const css = fs.readFileSync(path.join(__dirname, 'public', 'styles', 'premium-refresh.css'), 'utf8');
+  assert.ok(css.includes('grid-template-columns: minmax(300px, 0.76fr) minmax(540px, 1.34fr)'));
+  assert.ok(css.includes('.mobile-workspace-nav'));
+  assert.ok(css.includes('#resultsTable'));
+  assert.ok(css.includes('min-width: 1380px'));
+});
+
 console.log('\n[Health] /api/health and /api/health/deps response shape');
 
 // Minimal req/res stubs so we can test the handlers without starting Express.
