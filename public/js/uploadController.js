@@ -16,7 +16,7 @@
       dom.submitBtn.disabled = false;
       dom.submitBtn.classList.add('is-ready');
     } else {
-      dom.fileLabel.textContent = 'Choose a CSV file\u2026';
+      dom.fileLabel.textContent = 'Choose a CSV or Excel file\u2026';
       dom.submitBtn.disabled = true;
       dom.submitBtn.classList.remove('is-ready');
     }
@@ -34,7 +34,7 @@
 
     var file = dom.fileInput.files[0];
     if (!file) {
-      App.showError('Please select a CSV file before submitting.');
+      App.showError('Please select a CSV or Excel (.xlsx) file before submitting.');
       return;
     }
 

@@ -17,6 +17,7 @@ const { analyzeRows }                    = require('../../analyzer');
 const cfg                                = require('../../config');
 const { resolveHeaders, acceptedNames }  = require('../../columnMap');
 const { ingestCSV }                      = require('../../csvIngest');
+const { ingestXLSX }                     = require('../../xlsxIngest');
 const { getPlan, getPlanForUser, applyPlanLimits } = require('../../plans');
 const { supabaseAdmin, verifyToken }     = require('../../supabaseClient');
 
@@ -34,26 +35,30 @@ const storage = multer.diskStorage({
   }
 });
 
-function csvFileFilter(_req, file, cb) {
+function inventoryFileFilter(_req, file, cb) {
   const ext  = path.extname(file.originalname).toLowerCase();
   const mime = file.mimetype;
 
-  const extOk  = ext === '.csv';
-  const mimeOk = mime === 'text/csv' || mime === 'text/plain' ||
-                 mime === 'application/vnd.ms-excel' ||
-                 mime === 'application/octet-stream';
+  const csvMimeOk = mime === 'text/csv' || mime === 'text/plain' ||
+                    mime === 'application/vnd.ms-excel' ||
+                    mime === 'application/octet-stream' || mime === '';
+  const xlsxMimeOk = mime === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+                     mime === 'application/vnd.ms-excel' ||
+                     mime === 'application/zip' ||
+                     mime === 'application/octet-stream' || mime === '';
+  const accepted = (ext === '.csv' && csvMimeOk) || (ext === '.xlsx' && xlsxMimeOk);
 
-  if (extOk && mimeOk) {
+  if (accepted) {
     cb(null, true);
   } else {
-    cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE', 'Only .csv files are accepted.'));
+    cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE'));
   }
 }
 
 const upload = multer({
   storage,
   limits:     { fileSize: MAX_BYTES },
-  fileFilter: csvFileFilter
+  fileFilter: inventoryFileFilter
 });
 
 // ---------------------------------------------------------------------------
@@ -94,7 +99,9 @@ router.post('/upload', uploadLimiter, (req, res) => {
         if (req.file) fs.unlink(req.file.path, () => {});
         const msg = err.code === 'LIMIT_FILE_SIZE'
           ? `File is too large. Maximum allowed size is ${MAX_BYTES / (1024 * 1024)} MB.`
-          : err.message || 'File upload error.';
+          : err.code === 'LIMIT_UNEXPECTED_FILE'
+            ? 'Only .csv and .xlsx files are accepted.'
+            : err.message || 'File upload error.';
         return res.status(400).json({ error: msg });
       }
       if (req.file) fs.unlink(req.file.path, () => {});
@@ -103,13 +110,15 @@ router.post('/upload', uploadLimiter, (req, res) => {
 
     // --- empty / missing upload ----------------------------------------------
     if (!req.file) {
-      return res.status(400).json({ error: 'No file was uploaded. Please select a CSV file.' });
+      return res.status(400).json({ error: 'No file was uploaded. Please select a CSV or Excel (.xlsx) file.' });
     }
 
     const filePath = req.file.path;
+    const extension = path.extname(req.file.originalname).toLowerCase();
+    const ingestFile = extension === '.xlsx' ? ingestXLSX : ingestCSV;
 
     // --- parse & analyze -----------------------------------------------------
-    ingestCSV(filePath, async (parseErr, rows, ingestMeta) => {
+    ingestFile(filePath, async (parseErr, rows, ingestMeta) => {
       fs.unlink(filePath, () => {});
 
       if (parseErr) {
@@ -117,7 +126,7 @@ router.post('/upload', uploadLimiter, (req, res) => {
       }
 
       if (rows.length === 0) {
-        return res.status(422).json({ error: 'The uploaded CSV contains no data rows.' });
+        return res.status(422).json({ error: 'The uploaded file contains no data rows.' });
       }
 
       const dataRows = rows.filter(row =>
@@ -125,12 +134,12 @@ router.post('/upload', uploadLimiter, (req, res) => {
       );
 
       if (dataRows.length === 0) {
-        return res.status(422).json({ error: 'The uploaded CSV contains no data rows.' });
+        return res.status(422).json({ error: 'The uploaded file contains no data rows.' });
       }
 
       // Delimiter detection
       const parsedKeys = Object.keys(dataRows[0]);
-      if (parsedKeys.length === 1) {
+      if (extension === '.csv' && parsedKeys.length === 1) {
         const singleKey = parsedKeys[0];
         if (/;/.test(singleKey)) {
           return res.status(422).json({
@@ -209,6 +218,11 @@ router.post('/upload', uploadLimiter, (req, res) => {
 
       result.preambleRowsSkipped = ingestMeta.preambleRowsSkipped;
       result.encodingDetected    = ingestMeta.encoding;
+      result.sourceFormat        = extension.slice(1);
+      if (ingestMeta.worksheet) {
+        result.worksheet = ingestMeta.worksheet;
+        result.worksheetsAvailable = ingestMeta.worksheetsAvailable;
+      }
       // module_key is carried through so the client can tag any auto-save
       // it performs with the correct module.  Inventory upload always sets
       // 'inventory'; procurement will override this when its route lands.

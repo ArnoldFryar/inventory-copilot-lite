@@ -71,6 +71,10 @@
  */
 
 const assert = require('assert').strict;
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const ExcelJS = require('exceljs');
 const { analyzeRows }             = require('./analyzer');
 const { resolveHeaders, ALIASES } = require('./columnMap');
 const cfg                         = require('./config');
@@ -81,6 +85,11 @@ const {
   findHeaderRowIndex,
   parseCSVHeaderLine,
 }                                 = require('./csvIngest');
+const {
+  parseWorkbook,
+  cellValueToScalar,
+  findWorksheetHeader,
+}                                 = require('./xlsxIngest');
 
 let passed = 0;
 let failed = 0;
@@ -745,6 +754,71 @@ test('header at line index 19 is found (MAX_PREAMBLE_ROWS boundary)', () => {
   lines.push('part_number,on_hand,daily_usage,lead_time'); // index 19
   lines.push('P001,50,5,30');
   assert.equal(findHeaderRowIndex(lines), 19);
+});
+
+// ─── P22b: XLSX workbook ingestion ───────────────────────────────────────────
+console.log('\n[P22b] XLSX workbook ingestion');
+
+test('ExcelJS scalar conversion uses cached formula values and safe display text', () => {
+  assert.equal(cellValueToScalar({ formula: '25+25', result: 50 }), 50);
+  assert.equal(cellValueToScalar({ formula: 'NOW()' }), '');
+  assert.equal(cellValueToScalar({ richText: [{ text: 'Part ' }, { text: 'A' }] }), 'Part A');
+  assert.equal(cellValueToScalar({ text: 'Supplier portal', hyperlink: 'https://example.com' }), 'Supplier portal');
+  assert.equal(cellValueToScalar({ error: '#VALUE!' }), '');
+});
+
+test('worksheet header detection skips ERP title rows', () => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Inventory');
+  worksheet.addRow(['Inventory position report']);
+  worksheet.addRow(['Generated', '2026-07-24']);
+  worksheet.addRow(['Part No', 'QTY ON HAND', 'Avg Daily Usage', 'Lead Time']);
+
+  const header = findWorksheetHeader(worksheet);
+  assert.equal(header.rowNumber, 3);
+  assert.deepEqual(header.headers, ['Part No', 'QTY ON HAND', 'Avg Daily Usage', 'Lead Time']);
+});
+
+testAsync('XLSX parser selects the first valid visible sheet and returns CSV-compatible rows', async () => {
+  const workbook = new ExcelJS.Workbook();
+  workbook.addWorksheet('Cover').addRow(['Inventory export', 'Generated 2026-07-24']);
+  const worksheet = workbook.addWorksheet('Inventory Data');
+  worksheet.addRow(['Inventory position report']);
+  worksheet.addRow(['Generated', '2026-07-24']);
+  worksheet.addRow(['Part No', 'QTY ON HAND', 'Avg Daily Usage', 'Lead Time']);
+  const dataRow = worksheet.addRow(['MFG-1001', null, 5, 30]);
+  dataRow.getCell(2).value = { formula: '25+25', result: 50 };
+
+  const tempPath = path.join(os.tmpdir(), `inventory-copilot-${process.pid}-${Date.now()}.xlsx`);
+  try {
+    await workbook.xlsx.writeFile(tempPath);
+    const parsed = await parseWorkbook(tempPath);
+    assert.equal(parsed.meta.worksheet, 'Inventory Data');
+    assert.equal(parsed.meta.preambleRowsSkipped, 2);
+    assert.deepEqual(parsed.meta.worksheetsAvailable, ['Cover', 'Inventory Data']);
+    assert.equal(parsed.rows.length, 1);
+    assert.deepEqual(parsed.rows[0], {
+      'Part No': 'MFG-1001',
+      'QTY ON HAND': 50,
+      'Avg Daily Usage': 5,
+      'Lead Time': 30,
+    });
+  } finally {
+    await fs.promises.rm(tempPath, { force: true });
+  }
+});
+
+testAsync('XLSX parser rejects malformed and password-protected-style input clearly', async () => {
+  const tempPath = path.join(os.tmpdir(), `inventory-copilot-invalid-${process.pid}-${Date.now()}.xlsx`);
+  try {
+    await fs.promises.writeFile(tempPath, 'not an OOXML workbook');
+    await assert.rejects(
+      parseWorkbook(tempPath),
+      /corrupted, password-protected, or not a valid \.xlsx file/
+    );
+  } finally {
+    await fs.promises.rm(tempPath, { force: true });
+  }
 });
 
 // ─── P23: Plan model ──────────────────────────────────────────────────────────

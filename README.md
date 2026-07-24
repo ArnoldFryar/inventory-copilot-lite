@@ -1,6 +1,6 @@
 # Inventory Copilot Lite
 
-OpsCopilot-Lite — a lightweight inventory triage tool that ingests a CSV export from any ERP/WMS and returns a prioritised list of parts needing attention (stockout risk, excess inventory, slow movers).
+OpsCopilot-Lite — a lightweight inventory triage tool that ingests CSV and Excel (.xlsx) exports from ERP/WMS systems and returns a prioritised list of parts needing attention (stockout risk, excess inventory, slow movers).
 
 ## Quick Start
 
@@ -10,7 +10,7 @@ npm start          # starts on http://localhost:3000
 npm test           # runs regression and HTTP integration suites
 ```
 
-Upload a CSV file with the following columns (aliases and mixed-case headers are auto-resolved):
+Upload a `.csv` or `.xlsx` file with the following columns (aliases and mixed-case headers are auto-resolved). For Excel workbooks, Inventory Copilot automatically selects the first visible worksheet containing recognized inventory columns:
 
 | Canonical column | Common aliases accepted |
 |---|---|
@@ -33,6 +33,7 @@ inventory-copilot-lite/          ← repo root
 ├── config.js                    ← All tunable thresholds live here
 ├── columnMap.js                 ← Header alias resolution & BOM handling
 ├── csvIngest.js                 ← Encoding detection, header-row finder, CSV parsing
+├── xlsxIngest.js                ← Safe workbook parsing, worksheet/header detection
 ├── plans.js                     ← Plan model (free/pro) & limit enforcement
 ├── supabaseClient.js            ← Server-side Supabase client & JWT verification
 ├── supabase_migration.sql       ← Database schema (run once in Supabase SQL Editor)

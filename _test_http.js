@@ -1,6 +1,7 @@
 'use strict';
 
 const assert = require('assert').strict;
+const ExcelJS = require('exceljs');
 
 delete process.env.ENABLE_HOST_DIAGNOSTICS;
 const { app } = require('./server');
@@ -94,6 +95,49 @@ async function run() {
       });
       assert.equal(response.status, 401);
       assert.equal(response.headers.get('ratelimit-limit'), null);
+    });
+
+    await test('inventory upload accepts XLSX and analyzes the detected worksheet', async () => {
+      const workbook = new ExcelJS.Workbook();
+      workbook.addWorksheet('Cover').addRow(['ERP Inventory Export']);
+      const worksheet = workbook.addWorksheet('Inventory');
+      worksheet.addRow(['Generated', '2026-07-24']);
+      worksheet.addRow(['Part No', 'QTY ON HAND', 'Avg Daily Usage', 'Lead Time']);
+      worksheet.addRow(['MFG-2001', 40, 4, 15]);
+
+      const workbookBuffer = await workbook.xlsx.writeBuffer();
+      const form = new FormData();
+      form.append(
+        'csvfile',
+        new Blob([workbookBuffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        }),
+        'erp-inventory.xlsx'
+      );
+
+      const response = await request(baseUrl, '/upload', { method: 'POST', body: form });
+      const body = await response.json();
+      assert.equal(response.status, 200, body.error);
+      assert.equal(body.sourceFormat, 'xlsx');
+      assert.equal(body.encodingDetected, 'xlsx');
+      assert.equal(body.worksheet, 'Inventory');
+      assert.deepEqual(body.worksheetsAvailable, ['Cover', 'Inventory']);
+      assert.equal(body.summary.total, 1);
+      assert.equal(body.results[0].part_number, 'MFG-2001');
+    });
+
+    await test('inventory upload rejects legacy XLS files with an actionable error', async () => {
+      const form = new FormData();
+      form.append(
+        'csvfile',
+        new Blob(['legacy workbook'], { type: 'application/vnd.ms-excel' }),
+        'legacy-inventory.xls'
+      );
+
+      const response = await request(baseUrl, '/upload', { method: 'POST', body: form });
+      const body = await response.json();
+      assert.equal(response.status, 400);
+      assert.match(body.error, /\.csv and \.xlsx files are accepted/);
     });
 
     console.log(`\n${passed} HTTP integration tests passed`);
