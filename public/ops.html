@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OpsCopilot · Turn messy inventory data into clear decisions</title>
-  <meta name="description" content="Upload your ERP export and instantly identify excess inventory, shortage risks, and actionable insights. Built for supply chain and operations teams." />
+  <title>OpsCopilot | Inventory and PO Risk for Manufacturers</title>
+  <meta name="description" content="Find shortage risks, excess stock, and overdue purchase orders in your ERP exports. Try OpsCopilot free or request a guided review for your plant." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -54,6 +54,7 @@
     </a>
     <div class="hidden sm:flex items-center gap-8 text-sm text-ink-300">
       <a href="#how-it-works" class="hover:text-white transition-colors">How it works</a>
+      <a href="#pilot" class="hover:text-white transition-colors">Plant pilot</a>
       <a href="#pricing" class="hover:text-white transition-colors">Pricing</a>
     </div>
     <a href="https://app.myopscopilot.com" class="text-sm font-semibold text-brand-400 hover:text-brand-500 transition-colors">Open App &rarr;</a>
@@ -73,22 +74,22 @@
       <img src="/assets/logo/opscopilot-mark-gradient.svg" width="64" height="64" alt="" aria-hidden="true" style="filter:drop-shadow(0 0 20px rgba(0,184,186,0.28));display:block;">
     </div>
     <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-[1.1] tracking-tight text-white">
-      Know which parts need action<br class="hidden sm:block" /> before the line feels it.
+      See which parts are at risk and which POs to chase.
     </h1>
     <p class="mt-6 text-lg sm:text-xl text-ink-300 max-w-xl mx-auto leading-relaxed">
-      Upload one ERP export and get a ranked view of shortage risk, excess exposure, and the next parts your team should review first.
+      Turn your inventory and open PO exports into a prioritized materials review. Spot shortage risk, excess stock, and overdue orders before your next production meeting.
     </p>
     <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
       <a href="https://app.myopscopilot.com"
          class="inline-flex items-center px-8 py-3.5 rounded-xl bg-brand-600 text-white font-semibold text-base shadow-lg shadow-brand-600/25 hover:bg-brand-700 hover:shadow-brand-600/40 transition-all duration-200">
         Try it free
       </a>
-      <a href="#how-it-works"
-         class="inline-flex items-center px-8 py-3.5 rounded-xl border border-white/10 text-ink-300 font-semibold text-base hover:bg-white/5 hover:text-white transition-all duration-200">
-        See how it works
-      </a>
+      <button type="button" data-support-trigger="guided-review" aria-haspopup="dialog"
+              class="inline-flex items-center px-8 py-3.5 rounded-xl border border-white/10 text-ink-300 font-semibold text-base hover:bg-white/5 hover:text-white transition-all duration-200">
+        Request a guided review
+      </button>
     </div>
-    <p class="mt-8 text-sm text-ink-500">No sign-up required &middot; Free for your first 50 parts &middot; Deterministic triage, optional AI drafts later</p>
+    <p class="mt-8 text-sm text-ink-400">Free inventory triage for up to 50 parts per run. No sign-up required.</p>
   </div>
 </section>
 
@@ -132,32 +133,35 @@
 <section class="py-24 sm:py-32">
   <div class="max-w-5xl mx-auto px-6 fade-in-section">
     <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white text-center">
-      OpsCopilot shows you what matters instantly.
+      Review inventory, purchase orders, and part data.
     </h2>
     <div class="mt-14 grid sm:grid-cols-3 gap-8">
-      <!-- Card: Excess -->
+      <!-- Inventory -->
       <div class="group p-8 rounded-2xl bg-surface-2 border border-white/5 hover:border-brand-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-brand-600/5">
         <div class="w-11 h-11 rounded-lg bg-amber-500/10 flex items-center justify-center mb-5">
           <span class="w-5.5 h-5.5 text-amber-400" data-icon="package" data-icon-class="w-full h-full"></span>
         </div>
-        <h3 class="text-lg font-semibold text-white">Excess Inventory</h3>
-        <p class="mt-2 text-sm text-ink-300 leading-relaxed">Surface parts with coverage far beyond replenishment cycles. Free up cash and warehouse space.</p>
+        <h3 class="text-lg font-semibold text-white">Inventory Triage</h3>
+        <p class="mt-2 text-sm text-ink-300 leading-relaxed">Rank shortage risk by stock coverage and lead time. See excess and potential dead stock in the same review.</p>
+        <a href="https://app.myopscopilot.com/" class="mt-5 inline-block text-sm font-semibold text-brand-400 hover:text-white">Open Inventory Triage &rarr;</a>
       </div>
-      <!-- Card: Shortage -->
+      <!-- Procurement -->
       <div class="group p-8 rounded-2xl bg-surface-2 border border-white/5 hover:border-red-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-red-600/5">
         <div class="w-11 h-11 rounded-lg bg-red-500/10 flex items-center justify-center mb-5">
           <span class="w-5.5 h-5.5 text-red-400" data-icon="trending-down" data-icon-class="w-full h-full"></span>
         </div>
-        <h3 class="text-lg font-semibold text-white">Shortage Risk</h3>
-        <p class="mt-2 text-sm text-ink-300 leading-relaxed">Identify parts running below lead-time coverage before you miss a production window.</p>
+        <h3 class="text-lg font-semibold text-white">Procurement</h3>
+        <p class="mt-2 text-sm text-ink-300 leading-relaxed">Review overdue and due-soon PO lines, supplier risk, and the value of open orders at risk.</p>
+        <a href="https://app.myopscopilot.com/procurement" class="mt-5 inline-block text-sm font-semibold text-brand-400 hover:text-white">Explore Procurement &rarr;</a>
       </div>
-      <!-- Card: Insights -->
+      <!-- PFEP -->
       <div class="group p-8 rounded-2xl bg-surface-2 border border-white/5 hover:border-green-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-green-600/5">
         <div class="w-11 h-11 rounded-lg bg-green-500/10 flex items-center justify-center mb-5">
           <span class="w-5.5 h-5.5 text-green-400" data-icon="check-circle" data-icon-class="w-full h-full"></span>
         </div>
-        <h3 class="text-lg font-semibold text-white">Actionable Insights</h3>
-        <p class="mt-2 text-sm text-ink-300 leading-relaxed">Get severity-ranked triage with recommended actions for every part, ready for your next review.</p>
+        <h3 class="text-lg font-semibold text-white">Plan for Every Part (PFEP)</h3>
+        <p class="mt-2 text-sm text-ink-300 leading-relaxed">Find missing suppliers and lead times, replenishment parameter conflicts, and critical single-source parts.</p>
+        <a href="https://app.myopscopilot.com/pfep" class="mt-5 inline-block text-sm font-semibold text-brand-400 hover:text-white">Explore PFEP &rarr;</a>
       </div>
     </div>
   </div>
@@ -166,29 +170,50 @@
 <!-- ================================================================== -->
 <!--  4. HOW IT WORKS                                                   -->
 <!-- ================================================================== -->
-<section id="how-it-works" class="py-24 sm:py-32 bg-surface-2">
+<section id="how-it-works" class="scroll-mt-16 py-24 sm:py-32 bg-surface-2">
   <div class="max-w-4xl mx-auto px-6 fade-in-section">
     <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white text-center">How it works</h2>
     <div class="mt-16 grid sm:grid-cols-3 gap-10 text-center">
       <!-- Step 1 -->
       <div>
         <div class="w-14 h-14 mx-auto rounded-2xl bg-brand-600/10 border border-brand-500/20 flex items-center justify-center text-brand-400 text-xl font-bold">1</div>
-        <h3 class="mt-5 text-base font-semibold text-white">Upload CSV</h3>
-        <p class="mt-2 text-sm text-ink-300 leading-relaxed">Drop any ERP inventory export. Columns are detected automatically.</p>
+        <h3 class="mt-5 text-base font-semibold text-white">Upload your exports</h3>
+        <p class="mt-2 text-sm text-ink-300 leading-relaxed">Use CSV or Excel for inventory and CSV for open POs. OpsCopilot recognizes common ERP column names.</p>
       </div>
       <!-- Arrow (desktop only) -->
       <!-- Step 2 -->
       <div>
         <div class="w-14 h-14 mx-auto rounded-2xl bg-brand-600/10 border border-brand-500/20 flex items-center justify-center text-brand-400 text-xl font-bold">2</div>
-        <h3 class="mt-5 text-base font-semibold text-white">Deterministic rules classify inventory</h3>
-        <p class="mt-2 text-sm text-ink-300 leading-relaxed">Every row is scored by fixed coverage and lead-time rules in seconds. Optional AI drafts come after the report, never inside the triage logic.</p>
+        <h3 class="mt-5 text-base font-semibold text-white">Review the risks</h3>
+        <p class="mt-2 text-sm text-ink-300 leading-relaxed">Inventory uses fixed coverage and lead-time rules. Procurement flags delivery risk from your open PO data.</p>
       </div>
       <!-- Step 3 -->
       <div>
         <div class="w-14 h-14 mx-auto rounded-2xl bg-brand-600/10 border border-brand-500/20 flex items-center justify-center text-brand-400 text-xl font-bold">3</div>
-        <h3 class="mt-5 text-base font-semibold text-white">Get clear actions</h3>
-        <p class="mt-2 text-sm text-ink-300 leading-relaxed">Executive summary, priority panel, and recommended next steps, ready to share.</p>
+        <h3 class="mt-5 text-base font-semibold text-white">Decide what to follow up</h3>
+        <p class="mt-2 text-sm text-ink-300 leading-relaxed">Use the priority list to decide which parts to check and which suppliers to contact.</p>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- Plant pilot -->
+<section id="pilot" class="scroll-mt-16 py-20 sm:py-24">
+  <div class="max-w-5xl mx-auto px-6">
+    <div class="grid gap-10 md:grid-cols-2 items-start rounded-3xl border border-brand-500/30 bg-surface-3 p-6 sm:p-10">
+      <div>
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">One-week Inventory &amp; PO Risk Pilot</h2>
+        <p class="mt-4 text-ink-300 leading-relaxed">A paid, hands-on setup for one manufacturing site. We&rsquo;ll work with your materials team and the ERP exports you already pull.</p>
+        <button type="button" data-support-trigger="plant-pilot" aria-haspopup="dialog"
+                class="mt-7 inline-flex items-center rounded-xl bg-brand-600 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-700 transition-colors">
+          Ask about the pilot
+        </button>
+      </div>
+      <ul class="space-y-5 text-sm leading-relaxed text-ink-300">
+        <li><strong class="block text-white">Export setup</strong> We map your inventory and open PO fields and flag gaps to resolve.</li>
+        <li><strong class="block text-white">Buyer action list</strong> We review the results with your team and identify the parts to check and POs to chase.</li>
+        <li><strong class="block text-white">Second review</strong> We run a fresh export with your planner, check what changed, and compare prep time.</li>
+      </ul>
     </div>
   </div>
 </section>
@@ -196,10 +221,10 @@
 <!-- ================================================================== -->
 <!--  5. PRICING                                                        -->
 <!-- ================================================================== -->
-<section id="pricing" class="py-24 sm:py-32">
+<section id="pricing" class="scroll-mt-16 py-24 sm:py-32">
   <div class="max-w-4xl mx-auto px-6 fade-in-section">
     <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white text-center">Pricing</h2>
-    <p class="mt-4 text-center text-ink-300">Start with one fast triage. Upgrade when the review becomes recurring, shared, and worth saving.</p>
+    <p class="mt-4 text-center text-ink-300">Self-serve plans for inventory triage. For hands-on setup, see the <a href="#pilot" class="text-brand-400 underline underline-offset-4 hover:text-white">plant pilot</a>.</p>
 
     <div class="mt-14 grid sm:grid-cols-2 gap-8 max-w-2xl mx-auto">
       <!-- Free -->
@@ -309,14 +334,14 @@
   <div class="absolute inset-0 bg-linear-to-br from-brand-600/10 via-transparent to-transparent pointer-events-none"></div>
   <div class="relative max-w-3xl mx-auto px-6 text-center fade-in-section">
     <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">
-      Stop guessing. Start deciding.
+      Walk through your materials review with us.
     </h2>
-    <p class="mt-4 text-ink-300 text-lg">Upload your first ERP export and see inventory health in seconds.</p>
-    <a href="https://app.myopscopilot.com"
+    <p class="mt-4 text-ink-300 text-lg">Tell us what your team reviews today. We&rsquo;ll show you how OpsCopilot could fit that process.</p>
+    <button type="button" data-support-trigger="guided-review" aria-haspopup="dialog"
        class="inline-flex items-center gap-2 mt-10 px-10 py-4 rounded-xl bg-brand-600 text-white font-semibold text-base shadow-lg shadow-brand-600/25 hover:bg-brand-700 hover:shadow-brand-600/40 transition-all duration-200">
-      Try OpsCopilot
+      Request a guided review
       <span data-icon="chevron-right" data-icon-size="16" data-icon-class="shrink-0"></span>
-    </a>
+    </button>
   </div>
 </section>
 
@@ -327,7 +352,7 @@
   <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-ink-500">
     <span class="flex items-center gap-2">
       <img src="/assets/logo/opscopilot-mark-gradient.svg" width="15" height="15" alt="" aria-hidden="true" style="opacity:0.55;display:block;flex-shrink:0;">
-      OpsCopilot · Inventory intelligence for operations teams
+      OpsCopilot · Inventory and purchasing tools for manufacturers
     </span>
     <a href="https://app.myopscopilot.com" class="hover:text-ink-300 transition-colors">Open App</a>
     <button type="button" class="hover:text-ink-300 transition-colors bg-transparent border-0 p-0 cursor-pointer text-sm" data-support-trigger>Contact Support</button>

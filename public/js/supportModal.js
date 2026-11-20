@@ -11,10 +11,37 @@
 
   var MODAL_ID  = 'supportOverlay';
   var _injected = false;
+  var activeDialog = null;
+
+  var supportCopy = {
+    title: 'Contact Support',
+    subtitle: 'We\u2019ll get back to you within one business day.',
+    messageLabel: 'Message',
+    submitLabel: 'Send message',
+    successTitle: 'Message sent!',
+  };
+  var inquiryCopy = {
+    'guided-review': {
+      title: 'Request a guided review',
+      subject: 'OpsCopilot guided review request',
+      subtitle: 'Tell us what your materials team reviews today. We\u2019ll email you to arrange a walkthrough.',
+      messageLabel: 'Company and what you\u2019d like to review',
+      submitLabel: 'Send review request',
+      successTitle: 'Review request sent',
+    },
+    'plant-pilot': {
+      title: 'Ask about the plant pilot',
+      subject: 'OpsCopilot plant pilot inquiry',
+      subtitle: 'Tell us about your site and the inventory or purchasing workflow you want to improve.',
+      messageLabel: 'Company, site, and what you\u2019d like to improve',
+      submitLabel: 'Send pilot inquiry',
+      successTitle: 'Pilot inquiry sent',
+    },
+  };
 
   // ── Modal HTML (injected once into <body>) ────────────────────────────────
   var MODAL_HTML = [
-    '<div id="supportOverlay" class="support-overlay" role="dialog" aria-modal="true" aria-labelledby="supportTitle" aria-hidden="true">',
+    '<div id="supportOverlay" class="support-overlay" role="dialog" aria-modal="true" aria-labelledby="supportTitle" aria-describedby="supportSubtitle" aria-hidden="true" inert>',
     '  <div class="support-panel">',
 
     '    <!-- Header -->',
@@ -25,7 +52,7 @@
 
     '    <!-- Form view -->',
     '    <div id="supportFormView" class="support-body">',
-    '      <p class="support-subtitle">We\u2019ll get back to you within one business day.</p>',
+    '      <p id="supportSubtitle" class="support-subtitle"></p>',
     '      <form id="supportForm" class="support-form" novalidate>',
     '        <div class="support-row">',
     '          <div class="support-field">',
@@ -37,15 +64,15 @@
     '            <input id="supportEmail" name="email" type="email" class="support-input" autocomplete="email" maxlength="254" required />',
     '          </div>',
     '        </div>',
-    '        <div class="support-field">',
+    '        <div id="supportSubjectField" class="support-field">',
     '          <label for="supportSubject" class="support-label">Subject</label>',
     '          <input id="supportSubject" name="subject" type="text" class="support-input" maxlength="200" required />',
     '        </div>',
     '        <div class="support-field">',
-    '          <label for="supportMessage" class="support-label">Message</label>',
+    '          <label id="supportMessageLabel" for="supportMessage" class="support-label">Message</label>',
     '          <textarea id="supportMessage" name="message" class="support-textarea" maxlength="4000" rows="5" required></textarea>',
     '        </div>',
-    '        <div id="supportError" class="support-error hidden"></div>',
+    '        <div id="supportError" class="support-error hidden" role="alert"></div>',
     '        <div class="support-footer">',
     '          <button type="button" id="supportCancelBtn" class="support-cancel-btn">Cancel</button>',
     '          <button type="submit" id="supportSubmitBtn" class="support-submit-btn">Send message</button>',
@@ -56,7 +83,7 @@
     '    <!-- Success view -->',
     '    <div id="supportSuccessView" class="support-success hidden">',
     '      <span class="support-success-icon" aria-hidden="true">\u2705</span>',
-    '      <h3>Message sent!</h3>',
+    '      <h3 id="supportSuccessTitle">Message sent!</h3>',
     '      <p>Thanks for reaching out. We\u2019ll reply to your email address as soon as possible.</p>',
     '      <button type="button" id="supportSuccessDone" class="support-success-close">Done</button>',
     '    </div>',
@@ -127,19 +154,30 @@
     }
   }
 
-  function resetForm() {
-    var form      = document.getElementById('supportForm');
+  function resetForm(copy) {
+    document.getElementById('supportForm').reset();
+    document.getElementById('supportTitle').textContent = copy.title;
+    document.getElementById('supportSubtitle').textContent = copy.subtitle;
+    document.getElementById('supportSubjectField').hidden = Boolean(copy.subject);
+    document.getElementById('supportSubject').value = copy.subject || '';
+    document.getElementById('supportMessageLabel').textContent = copy.messageLabel;
+    document.getElementById('supportSuccessTitle').textContent = copy.successTitle;
     var submitBtn = document.getElementById('supportSubmitBtn');
-    if (form)      form.reset();
-    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Send message'; }
+    submitBtn.disabled = false;
+    submitBtn.textContent = copy.submitLabel;
     setError('');
     showView('form');
   }
 
   // ── Open ─────────────────────────────────────────────────────────────────
-  function open() {
+  function open(trigger) {
     inject();
-    resetForm();
+    var source = trigger && typeof trigger.getAttribute === 'function' ? trigger : document.activeElement;
+    var mode = source && source.getAttribute('data-support-trigger');
+    var copy = Object.prototype.hasOwnProperty.call(inquiryCopy, mode) ? inquiryCopy[mode] : supportCopy;
+    var dialog = { copy: copy, trigger: source };
+    activeDialog = dialog;
+    resetForm(copy);
 
     // Auto-fill email when signed in to the app
     var emailInput = document.getElementById('supportEmail');
@@ -151,26 +189,31 @@
     var overlay = getOverlay();
     overlay.classList.add('is-open');
     overlay.removeAttribute('aria-hidden');
+    overlay.removeAttribute('inert');
 
     // Focus first empty field
     setTimeout(function () {
-      var name = document.getElementById('supportName');
-      var subj = document.getElementById('supportSubject');
-      if (name && !name.value) { name.focus(); }
-      else if (subj)           { subj.focus(); }
+      if (activeDialog === dialog) document.getElementById('supportName').focus();
     }, 60);
   }
 
   // ── Close ─────────────────────────────────────────────────────────────────
   function close() {
     var overlay = getOverlay();
-    if (!overlay) return;
+    if (!overlay || !activeDialog) return;
+    var trigger = activeDialog.trigger;
+    activeDialog = null;
     overlay.classList.remove('is-open');
     overlay.setAttribute('aria-hidden', 'true');
+    overlay.setAttribute('inert', '');
+    if (trigger && trigger.isConnected) trigger.focus();
   }
 
   // ── Submit ────────────────────────────────────────────────────────────────
   function submitForm() {
+    var dialog = activeDialog;
+    var submitBtn = document.getElementById('supportSubmitBtn');
+    if (!dialog || submitBtn.disabled) return;
     var name    = (document.getElementById('supportName').value    || '').trim();
     var email   = (document.getElementById('supportEmail').value   || '').trim();
     var subject = (document.getElementById('supportSubject').value || '').trim();
@@ -186,7 +229,6 @@
     }
 
     setError('');
-    var submitBtn = document.getElementById('supportSubmitBtn');
     submitBtn.disabled    = true;
     submitBtn.textContent = 'Sending\u2026';
 
@@ -196,6 +238,7 @@
 
     var url = '/api/support';
     console.debug('[support] submit start \u2192', url);
+    var sent = false;
 
     var controller = new AbortController();
     var fetchTimeout = setTimeout(function () { controller.abort(); }, 20000);
@@ -216,9 +259,12 @@
       });
     })
     .then(function (result) {
+      if (activeDialog !== dialog) return;
       if (result.ok && result.data && result.data.ok) {
         console.debug('[support] success');
+        sent = true;
         showView('success');
+        document.getElementById('supportSuccessDone').focus();
       } else {
         var msg = (result.data && result.data.error) || 'Something went wrong. Please try again.';
         console.warn('[support] server error:', msg);
@@ -226,6 +272,7 @@
       }
     })
     .catch(function (err) {
+      if (activeDialog !== dialog) return;
       console.error('[support] fetch error:', err);
       if (err.name === 'AbortError') {
         setError('Request timed out. Please try again.');
@@ -235,13 +282,9 @@
     })
     .finally(function () {
       clearTimeout(fetchTimeout);
-      // Always reset loading state — prevents permanent "Sending…" lock.
-      // Skip reset only when the success view is visible (form is hidden).
-      var successVisible = false;
-      try { successVisible = !document.getElementById('supportSuccessView').classList.contains('hidden'); } catch (_) {}
-      if (submitBtn && !successVisible) {
+      if (activeDialog === dialog && !sent) {
         submitBtn.disabled    = false;
-        submitBtn.textContent = 'Send message';
+        submitBtn.textContent = dialog.copy.submitLabel;
       }
     });
   }
@@ -251,7 +294,7 @@
     document.querySelectorAll('[data-support-trigger]').forEach(function (el) {
       el.addEventListener('click', function (e) {
         e.preventDefault();
-        open();
+        open(el);
       });
     });
   });
