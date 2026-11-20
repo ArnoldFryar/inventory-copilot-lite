@@ -118,6 +118,10 @@
   gap: 6px;
 }
 
+.support-field[hidden] {
+  display: none;
+}
+
 .support-label {
   font-size: 12px;
   font-weight: 600;
