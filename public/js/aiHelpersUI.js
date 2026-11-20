@@ -10,84 +10,26 @@
   function showAiHelpersPanel() {
     if (!dom.aiHelpersSection) return;
 
-    var hasAnalysis = !!state.lastResponse;
-    var isAdmin = state.currentProfile && state.currentProfile.is_admin === true;
-    var isPro = (state.currentPlan && state.currentPlan.plan === 'pro') || isAdmin;
-
-    // ── No analysis yet: hide everything ───────────────────────────────────
-    if (!hasAnalysis) {
-      dom.aiHelpersSection.classList.add('hidden');
-      if (dom.aiHelpersLockedCta) dom.aiHelpersLockedCta.classList.add('hidden');
-      if (dom.comparisonLockedCta) dom.comparisonLockedCta.classList.add('hidden');
-      return;
-    }
-
-    // ── Analysis loaded, Pro plan: show active panel ────────────────────────
-    if (isPro && state.aiHelpersAvailable) {
-      dom.aiHelpersSection.classList.remove('hidden', 'ai-helpers-locked');
-      if (dom.aiHelpersActions) dom.aiHelpersActions.classList.remove('hidden');
-      if (dom.aiHelpersLockedCta) dom.aiHelpersLockedCta.classList.add('hidden');
-      if (dom.comparisonLockedCta) dom.comparisonLockedCta.classList.add('hidden');
-      renderHistory();
-      return;
-    }
-
-    // ── Analysis loaded, NOT Pro: show buttons in locked state + upgrade modal on click
-    dom.aiHelpersSection.classList.remove('hidden');
-    dom.aiHelpersSection.classList.add('ai-helpers-locked');
-    if (dom.aiHelpersActions) dom.aiHelpersActions.classList.remove('hidden');
-    if (dom.aiHelperResult) dom.aiHelperResult.classList.add('hidden');
-
-    var summary = state.lastResponse && state.lastResponse.summary ? state.lastResponse.summary : {};
-    var urgent = summary.urgent_stockout || 0;
-    var risk = summary.stockout_risk || 0;
-    var excessExposure = (summary.excess || 0) + (summary.dead_stock || 0);
-
-    if (dom.aiHelpersLockedCta) {
-      dom.aiHelpersLockedCta.classList.remove('hidden');
-      while (dom.aiHelpersLockedCta.firstChild) {
-        dom.aiHelpersLockedCta.removeChild(dom.aiHelpersLockedCta.firstChild);
+    const run = state.lastResponse;
+    const pro = state.currentPlan?.plan === 'pro';
+    const available = pro && state.aiHelpersAvailable && (run?.savedRunId || run?.analysisId) && !run.resultsTruncated;
+    dom.aiHelpersSection.classList.toggle('hidden', !run);
+    dom.aiHelpersActions.classList.toggle('hidden', !available);
+    dom.aiHelpersLockedCta.classList.toggle('hidden', !run || Boolean(available));
+    dom.aiHelpersSection.classList.remove('ai-helpers-locked');
+    if (!available) {
+      dom.aiHelperResult._rawText = '';
+      dom.aiHelperResult.classList.add('hidden');
+      dom.aiContextPanel.classList.add('hidden');
+      dom.aiHistoryPanel.classList.add('hidden');
+      dom.aiHelpersLockedCta.replaceChildren();
+      if (run) {
+        const message = document.createElement(pro ? 'p' : 'a');
+        if (!pro) message.href = '/billing.html';
+        message.textContent = pro ? 'Open a complete customer analysis to draft follow-up with the configured AI provider.' : 'AI drafts are available with Pro';
+        dom.aiHelpersLockedCta.append(message);
       }
-      dom.aiHelpersLockedCta.appendChild(App.buildUpsellCta({
-        icon: '\u2728',
-        headline: urgent > 0 ? 'Draft supplier follow-up from this run' : 'Turn this report into leadership-ready follow-up',
-        description: urgent > 0
-          ? 'This run already identified ' + urgent + ' urgent item' + (urgent === 1 ? '' : 's') + ' and ' + risk + ' additional risk item' + (risk === 1 ? '' : 's') + '. Pro drafts expedite emails, escalation summaries, and meeting talking points grounded in the current analysis.'
-          : 'Pro drafts buyer, supplier, and leadership follow-up from the same deterministic report your team is already reviewing.',
-        features: [
-          'Expedite email drafts tied to current urgent items',
-          'Leadership-ready escalation summary',
-          excessExposure > 0 ? 'Talking points for excess and dead-stock cleanup' : 'Meeting talking points for the next materials review'
-        ],
-        valueAnchor: urgent > 0
-          ? 'The risky parts are already flagged. Pro turns them into ready-to-edit communications.'
-          : 'Use the same report as the source for every follow-up message.',
-        showBtn: !!state.billingConfigured,
-        btnText: 'Unlock AI Follow-Up \u2014 $49/mo \u2192',
-        upgradeSource: 'ai_helpers_locked'
-      }));
-    }
-
-    // Comparison locked CTA — teaser for run-to-run comparison
-    if (dom.comparisonLockedCta) {
-      dom.comparisonLockedCta.classList.remove('hidden');
-      while (dom.comparisonLockedCta.firstChild) {
-        dom.comparisonLockedCta.removeChild(dom.comparisonLockedCta.firstChild);
-      }
-      var cmpCta = App.buildUpsellCta({
-        icon: '\uD83D\uDCC8',
-        headline: 'Prove Progress to Leadership',
-        description: 'Compare this run to any prior analysis. Surface new urgent items, confirm resolved risks, and show measurable improvement \u2014 with data, not gut feel.',
-        features: ['New urgent items flagged instantly', 'Resolved risks confirmed', 'Status shift deltas', 'Run-over-run trend visibility'],
-        valueAnchor: urgent > 0
-          ? 'Save this run now so the next upload shows exactly what changed for today\'s urgent items.'
-          : 'The first saved run becomes the baseline for every future review.',
-        showBtn: !!state.billingConfigured,
-        btnText: 'Unlock Trend Comparison \u2014 $49/mo \u2192',
-        upgradeSource: 'comparison_locked'
-      });
-      dom.comparisonLockedCta.appendChild(cmpCta);
-    }
+    } else renderHistory();
   }
 
   /* ── Label map ─────────────────────────────────────────────────────── */
@@ -106,12 +48,12 @@
   /* ── Internal helpers ─────────────────────────────────────────────── */
   var _progressTimer = null;
   var _lastHelperType = null;
-  var _lastRunData = null;
-  var _lastContext = null;
   var _pendingHelperType = null;
 
   /* ── Context input defaults (localStorage-backed) ───────────────── */
-  var CTX_STORAGE_KEY = 'opscopilot_ai_ctx_defaults';
+  function contextKey() {
+    return state.currentUser?.id ? 'opscopilot:ai-context:' + state.currentUser.id : null;
+  }
 
   var FIELD_MAP = {
     expedite_email:        { icon: '\u2709\uFE0F', title: 'Draft Expedite Email',   panel: 'aiCtxExpedite' },
@@ -122,7 +64,7 @@
   /** Read saved context defaults from localStorage. */
   function loadCtxDefaults() {
     try {
-      var raw = localStorage.getItem(CTX_STORAGE_KEY);
+      var raw = contextKey() ? localStorage.getItem(contextKey()) : null;
       return raw ? JSON.parse(raw) : {};
     } catch (_) { return {}; }
   }
@@ -131,7 +73,7 @@
   function saveCtxDefaults(helperType) {
     var saved = loadCtxDefaults();
     saved[helperType] = collectCtxFields(helperType);
-    try { localStorage.setItem(CTX_STORAGE_KEY, JSON.stringify(saved)); } catch (_) {}
+    try { if (contextKey()) localStorage.setItem(contextKey(), JSON.stringify(saved)); } catch (_) {}
   }
 
   /** Collect field values for a given helper type. */
@@ -596,27 +538,11 @@
   async function requestAiHelper(helperType, refinement) {
     if (!state.lastResponse || !state.currentUser || !window.authModule) return;
 
-    // Build the run data payload from the current analysis
-    var runData = {
-      summary:     state.lastResponse.summary,
-      results:     state.lastResponse.results,
-      topPriority: state.lastResponse.topPriority || [],
-      analyzedAt:  state.lastResponse.analyzedAt,
-      thresholds:  state.lastResponse.thresholds,
-    };
-
-    // Build business context from the context input fields
-    var context = buildContext(helperType);
-
-    // Save field values for next time
+    const run = state.lastResponse;
+    const owner = state.currentUser.id;
+    const rowIds = App.getSelectedParts().map(row => row.row_id || String(run.results.indexOf(row) + 1));
     saveCtxDefaults(helperType);
-
-    // Hide context panel once generation starts
     hideContextPanel();
-
-    // Persist for refinement iterations
-    _lastRunData = runData;
-    _lastContext = context;
 
     // Mark the clicked button loading & disable all buttons
     var btn = dom.aiHelpersSection.querySelector('[data-helper="' + helperType + '"]');
@@ -636,8 +562,9 @@
     }
 
     // Build request body
-    var reqBody = { helperType: helperType, runData: runData, context: context };
-    if (refinement) reqBody.refinement = refinement;
+    var reqBody = { helperType, analysisId: run.savedRunId || run.analysisId, saved: Boolean(run.savedRunId), rowIds };
+    const guidance = refinement?.instruction || Object.values(collectCtxFields(helperType)).filter(Boolean).join(' · ');
+    if (guidance) reqBody.refinement = { instruction: guidance.slice(0, 500) };
 
     try {
       var token = await window.authModule.getToken();
@@ -657,32 +584,10 @@
 
       var data = await res.json();
 
-      // Derive confidence level and evidence grounding from the analysis data
-      var summaryData = state.lastResponse.summary || {};
-      var uCount  = summaryData.urgent_stockout || 0;
-      var riskCount   = summaryData.stockout_risk   || 0;
-      var totalCount  = summaryData.total           || 0;
-
-      var confidenceLevel, confidenceText, groundingText;
-
-      if (helperType === 'expedite_email') {
-        confidenceLevel = uCount > 0 ? 'high' : 'medium';
-        confidenceText  = uCount > 0 ? 'High confidence' : 'Medium confidence';
-        groundingText   = uCount > 0
-          ? 'Based on ' + uCount + ' urgent part' + (uCount === 1 ? '' : 's') + ' from this analysis'
-          : 'No urgent parts detected \u2014 draft may be precautionary';
-      } else if (helperType === 'escalation_summary') {
-        var atRisk = uCount + riskCount;
-        confidenceLevel = atRisk > 0 ? 'high' : 'medium';
-        confidenceText  = atRisk > 0 ? 'High confidence' : 'Medium confidence';
-        groundingText   = atRisk > 0
-          ? 'Based on ' + atRisk + ' at-risk part' + (atRisk === 1 ? '' : 's') + ' (' + uCount + ' urgent, ' + riskCount + ' risk)'
-          : 'No at-risk parts detected \u2014 summary reflects healthy inventory';
-      } else {
-        confidenceLevel = 'medium';
-        confidenceText  = 'Medium confidence';
-        groundingText   = 'Based on ' + totalCount + ' part' + (totalCount === 1 ? '' : 's') + ' from this analysis';
-      }
+      if (run !== state.lastResponse || owner !== state.currentUser?.id) return;
+      var confidenceLevel = 'review';
+      var confidenceText = 'Draft for review';
+      var groundingText = data.rowsReferenced + ' of ' + data.rowsReviewed + ' supplied rows referenced';
 
       // Populate result elements
       if (dom.aiHelperResultLabel) dom.aiHelperResultLabel.textContent = data.label || LABELS[helperType] || helperType;
@@ -736,6 +641,7 @@
         renderHistory();
       }
     } catch (err) {
+      if (run !== state.lastResponse || owner !== state.currentUser?.id) return;
       hideLoading();
       if (dom.aiHelperResultBody) dom.aiHelperResultBody.classList.remove('ai-dimmed');
       hideContent();
@@ -850,7 +756,7 @@
           // Increment daily counter & show toast
           var count = incrementCopyCount();
           var sub = count > 1 ? 'Copied ' + count + ' times today' : '';
-          showToast('Copied \u2014 ready to send', sub);
+          showToast('Draft copied for review', sub);
         });
       }
     });
@@ -895,7 +801,7 @@
           setTimeout(function () { copyBtn.classList.remove('copy-pulse'); }, 400);
           var count = incrementCopyCount();
           var sub = section.supplier ? section.supplier : '';
-          showToast('Copied \u2014 ' + sub + ' email ready', count > 1 ? 'Copied ' + count + ' times today' : '');
+          showToast('Copied \u2014 ' + sub + ' draft copied', count > 1 ? 'Copied ' + count + ' times today' : '');
         });
       }
     });

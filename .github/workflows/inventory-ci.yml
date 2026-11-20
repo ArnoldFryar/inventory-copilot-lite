@@ -1,0 +1,21 @@
+name: Inventory checks
+on:
+  push:
+  pull_request:
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - run: TEST_ACCOUNT_BROWSER=1 node _test_accounts.js
+      - run: npm audit --omit=dev --audit-level=high

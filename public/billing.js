@@ -73,6 +73,14 @@
   }
 
   // ── Render plan state ──────────────────────────────────────────────
+  fetch('/api/billing/price').then(response => response.json()).then(({ price }) => {
+    if (!price || !Number.isFinite(price.amount)) return;
+    const currencyFormat = new Intl.NumberFormat(undefined, { style: 'currency', currency: price.currency });
+    const exponent = currencyFormat.resolvedOptions().maximumFractionDigits;
+    document.getElementById('publicPlanPrice').textContent = currencyFormat.format(price.amount / (10 ** exponent)) +
+      ' / ' + (price.intervalCount > 1 ? price.intervalCount + ' ' + price.interval + 's' : (price.interval || 'billing period'));
+  }).catch(() => {});
+
   function renderPlan(data) {
     var plan   = data.plan || 'free';
     var status = data.subscriptionStatus || 'inactive';
@@ -80,6 +88,11 @@
 
     // Plan label
     $planLabel.textContent = plan === 'pro' ? 'Pro' : 'Free';
+    if (plan === 'pro' && new URLSearchParams(location.search).get('billing') === 'success') {
+      $successMsg.textContent = 'Your Pro plan is active.';
+      show($success);
+      history.replaceState({}, '', location.pathname);
+    }
 
     // Status badge
     $statusBadge.textContent = status;
@@ -107,10 +120,13 @@
     }
 
     // Action buttons
-    if (plan === 'pro' && status === 'active') {
+    if (plan === 'pro' && ['active', 'trialing'].includes(status)) {
       hide($upgradeBtn);
       show($manageBtn);
     } else if (plan === 'pro' && status === 'canceled') {
+      hide($upgradeBtn);
+      show($manageBtn);
+    } else if (['past_due', 'unpaid'].includes(status)) {
       hide($upgradeBtn);
       show($manageBtn);
     } else {
@@ -231,10 +247,8 @@
   function checkReturnParams() {
     var params = new URLSearchParams(window.location.search);
     if (params.get('billing') === 'success') {
-      $successMsg.textContent = 'Welcome to Pro! Your subscription is now active.';
+      $successMsg.textContent = 'Checkout returned. Waiting for subscription confirmation.';
       show($success);
-      // Clean up the URL
-      window.history.replaceState({}, '', window.location.pathname);
     } else if (params.get('billing') === 'cancelled') {
       showError('Checkout was cancelled. No changes were made.');
       window.history.replaceState({}, '', window.location.pathname);

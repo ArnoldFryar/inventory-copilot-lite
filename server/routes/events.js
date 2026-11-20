@@ -16,7 +16,7 @@ const router        = express.Router();
 const { supabaseAdmin, verifyToken } = require('../../supabaseClient');
 const { VALID_EVENTS, sanitizeProperties } = require('../lib/telemetryEvents');
 
-router.post('/api/events', async (req, res) => {
+router.post(['/api/events', '/api/event'], async (req, res) => {
   const { event, properties, props } = req.body || {};
 
   if (!event || typeof event !== 'string') {
@@ -36,7 +36,7 @@ router.post('/api/events', async (req, res) => {
     if (user) userId = user.id;
   }
 
-  console.log('[event]', event, JSON.stringify({ user_id: userId, ...payloadProps }));
+  console.log('[event]', event, JSON.stringify(payloadProps));
 
   if (supabaseAdmin) {
     // fire-and-forget — don't block the response on DB write
@@ -45,7 +45,7 @@ router.post('/api/events', async (req, res) => {
       event_name: event,
       properties: payloadProps,
     }).then(({ error }) => {
-      if (error) console.error('[event] DB write error:', error.message);
+      if (error) console.error('[event] DB write failed');
     });
   }
 

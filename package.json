@@ -4,22 +4,32 @@
   "description": "OpsCopilot-Lite — inventory triage prototype",
   "main": "server.js",
   "engines": {
-    "node": ">=18"
+    "node": ">=24 <25"
   },
   "scripts": {
     "start": "node server.js",
-    "test": "node _test_regression.js && node _test_http.js"
+    "test": "node _test_regression.js && node _test_http.js && node _test_accounts.js",
+    "test:browser": "node _test_workbench.js"
   },
   "dependencies": {
     "@sendgrid/mail": "^8.1.6",
-    "@supabase/supabase-js": "^2.99.1",
+    "@supabase/supabase-js": "2.119.2",
+    "compression": "1.8.2",
     "csv-parser": "^3.0.0",
     "exceljs": "^4.4.0",
-    "express": "^4.18.2",
+    "express": "5.3.0",
     "express-rate-limit": "^7.5.1",
     "iconv-lite": "^0.6.3",
-    "multer": "^1.4.5-lts.1",
-    "nodemailer": "^8.0.3",
+    "multer": "2.5.0",
+    "nodemailer": "10.6.1",
     "stripe": "^20.4.1"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  },
+  "overrides": {
+    "exceljs": {
+      "uuid": "11.1.1"
+    }
   }
 }

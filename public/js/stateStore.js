@@ -278,6 +278,7 @@
 
   // ── Upgrade modal helpers ─────────────────────────────────────────────────
   var modalReturnFocus = new WeakMap();
+  var modalBackground = new WeakMap();
   var MODAL_FOCUSABLE = [
     'a[href]',
     'button:not([disabled])',
@@ -290,7 +291,7 @@
   function modalFocusableElements(container) {
     return Array.prototype.slice.call(container.querySelectorAll(MODAL_FOCUSABLE))
       .filter(function (element) {
-        return element.getAttribute('aria-hidden') !== 'true';
+        return element.getAttribute('aria-hidden') !== 'true' && element.getClientRects().length > 0;
       });
   }
 
@@ -303,6 +304,12 @@
       }
       container.classList.remove('hidden');
       container.setAttribute('aria-hidden', 'false');
+      if (!modalBackground.has(container)) {
+        const siblings = Array.from(container.parentElement.children).filter(element =>
+          element !== container && !element.inert && !['SCRIPT', 'STYLE'].includes(element.tagName));
+        siblings.forEach(element => { element.inert = true; });
+        modalBackground.set(container, siblings);
+      }
       window.requestAnimationFrame(function () {
         var target = initialFocus || modalFocusableElements(container)[0];
         if (target && typeof target.focus === 'function') target.focus();
@@ -313,6 +320,8 @@
       if (!container) return;
       container.classList.add('hidden');
       container.setAttribute('aria-hidden', 'true');
+      (modalBackground.get(container) || []).forEach(element => { element.inert = false; });
+      modalBackground.delete(container);
       var returnTarget = modalReturnFocus.get(container);
       modalReturnFocus.delete(container);
       if (returnTarget && returnTarget.isConnected && typeof returnTarget.focus === 'function') {
@@ -424,7 +433,7 @@
       if (config.upgradeSource) {
         btn.setAttribute('data-upgrade-source', config.upgradeSource);
       }
-      btn.textContent = config.btnText || 'Upgrade to Pro \u2014 $49/mo \u2192';
+      btn.textContent = config.btnText || 'Upgrade to Pro';
       wrap.appendChild(btn);
     }
 
@@ -441,7 +450,8 @@
   App.showError = function (message) {
     App.dom.errorBanner.textContent = message;
     App.dom.errorBanner.classList.remove('hidden');
-    App.dom.errorBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    document.getElementById('inventoryUpload').classList.remove('hidden');
+    App.dom.errorBanner.focus();
   };
 
   App.hideError = function () {
@@ -450,28 +460,15 @@
   };
 
   App.hideResults = function () {
-    App.state.allResults   = [];
+    App.state.allResults = [];
     App.state.lastResponse = null;
     App.state.analysisSource = null;
-    if (App.dom.execSummarySection) App.dom.execSummarySection.classList.add('hidden');
-    if (App.dom.nextStepSection) App.dom.nextStepSection.classList.add('hidden');
-    if (App.dom.premiumUpgradeSection) App.dom.premiumUpgradeSection.classList.add('hidden');
-    App.dom.summarySection.classList.add('hidden');
-    App.dom.leadershipSection.classList.add('hidden');
-    App.dom.prioritySection.classList.add('hidden');
+    App.state.lastComparison = null;
+    App.clearPartSelection?.();
+    document.getElementById('analysisOverview').classList.add('hidden');
     App.dom.resultsSection.classList.add('hidden');
-    App.dom.actionBar.classList.add('hidden');
-    App.dom.warningBanner.classList.add('hidden');
-    if (App.dom.comparisonSection) App.dom.comparisonSection.classList.add('hidden');
-    if (App.dom.saveRunBtn) {
-      App.dom.saveRunBtn.classList.add('hidden');
-      App.dom.saveRunBtn.textContent = 'Save to History';
-      App.dom.saveRunBtn.disabled = false;
-    }
-    if (App.dom.tableLimitNotice) {
-      App.dom.tableLimitNotice.textContent = '';
-      App.dom.tableLimitNotice.classList.add('hidden');
-    }
+    App.dom.comparisonSection.classList.add('hidden');
+    App.aiHelpersUI?.showAiHelpersPanel();
   };
 
   App.setLoading = function (isLoading) {
@@ -482,7 +479,7 @@
       App.dom.submitLabel.textContent = 'Analyzing\u2026';
     } else {
       App.dom.submitBtn.classList.remove('is-loading');
-      App.dom.submitLabel.textContent = 'Analyze Inventory';
+      App.dom.submitLabel.textContent = 'Analyze inventory';
     }
   };
 })();

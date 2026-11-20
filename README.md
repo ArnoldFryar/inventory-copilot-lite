@@ -2,24 +2,27 @@
 
 OpsCopilot-Lite — a lightweight inventory triage tool that ingests CSV and Excel (.xlsx) exports from ERP/WMS systems and returns a prioritised list of parts needing attention (stockout risk, excess inventory, slow movers).
 
-## Quick Start
+## Quick start
 
-```bash
-npm install
-npm start          # starts on http://localhost:3000
-npm test           # runs regression and HTTP integration suites
+Use the Node.js release in `.nvmrc`.
+
+```sh
+npm ci
+npm start
+npm test
+npx playwright install chromium
+npm run test:browser
 ```
 
-Upload a `.csv` or `.xlsx` file with the following columns (aliases and mixed-case headers are auto-resolved). For Excel workbooks, Inventory Copilot automatically selects the first visible worksheet containing recognized inventory columns:
+Upload a CSV or XLSX export up to 5 MB and 50,000 rows. OpsCopilot can suggest common ERP column aliases. Use **Review column mapping** to select custom headers, choose a worksheet, or confirm a calendar conversion. The **Run sample** button previews a ready-made export.
 
-| Canonical column | Common aliases accepted |
-|---|---|
-| `part_number` | `sku`, `item`, `part`, `part_no`, … |
-| `on_hand` | `qty`, `quantity`, `stock`, `inventory`, … |
-| `daily_usage` | `usage`, `avg_usage`, `daily_demand`, … |
-| `lead_time` | `lt`, `lead`, `leadtime`, `days_lead`, … |
+| Fields | Inventory results |
+| --- | --- |
+| Part number and on hand | Quantity and zero-stock review |
+| Add positive daily usage | Days of coverage |
+| Add comparable lead time | Shortage risk ranking |
 
----
+Signed-in users may remember mappings in the current browser. Missing inputs remain visible as data needs. Confirm open POs, allocations and demand in the ERP before acting on coverage results.
 
 ## Active App Structure
 
@@ -87,7 +90,7 @@ for premium AI requests.
 
 ## Deployment
 
-The app is a single-process Node/Express server. Set `PORT` via environment variable (default: `3000`). No database or external API dependencies are needed for the core analysis — Supabase is optional for user accounts and history.
+The app is a single-process Node 24 and Express 5 server. Set `PORT` via environment variable (default: `3000`). No database or external API dependencies are needed for the core analysis — Supabase is optional for user accounts and history.
 
 ---
 
@@ -123,4 +126,10 @@ In the Supabase dashboard under **Authentication → Providers**, ensure **Email
 npm start
 ```
 
-When configured, users will see a "Sign in" button in the header. After signing in, they can save analysis runs to their account and reload them from the history panel.
+When configured, users can sign in and open or delete their saved runs. Pro users may save new customer analyses explicitly. Free includes full-file counts and a preview of 50 ranked rows.
+
+### Inventory v2 rollout
+
+For an existing database, apply the **Inventory v2** section at the end of `supabase_migration.sql` in staging before starting the updated service. For a new database, apply the full migration. Configure the Supabase password recovery redirect allowlist for the application origin and test with separate Free and Pro accounts. Run Stripe's test checkout, cancellation and delivery retry before enabling paid traffic. Publish the build using the Git SHA that passed the checks.
+
+Raw inventory uploads use a private temporary folder. Normal completion deletes the file. Periodic cleanup removes abandoned files older than one hour. Signed-in Pro analyses are held in a bounded, process-local cache for up to 30 minutes, or until saved or deleted. A restart or cache eviction can require reanalysis. Keep this deployment single-instance or use a shared private cache before scaling. Saved results remain in Supabase until deletion, subject to the deployment's provider backup schedule. AI only receives bounded selected row facts and requested guidance to draft follow-up. Review provider retention before using customer data.

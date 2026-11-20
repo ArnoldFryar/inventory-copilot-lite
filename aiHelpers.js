@@ -296,7 +296,7 @@ const PROMPT_BUILDERS = {
  * @param {object} [opts.context] — optional business context { company, supplier, urgency, notes }
  * @returns {Promise<{text: string, model: string, usage: object}>}
  */
-async function generateHelper(helperType, runData, { model: modelOverride, context, refinement } = {}) {
+async function generateHelper(helperType, runData, { model: modelOverride, context, refinement, evidence } = {}) {
   if (!VALID_HELPER_TYPES.has(helperType)) {
     throw new Error(`Unknown helper type: ${helperType}`);
   }
@@ -322,7 +322,15 @@ async function generateHelper(helperType, runData, { model: modelOverride, conte
     { role: 'user',   content: prompt.user },
   ];
 
-  if (refinement && refinement.previousOutput && refinement.instruction) {
+  if (evidence) {
+    messages[0].content = 'Select relevant follow-up actions for the supplied inventory rows. Return JSON only in the form {"actions":[{"reference":1,"action":"verify_receipt"}]}. Use only listed reference numbers and action codes. No free text or extra keys.';
+    messages[1].content = JSON.stringify({
+      helperType, rows: evidence.rows, actions: evidence.actions,
+      guidance: String(refinement?.instruction || '').slice(0, 500),
+    });
+  }
+
+  if (!evidence && refinement && refinement.previousOutput && refinement.instruction) {
     messages.push(
       { role: 'assistant', content: String(refinement.previousOutput).slice(0, 4000) },
       { role: 'user',      content: 'Revise the draft above. ' + String(refinement.instruction).slice(0, 500) },
@@ -333,6 +341,7 @@ async function generateHelper(helperType, runData, { model: modelOverride, conte
     model:       resolvedModel,
     messages,
     max_tokens:  maxTokens,
+    ...(evidence ? { response_format: { type: 'json_object' } } : {}),
     temperature: 0.3,   // low temperature for factual, grounded output
   };
 
@@ -364,13 +373,12 @@ async function generateHelper(helperType, runData, { model: modelOverride, conte
       helperType,
       durationMs,
       errorName:    fetchErr.name,
-      errorMessage: fetchErr.message,
       isTimeout:    isAbort,
     });
     if (isAbort) {
       throw new Error(`AI request timed out after ${Math.round(durationMs / 1000)}s (limit ${AI_TIMEOUT_MS / 1000}s).`);
     }
-    throw new Error(`AI network error: ${fetchErr.message}`);
+    throw new Error('AI network error.');
   } finally {
     clearTimeout(timeoutId);
   }
@@ -378,15 +386,14 @@ async function generateHelper(helperType, runData, { model: modelOverride, conte
   const durationMs = Date.now() - t0;
 
   if (!res.ok) {
-    const errBody = await res.text().catch(() => '');
-    console.error('[AI_HELPER] API error', { helperType, status: res.status, durationMs, body: errBody.slice(0, 300) });
-    throw new Error(`AI provider returned ${res.status}: ${errBody.slice(0, 200)}`);
+    console.error('[AI_HELPER] API error', { helperType, status: res.status, durationMs });
+    throw new Error(`AI provider returned ${res.status}`);
   }
 
   const json = await res.json();
   const choice = json.choices?.[0];
   if (!choice?.message?.content) {
-    console.error('[AI_HELPER] empty response', { helperType, durationMs, json });
+    console.error('[AI_HELPER] empty response', { helperType, durationMs });
     throw new Error('AI provider returned an empty response.');
   }
 

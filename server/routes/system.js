@@ -7,7 +7,6 @@
 // GET /api/health/deps  — dependency configuration diagnostics (no secrets)
 // GET /api/config       — business thresholds
 // GET /api/auth-config  — public Supabase credentials for the frontend SDK
-// POST /api/event       — client-side telemetry sink
 // GET /sample-data      — bundled demo CSV download
 // GET /api/demo-analysis — demo triage run without file upload
 // ---------------------------------------------------------------------------
@@ -82,24 +81,6 @@ router.get('/api/auth-config', (_req, res) => {
     supabaseUrl:     SUPABASE_URL,
     supabaseAnonKey: SUPABASE_ANON_KEY
   });
-});
-
-// ---------------------------------------------------------------------------
-// POST /api/event — client-side telemetry sink.
-// Only enumerated event names and aggregate numeric props are logged.
-// ---------------------------------------------------------------------------
-router.post('/api/event', (req, res) => {
-  const { event, props } = req.body || {};
-  if (typeof event !== 'string' || event.length < 1 || event.length > 64) {
-    return res.status(400).json({ error: 'Invalid event.' });
-  }
-  const safe = {
-    ts:    new Date().toISOString(),
-    event: event.replace(/[^\w._-]/g, ''),
-    props: (props && typeof props === 'object' && !Array.isArray(props)) ? props : {}
-  };
-  console.log('EVENT', JSON.stringify(safe));
-  res.status(204).end();
 });
 
 // ---------------------------------------------------------------------------

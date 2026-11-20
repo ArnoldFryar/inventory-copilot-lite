@@ -75,7 +75,7 @@ const ACTIVE_STATUSES = ACTIVE_SUB_STATUSES;
 // ---------------------------------------------------------------------------
 function getPlan(userId) {
   // Env-var override — works in dev and demo mode without any DB or Stripe.
-  const envPlan = (process.env.PLAN || '').trim().toLowerCase();
+  const envPlan = process.env.NODE_ENV === 'production' ? '' : (process.env.PLAN || '').trim().toLowerCase();
   if (envPlan === 'pro') return PLANS.pro;
   if (!userId)           return PLANS.free;
   return PLANS.free; // synchronous fallback; async lookup via getPlanForUser
@@ -91,7 +91,7 @@ function getPlan(userId) {
  */
 async function getPlanForUser(userId, supabaseAdmin) {
   // Env-var override always wins (dev / demo mode)
-  const envPlan = (process.env.PLAN || '').trim().toLowerCase();
+  const envPlan = process.env.NODE_ENV === 'production' ? '' : (process.env.PLAN || '').trim().toLowerCase();
   if (envPlan === 'pro') return PLANS.pro;
   if (!userId || !supabaseAdmin) return PLANS.free;
 

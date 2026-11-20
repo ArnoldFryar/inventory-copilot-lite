@@ -25,7 +25,10 @@
   fetch('/api/ai-helper/types')
     .then(function (res) { return res.ok ? res.json() : null; })
     .then(function (data) {
-      if (data && data.configured) App.state.aiHelpersAvailable = true;
+      if (data && data.configured) {
+        App.state.aiHelpersAvailable = true;
+        App.aiHelpersUI.showAiHelpersPanel();
+      }
     })
     .catch(function () { /* AI helpers not available — that is fine */ });
 
@@ -39,6 +42,7 @@
     window.authModule.init().then(function () {
       if (!window.authModule.isConfigured()) {
         // Auth not configured — fetch plan anonymously
+        App.historyManager.refreshHistory();
         App.exportManager.fetchPlan();
         return;
       }
@@ -50,6 +54,7 @@
     });
   } else {
     // No auth module at all — fetch plan anonymously
+    App.historyManager.refreshHistory();
     App.exportManager.fetchPlan();
   }
 })();

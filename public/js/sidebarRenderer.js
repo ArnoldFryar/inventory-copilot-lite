@@ -66,7 +66,7 @@
   }
 
   function isSubPageActive(sp) {
-    if (sp.path.charAt(0) === '#') return pathname === '/';
+    if (sp.path.charAt(0) === '#') return pathname === '/' && location.hash === sp.path;
     return pathname === sp.path;
   }
 
@@ -95,7 +95,7 @@
 
   for (var i = 0; i < MODULES.length; i++) {
     var m = MODULES[i];
-    var active = m.key === current.key;
+    var active = m.key === current.key && (pathname !== '/' || !location.hash);
     h += '<a href="' + esc(m.path) + '" class="sidebar-nav-item' + (active ? ' is-active' : '') + '"';
     if (active) h += ' aria-current="page"';
     h += '>';
@@ -112,6 +112,7 @@
     h += '<div class="sidebar-section-label">' + esc(current.shortName.split(' ')[0]) + '</div>';
     for (var j = 0; j < current.subPages.length; j++) {
       var sp = current.subPages[j];
+      if (current.key === 'inventory' && sp.path === '/') continue;
       var spActive = isSubPageActive(sp);
       h += '<a href="' + esc(sp.path) + '" class="sidebar-nav-item sidebar-nav-sub' + (spActive ? ' is-active' : '') + '"';
       h += ' data-nav="' + esc(current.key + '-' + sp.key) + '">';
@@ -144,10 +145,20 @@
     h += '<span class="cmd-trigger-shortcut">Ctrl K</span>';
     h += '</button>';
   }
-  h += '<div class="sidebar-status-row">';
-  h += '<span class="sidebar-status-dot" aria-hidden="true"></span>';
-  h += '<span class="sidebar-status-text">System online</span>';
-  h += '</div></div>';
+  h += '</div>';
 
   nav.innerHTML = h;
+  if (pathname === '/') {
+    function updateLocation() {
+      document.querySelectorAll('#appSidebar a, .mobile-workspace-nav a').forEach(function (link) {
+        var href = link.getAttribute('href');
+        var active = href === (location.hash || '/');
+        link.classList.toggle('is-active', active);
+        if (active) link.setAttribute('aria-current', location.hash ? 'location' : 'page');
+        else link.removeAttribute('aria-current');
+      });
+    }
+    window.addEventListener('hashchange', updateLocation);
+    updateLocation();
+  }
 })();

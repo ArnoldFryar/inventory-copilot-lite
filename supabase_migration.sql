@@ -671,3 +671,62 @@ DROP POLICY IF EXISTS "Users can delete own pfep_parts" ON pfep_parts;
 CREATE POLICY "Users can delete own pfep_parts"
   ON pfep_parts FOR DELETE
   USING (auth.uid() = user_id);
+
+-- Inventory v2. Apply this section to existing projects before the app release.
+-- Browser clients use server-validated snapshots and cannot write entitlements.
+drop policy if exists "Users can insert own runs" on public.analysis_runs;
+drop policy if exists "Users can delete own runs" on public.analysis_runs;
+drop policy if exists "Users can read own runs" on public.analysis_runs;
+revoke all on public.analysis_runs from anon, authenticated;
+grant select, insert, update, delete on public.analysis_runs to service_role;
+
+drop policy if exists "Users can insert own profile" on public.profiles;
+revoke insert, update, delete on public.profiles from anon, authenticated;
+revoke insert (is_admin), update (is_admin) on public.profiles from anon, authenticated;
+revoke insert, update, delete on public.user_subscriptions from anon, authenticated;
+grant select, insert, update, delete on public.user_subscriptions to service_role;
+
+alter table public.user_subscriptions add column if not exists stripe_observed_at timestamptz;
+create table if not exists public.stripe_processed_events (
+  id text primary key,
+  processed_at timestamptz not null default now()
+);
+alter table public.stripe_processed_events enable row level security;
+revoke all on public.stripe_processed_events from public, anon, authenticated;
+grant select, insert, delete on public.stripe_processed_events to service_role;
+
+create or replace function public.record_subscription_event(
+  p_event_id text, p_observed_at timestamptz, p_user_id uuid,
+  p_customer_id text, p_subscription_id text, p_plan text, p_status text, p_period_end timestamptz
+) returns void
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  insert into public.stripe_processed_events(id) values (p_event_id) on conflict (id) do nothing;
+  if not found then return; end if;
+
+  insert into public.user_subscriptions (
+    user_id, stripe_customer_id, stripe_subscription_id, plan, subscription_status,
+    current_period_end, updated_at, stripe_observed_at
+  ) values (
+    p_user_id, p_customer_id, p_subscription_id, p_plan, p_status,
+    p_period_end, now(), p_observed_at
+  )
+  on conflict (user_id) do update set
+    stripe_customer_id = excluded.stripe_customer_id,
+    stripe_subscription_id = excluded.stripe_subscription_id,
+    plan = excluded.plan,
+    subscription_status = excluded.subscription_status,
+    current_period_end = excluded.current_period_end,
+    updated_at = excluded.updated_at,
+    stripe_observed_at = excluded.stripe_observed_at
+  where user_subscriptions.stripe_observed_at is null
+    or user_subscriptions.stripe_observed_at <= excluded.stripe_observed_at;
+end;
+$$;
+revoke all on function public.record_subscription_event(text, timestamptz, uuid, text, text, text, text, timestamptz)
+from public, anon, authenticated;
+grant execute on function public.record_subscription_event(text, timestamptz, uuid, text, text, text, text, timestamptz)
+to service_role;

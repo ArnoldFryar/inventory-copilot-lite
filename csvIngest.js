@@ -286,7 +286,7 @@ function findHeaderRowIndex(lines) {
 // IngestMeta shape:
 //   { encoding: string, encodingMethod: string, preambleRowsSkipped: number }
 // ---------------------------------------------------------------------------
-function ingestCSV(filePath, callback) {
+function ingestCSV(filePath, callback, options = {}) {
   const meta = {
     encoding:            'unknown',
     encodingMethod:      'unknown',
@@ -296,7 +296,7 @@ function ingestCSV(filePath, callback) {
   // ── 1. Read entire file as Buffer ────────────────────────────────────────
   fs.readFile(filePath, (readErr, buf) => {
     if (readErr) {
-      return callback(`Could not read the uploaded file: ${readErr.message}`, [], meta);
+      return callback(`Could not read the uploaded file: Check the file and try again.`, [], meta);
     }
 
     // ── 2. Detect encoding ────────────────────────────────────────────────
@@ -331,9 +331,12 @@ function ingestCSV(filePath, callback) {
     const lines = decoded.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
 
     // ── 5. Find the column header row ────────────────────────────────────
-    const headerIdx = findHeaderRowIndex(lines);
+    const detected = findHeaderRowIndex(lines);
+    const fallback = lines.slice(0, MAX_PREAMBLE_ROWS).findIndex(line => parseCSVHeaderLine(line).filter(cell => cell.trim()).length >= 2);
+    const headerIdx = options.headerRow ? options.headerRow - 1 :
+      detected >= 0 ? detected : options.allowCustomHeaders ? fallback : -1;
 
-    if (headerIdx === -1) {
+    if (headerIdx < 0 || headerIdx >= lines.length || parseCSVHeaderLine(lines[headerIdx]).filter(cell => cell.trim()).length < 2) {
       return callback(
         `Could not find a valid column header row in the first ${MAX_PREAMBLE_ROWS} lines. ` +
         'The file may not be a standard inventory export, or the column names are not recognised. ' +
@@ -352,6 +355,18 @@ function ingestCSV(filePath, callback) {
     const trimmedCSV = lines.slice(headerIdx).join('\n');
 
     const rows     = [];
+    const seenHeaders = new Set();
+    const parser = csv({
+      maxRowBytes: 256 * 1024,
+      mapHeaders: ({ header, index }) => {
+        if (index >= 200) return null;
+        const base = header.trim() || `Column ${index + 1}`;
+        let key = base;
+        for (let i = 2; seenHeaders.has(key.toLowerCase()); i++) key = `${base} (${i})`;
+        seenHeaders.add(key.toLowerCase());
+        return key;
+      },
+    });
     let   hadError = false;
 
     const readable = new Readable();
@@ -359,7 +374,7 @@ function ingestCSV(filePath, callback) {
     readable.push(null);
 
     readable
-      .pipe(csv())
+      .pipe(parser)
       .on('error', (parseErr) => {
         if (hadError) return;
         hadError = true;
@@ -368,7 +383,14 @@ function ingestCSV(filePath, callback) {
           [], meta
         );
       })
-      .on('data', (row) => rows.push(row))
+      .on('headers', headers => { meta.headers = headers.filter(Boolean); })
+      .on('data', row => {
+        if (options.maxRows && rows.length >= options.maxRows) {
+          parser.destroy(new Error(`This file has more than ${options.maxRows.toLocaleString('en-US')} rows. Split the export and try again.`));
+          return;
+        }
+        rows.push(row);
+      })
       .on('end', () => {
         if (!hadError) {
           hadError = true;

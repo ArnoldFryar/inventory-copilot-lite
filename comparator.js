@@ -1,196 +1,78 @@
 'use strict';
 
-// ---------------------------------------------------------------------------
-// OpsCopilot-Lite — Run Comparison Engine
-//
-// Pure, deterministic comparison between two analysis result sets.
-// No I/O, no side effects — safe to call from server routes or tests.
-//
-// Comparison key: part_number (case-sensitive exact match).
-// Rows with no part_number or "(no part number)" are excluded from matching
-// because they cannot be reliably linked across runs.
-// ---------------------------------------------------------------------------
+const { inventoryKey } = require('./analyzer');
 
-// Risk ordering: lower number = higher risk.
-// Used to determine whether a part worsened or improved between runs.
-// Invalid is placed between Excess and Healthy — it's a data-quality issue,
-// not an active supply risk, so moving from Healthy→Invalid is a slight
-// worsening (data degraded) while moving from Urgent→Invalid is an improvement
-// (part dropped out of supply risk, even if via bad data).
 const STATUS_RISK = {
   'Urgent Stockout Risk': 0,
-  'Stockout Risk':        1,
+  'Stockout Risk': 1,
   'Potential Dead Stock': 2,
-  'No Usage Data':        3,
-  'Excess Inventory':     4,
-  'Invalid':              5,
-  'Healthy':              6
+  'Excess Inventory': 3,
+  'Healthy': 4,
 };
 
-function riskOf(status) {
-  return STATUS_RISK[status] ?? 99;
+function indexRows(rows) {
+  const index = new Map();
+  for (const row of rows) {
+    if (!row.part_number || row.part_number === '(no part number)') continue;
+    const key = inventoryKey(row);
+    const existing = index.get(key);
+    index.set(key, existing ? { row: existing.row, duplicate: true } : { row });
+  }
+  return index;
 }
 
-// ---------------------------------------------------------------------------
-// compareRuns
-//
-// Parameters:
-//   currentRows — RowResult[] from the current (newer) analysis
-//   priorRows   — RowResult[] from the previous (older) analysis
-//
-// Returns ComparisonResult:
-//   {
-//     hasPrior           : boolean,
-//     newUrgent          : ChangeItem[],   — became urgent (new part or worsened into urgent)
-//     resolvedUrgent     : ChangeItem[],   — was urgent, no longer (improved or removed)
-//     worsened           : ChangeItem[],   — moved to a higher-risk status
-//     improved           : ChangeItem[],   — moved to a lower-risk status
-//     added              : ChangeItem[],   — in current but not in prior
-//     removed            : ChangeItem[],   — in prior but not in current
-//     unchanged          : number,
-//     statusDeltas       : { [status]: number },  — net change per bucket
-//     leadershipSentence : string
-//   }
-// ---------------------------------------------------------------------------
 function compareRuns(currentRows, priorRows) {
-  if (!Array.isArray(currentRows) || !Array.isArray(priorRows) || priorRows.length === 0) {
-    return { hasPrior: false };
-  }
-
-  // Build lookup maps keyed by part_number.
-  // Skip unmatchable rows (no part number).
-  const isMatchable = (pn) => pn && pn !== '(no part number)';
-
-  const priorMap = new Map();
-  for (const row of priorRows) {
-    if (isMatchable(row.part_number)) priorMap.set(row.part_number, row);
-  }
-
-  const currentMap = new Map();
-  for (const row of currentRows) {
-    if (isMatchable(row.part_number)) currentMap.set(row.part_number, row);
-  }
-
-  const newUrgent      = [];
-  const resolvedUrgent = [];
-  const worsened       = [];
-  const improved       = [];
-  const added          = [];
-  const removed        = [];
-  let   unchanged      = 0;
-
-  // ── Process current rows ────────────────────────────────────────────────
-  for (const [pn, curr] of currentMap) {
-    const prev = priorMap.get(pn);
-
-    if (!prev) {
-      // Part is new — didn't exist in prior run
-      const item = { part_number: pn, status: curr.status, severity: curr.severity, coverage: curr.coverage };
-      added.push(item);
-      if (curr.status === 'Urgent Stockout Risk') {
-        newUrgent.push(item);
-      }
-      continue;
-    }
-
-    const prevRisk = riskOf(prev.status);
-    const currRisk = riskOf(curr.status);
-
-    if (prevRisk === currRisk) {
-      unchanged++;
-      continue;
-    }
-
-    const changeItem = {
-      part_number:   pn,
-      prev_status:   prev.status,
-      status:        curr.status,
-      prev_severity: prev.severity,
-      severity:      curr.severity,
-      coverage:      curr.coverage,
-      prev_coverage: prev.coverage
-    };
-
-    if (currRisk < prevRisk) {
-      // Worsened — moved to higher risk
-      worsened.push(changeItem);
-      if (curr.status === 'Urgent Stockout Risk' && prev.status !== 'Urgent Stockout Risk') {
-        newUrgent.push({ part_number: pn, status: curr.status, severity: curr.severity, coverage: curr.coverage, prev_status: prev.status });
-      }
-    } else {
-      // Improved — moved to lower risk
-      improved.push(changeItem);
-      if (prev.status === 'Urgent Stockout Risk' && curr.status !== 'Urgent Stockout Risk') {
-        resolvedUrgent.push({ part_number: pn, prev_status: prev.status, status: curr.status, coverage: curr.coverage });
-      }
-    }
-  }
-
-  // ── Find removed parts ──────────────────────────────────────────────────
-  for (const [pn, prev] of priorMap) {
-    if (!currentMap.has(pn)) {
-      removed.push({ part_number: pn, status: prev.status, severity: prev.severity, coverage: prev.coverage });
-      if (prev.status === 'Urgent Stockout Risk') {
-        resolvedUrgent.push({ part_number: pn, prev_status: prev.status, status: '(removed)', coverage: null });
-      }
-    }
-  }
-
-  // ── Net change by status bucket ─────────────────────────────────────────
-  const ALL_STATUSES = Object.keys(STATUS_RISK);
-  const statusDeltas = {};
-  for (const bucket of ALL_STATUSES) {
-    const currCount = currentRows.filter(r => r.status === bucket).length;
-    const prevCount = priorRows.filter(r => r.status === bucket).length;
-    statusDeltas[bucket] = currCount - prevCount;
-  }
-
-  // ── Leadership comparison sentence ──────────────────────────────────────
-  const leadershipSentence = buildLeadershipSentence({
-    newUrgent, resolvedUrgent, worsened, improved, added, removed
-  });
-
-  return {
-    hasPrior: true,
-    newUrgent,
-    resolvedUrgent,
-    worsened,
-    improved,
-    added,
-    removed,
-    unchanged,
-    statusDeltas,
-    leadershipSentence
+  if (!Array.isArray(currentRows) || !Array.isArray(priorRows) || !priorRows.length) return { hasPrior: false };
+  const prior = indexRows(priorRows);
+  const current = indexRows(currentRows);
+  const result = {
+    hasPrior: true, newUrgent: [], resolvedUrgent: [], worsened: [], improved: [],
+    added: [], removed: [], couldNotVerify: [], unchanged: 0, statusDeltas: {},
   };
-}
 
-// ---------------------------------------------------------------------------
-// buildLeadershipSentence
-// Produces a plain-language summary suitable for forwarding to leadership.
-// Follows the same style as the main leadership narrative — no emoji,
-// no all-caps status names, one sentence.
-// ---------------------------------------------------------------------------
-function buildLeadershipSentence({ newUrgent, resolvedUrgent, worsened, improved, added, removed }) {
-  const parts = [];
-
-  if (newUrgent.length > 0)
-    parts.push(`${newUrgent.length} new urgent item${newUrgent.length > 1 ? 's' : ''}`);
-  if (resolvedUrgent.length > 0)
-    parts.push(`${resolvedUrgent.length} previously urgent item${resolvedUrgent.length > 1 ? 's' : ''} resolved`);
-  if (worsened.length > 0)
-    parts.push(`${worsened.length} item${worsened.length > 1 ? 's' : ''} worsened`);
-  if (improved.length > 0)
-    parts.push(`${improved.length} item${improved.length > 1 ? 's' : ''} improved`);
-  if (added.length > 0)
-    parts.push(`${added.length} new part${added.length > 1 ? 's' : ''}`);
-  if (removed.length > 0)
-    parts.push(`${removed.length} part${removed.length > 1 ? 's' : ''} no longer in file`);
-
-  if (parts.length === 0) {
-    return 'No material changes since the last upload.';
+  for (const key of new Set([...prior.keys(), ...current.keys()])) {
+    const before = prior.get(key);
+    const after = current.get(key);
+    const prev = before?.row;
+    const row = after?.row || prev;
+    const item = {
+      part_number: row.part_number, site: row.site || '', uom: row.uom || '', status: row.status,
+      severity: row.severity, coverage: row.coverage, prev_status: prev?.status,
+      prev_severity: prev?.severity, prev_coverage: prev?.coverage,
+    };
+    if (before?.duplicate || after?.duplicate) {
+      result.couldNotVerify.push({ ...item, reason: 'Duplicate part, site and unit' });
+    } else if (!before) {
+      result.added.push(item);
+      if (row.status === 'Urgent Stockout Risk') result.newUrgent.push(item);
+    } else if (!after) {
+      result.removed.push(item);
+    } else if (STATUS_RISK[prev.status] === undefined || STATUS_RISK[row.status] === undefined) {
+      if (prev.status === row.status) result.unchanged++;
+      else result.couldNotVerify.push({ ...item, reason: 'Missing or invalid risk inputs' });
+    } else if (prev.status === row.status) {
+      result.unchanged++;
+    } else {
+      const worsened = STATUS_RISK[row.status] < STATUS_RISK[prev.status];
+      result[worsened ? 'worsened' : 'improved'].push(item);
+      if (worsened && row.status === 'Urgent Stockout Risk') result.newUrgent.push(item);
+      if (!worsened && prev.status === 'Urgent Stockout Risk' && row.status !== 'Stockout Risk') {
+        result.resolvedUrgent.push(item);
+      }
+    }
   }
 
-  return 'Since the last upload: ' + parts.join(', ') + '.';
+  for (const status of [...Object.keys(STATUS_RISK), 'No Usage Data', 'Invalid']) {
+    result.statusDeltas[status] = currentRows.filter(row => row.status === status).length -
+      priorRows.filter(row => row.status === status).length;
+  }
+  const labels = [
+    ['newUrgent', 'new urgent'], ['resolvedUrgent', 'resolved urgent'], ['worsened', 'worsened'],
+    ['improved', 'improved'], ['added', 'new in file'], ['removed', 'no longer in file'],
+    ['couldNotVerify', 'could not verify'],
+  ].filter(([key]) => result[key].length).map(([key, label]) => `${result[key].length} ${label}`);
+  result.leadershipSentence = labels.length ? `Since the last upload: ${labels.join(', ')}.` : 'No material changes since the last upload.';
+  return result;
 }
 
 module.exports = { compareRuns, STATUS_RISK };

@@ -39,7 +39,7 @@
       icon: iconHtml('summary', { size: 14 }),
       keywords: ['exec', 'summary', 'health', 'score', 'kpi'],
       available: function () { return !hidden('execSummarySection'); },
-      run: function () { scrollTo('execSummarySection'); },
+      run: function () { scrollTo('analysisOverview'); },
     },
     {
       id: 'risks',
@@ -49,7 +49,7 @@
       icon: iconHtml('risk', { size: 14 }),
       keywords: ['risk', 'priority', 'urgent', 'stockout', 'danger', 'critical'],
       available: function () { return !hidden('prioritySection'); },
-      run: function () { scrollTo('prioritySection'); },
+      run: function () { scrollTo('resultsSection'); },
     },
     {
       id: 'results',
@@ -107,7 +107,7 @@
         var section = document.querySelector('.upload-section');
         if (section) section.scrollIntoView({ behavior: 'smooth', block: 'center' });
         var input = document.getElementById('csvfile');
-        if (input) setTimeout(function () { input.click(); }, 280);
+        if (input) document.getElementById('chooseInventoryFile').click();
       },
     },
     {

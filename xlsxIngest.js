@@ -17,7 +17,7 @@ const MAX_PREAMBLE_ROWS = 20;
 const MAX_WORKSHEETS = 50;
 const MAX_DATA_ROWS = 50_000;
 const MAX_COLUMNS = 200;
-const MIN_HEADER_CELLS = 3;
+const MIN_HEADER_CELLS = 2;
 const MIN_HEADER_FIELDS = 2;
 
 function cellValueToScalar(value) {
@@ -44,12 +44,16 @@ function cellValueToScalar(value) {
   return '';
 }
 
-function worksheetRowValues(worksheet, rowNumber) {
+function worksheetRowValues(worksheet, rowNumber, idColumn = -1) {
   const row = worksheet.getRow(rowNumber);
   const lastColumn = Math.min(row.cellCount || 0, MAX_COLUMNS);
   const values = [];
   for (let column = 1; column <= lastColumn; column++) {
-    values.push(cellValueToScalar(row.getCell(column).value));
+    const cell = row.getCell(column);
+    const value = cellValueToScalar(cell.value);
+    const mask = cell.numFmt;
+    values.push(column !== idColumn || !Number.isSafeInteger(value) || value < 0 || !/^0{2,32}$/.test(mask || '')
+      ? value : String(value).padStart(mask.length, '0'));
   }
   return values;
 }
@@ -75,16 +79,17 @@ function findWorksheetHeader(worksheet) {
 }
 
 function uniqueHeaders(headers) {
-  const seen = new Map();
+  const seen = new Set();
   return headers.map((header, index) => {
     const base = String(header ?? '').trim() || `Column ${index + 1}`;
-    const count = seen.get(base) || 0;
-    seen.set(base, count + 1);
-    return count === 0 ? base : `${base} (${count + 1})`;
+    let key = base;
+    for (let i = 2; seen.has(key.toLowerCase()); i++) key = `${base} (${i})`;
+    seen.add(key.toLowerCase());
+    return key;
   });
 }
 
-function worksheetToRows(worksheet, headerInfo) {
+function worksheetToRows(worksheet, headerInfo, idHeader) {
   const headers = uniqueHeaders(headerInfo.headers).slice(0, MAX_COLUMNS);
   const lastDataRow = worksheet.rowCount || 0;
   const dataRowCount = Math.max(0, lastDataRow - headerInfo.rowNumber);
@@ -96,10 +101,11 @@ function worksheetToRows(worksheet, headerInfo) {
     );
   }
 
+  const idColumn = headers.indexOf(idHeader || resolveHeaders(headers).mapping.part_number) + 1;
   const rows = [];
   for (let rowNumber = headerInfo.rowNumber + 1; rowNumber <= lastDataRow; rowNumber++) {
-    const values = worksheetRowValues(worksheet, rowNumber);
-    const row = {};
+    const values = worksheetRowValues(worksheet, rowNumber, idColumn);
+    const row = Object.create(null);
     for (let column = 0; column < headers.length; column++) {
       row[headers[column]] = column < values.length ? values[column] : '';
     }
@@ -108,11 +114,30 @@ function worksheetToRows(worksheet, headerInfo) {
   return rows;
 }
 
-async function parseWorkbook(filePath) {
+// Workbook containers must fit the expansion budget before ExcelJS builds its model.
+function validateZipBudget(buffer) {
+  const end = buffer.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
+  if (end < 0 || end + 22 > buffer.length) throw new Error('Invalid workbook container.');
+  const entries = buffer.readUInt16LE(end + 10);
+  let offset = buffer.readUInt32LE(end + 16);
+  let expanded = 0;
+  if (entries > 2048) throw new Error('The workbook contains too many items.');
+  for (let index = 0; index < entries; index++) {
+    if (offset + 46 > end || buffer.readUInt32LE(offset) !== 0x02014b50) {
+      throw new Error('Invalid workbook container.');
+    }
+    expanded += buffer.readUInt32LE(offset + 24);
+    if (expanded > 64 * 1024 * 1024) throw new Error('The workbook expands beyond the 64 MB processing limit.');
+    offset += 46 + buffer.readUInt16LE(offset + 28) + buffer.readUInt16LE(offset + 30) + buffer.readUInt16LE(offset + 32);
+  }
+}
+
+async function parseWorkbook(filePath, options = {}) {
   const buffer = await fs.promises.readFile(filePath);
   const workbook = new ExcelJS.Workbook();
 
   try {
+    validateZipBudget(buffer);
     await workbook.xlsx.load(buffer, {
       ignoreNodes: [
         'dataValidations',
@@ -123,7 +148,8 @@ async function parseWorkbook(filePath) {
         'sheetPr',
       ],
     });
-  } catch (_error) {
+  } catch (error) {
+    if (/processing limit|too many items/.test(error.message)) throw error;
     throw new Error(
       'The Excel workbook could not be opened. It may be corrupted, password-protected, or not a valid .xlsx file.'
     );
@@ -139,34 +165,50 @@ async function parseWorkbook(filePath) {
     );
   }
 
-  const candidates = workbook.worksheets
-    .map(worksheet => ({ worksheet, header: findWorksheetHeader(worksheet) }))
-    .filter(candidate => candidate.header);
-
-  if (candidates.length === 0) {
-    throw new Error(
-      `Could not find a valid inventory header row in the first ${MAX_PREAMBLE_ROWS} rows of any worksheet. ` +
-      'Required columns (recognized aliases are accepted): part number, on hand quantity, daily usage, and lead time.'
-    );
+  const visible = workbook.worksheets.filter(sheet => sheet.state === 'visible');
+  const explicitHeader = sheet => {
+    if (!options.headerRow) return null;
+    const headers = worksheetRowValues(sheet, options.headerRow);
+    return headers.filter(value => String(value).trim()).length >= 2 ? { rowNumber: options.headerRow, headers } : null;
+  };
+  const fallbackHeader = sheet => {
+    for (let rowNumber = 1; rowNumber <= Math.min(sheet.rowCount, MAX_PREAMBLE_ROWS); rowNumber++) {
+      const headers = worksheetRowValues(sheet, rowNumber);
+      if (headers.filter(value => String(value).trim()).length >= 2) return { rowNumber, headers };
+    }
+    return null;
+  };
+  const sheets = visible.map(worksheet => ({
+    worksheet,
+    detected: findWorksheetHeader(worksheet),
+    fallback: options.allowCustomHeaders ? fallbackHeader(worksheet) : null,
+  }));
+  const candidates = sheets.filter(sheet => sheet.detected || sheet.fallback);
+  const selected = options.worksheet
+    ? sheets.find(sheet => sheet.worksheet.name === options.worksheet)
+    : sheets.find(sheet => sheet.detected) || candidates[0];
+  const header = selected && (options.headerRow ? explicitHeader(selected.worksheet) : selected.detected || selected.fallback);
+  if (!header) {
+    throw new Error('Could not find an inventory header in the selected worksheet. Check the first 20 rows.');
   }
-
-  const selected = candidates.find(candidate => candidate.worksheet.state === 'visible') || candidates[0];
-  const rows = worksheetToRows(selected.worksheet, selected.header);
+  const rows = worksheetToRows(selected.worksheet, header, options.idHeader);
 
   return {
     rows,
     meta: {
       encoding: 'xlsx',
       encodingMethod: 'exceljs-workbook',
-      preambleRowsSkipped: selected.header.rowNumber - 1,
+      preambleRowsSkipped: header.rowNumber - 1,
+      headers: uniqueHeaders(header.headers),
+      worksheetCandidates: candidates.map(sheet => sheet.worksheet.name),
       worksheet: selected.worksheet.name,
       worksheetsAvailable: workbook.worksheets.map(worksheet => worksheet.name),
     },
   };
 }
 
-function ingestXLSX(filePath, callback) {
-  parseWorkbook(filePath)
+function ingestXLSX(filePath, callback, options) {
+  parseWorkbook(filePath, options)
     .then(({ rows, meta }) => callback(null, rows, meta))
     .catch(error => {
       const meta = {

@@ -21,13 +21,13 @@
   var _supabase = null;       // Supabase client instance
   var _configured = false;
 
-  // Dynamically load the Supabase browser bundle from CDN.
+  // Load the installed Supabase browser bundle from the app origin.
   // This avoids bundler complexity — the app has no build step.
   function loadSupabaseSDK() {
     return new Promise(function (resolve, reject) {
       if (window.supabase) { resolve(); return; }
       var s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+      s.src = '/assets/vendor/supabase.js';
       s.onload  = resolve;
       s.onerror = function () { reject(new Error('Failed to load Supabase SDK')); };
       document.head.appendChild(s);
@@ -63,6 +63,20 @@
     var result = await _supabase.auth.signInWithPassword({ email: email, password: password });
     if (result.error) throw new Error(result.error.message);
     return result.data;
+  }
+
+  async function resetPassword(email) {
+    if (!_supabase) throw new Error('Account recovery is unavailable.');
+    const result = await _supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/?recovery=1',
+    });
+    if (result.error) throw new Error(result.error.message);
+  }
+
+  async function updatePassword(password) {
+    if (!_supabase) throw new Error('Account recovery is unavailable.');
+    const result = await _supabase.auth.updateUser({ password });
+    if (result.error) throw new Error(result.error.message);
   }
 
   async function signOut() {
@@ -103,6 +117,8 @@
     init: init,
     signUp: signUp,
     signIn: signIn,
+    resetPassword: resetPassword,
+    updatePassword: updatePassword,
     signOut: signOut,
     getSession: getSession,
     getToken: getToken,

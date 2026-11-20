@@ -10,14 +10,18 @@
    * Fetches comparison data for a given run ID and renders the panel.
    * Silent on failure — the comparison panel simply stays hidden.
    */
-  async function fetchAndRenderComparison(runId, token) {
+  async function fetchAndRenderComparison(runId, token, baseline) {
     try {
       if (!token) token = await window.authModule.getToken();
       if (!token) return;
-      var res = await fetch('/api/runs/' + encodeURIComponent(runId) + '/compare', {
+      var res = await fetch('/api/runs/' + encodeURIComponent(runId) + '/compare' + (baseline ? '?baseline=' + encodeURIComponent(baseline) : ''), {
         headers: { 'Authorization': 'Bearer ' + token }
       });
-      if (!res.ok) return;
+      if (App.state.lastResponse?.savedRunId !== runId) return;
+      if (!res.ok) {
+        renderComparison({ hasPrior: false, reason: 'The comparison could not be loaded.' });
+        return;
+      }
       var comparison = await res.json();
       renderComparison(comparison);
     } catch (_) {
@@ -32,7 +36,11 @@
   function renderComparison(cmp) {
     if (!dom.comparisonSection) return;
     if (!cmp || !cmp.hasPrior) {
-      dom.comparisonSection.classList.add('hidden');
+      dom.comparisonSection.classList.toggle('hidden', !cmp?.reason);
+      dom.comparisonPrior.textContent = '';
+      dom.comparisonSentence.textContent = cmp?.reason || '';
+      dom.comparisonGrid.replaceChildren();
+      dom.comparisonDetails.classList.add('hidden');
       if (dom.comparisonExportBtn) dom.comparisonExportBtn.classList.add('hidden');
       App.state.lastComparison = null;
       return;
@@ -61,7 +69,8 @@
         { label: 'Worsened',        value: cmp.worsened?.length       || 0, cls: 'cmp-worsened' },
         { label: 'Improved',        value: cmp.improved?.length       || 0, cls: 'cmp-improved' },
         { label: 'New Parts',       value: cmp.added?.length          || 0, cls: 'cmp-added' },
-        { label: 'Removed',         value: cmp.removed?.length        || 0, cls: 'cmp-removed' }
+        { label: 'Missing in current file', value: cmp.removed?.length || 0, cls: 'cmp-removed' },
+        { label: 'Could not verify', value: cmp.couldNotVerify?.length || 0, cls: 'cmp-removed' }
       ];
 
       cards.forEach(function (c) {
@@ -113,7 +122,8 @@
         { title: 'Worsened',              items: cmp.worsened,       showPrev: true },
         { title: 'Improved',              items: cmp.improved,       showPrev: true },
         { title: 'New Parts',             items: cmp.added,          showPrev: false },
-        { title: 'Removed Parts',         items: cmp.removed,        showPrev: false }
+        { title: 'Missing in current file', items: cmp.removed, showPrev: false },
+        { title: 'Could not verify', items: cmp.couldNotVerify, showPrev: true }
       ];
 
       var hasItems = false;
@@ -128,10 +138,10 @@
 
         var ul = document.createElement('ul');
         ul.className = 'cmp-detail-list';
-        sec.items.forEach(function (item) {
+        sec.items.slice(0, 100).forEach(function (item) {
           var li = document.createElement('li');
           var pn = document.createElement('strong');
-          pn.textContent = item.part_number;
+          pn.textContent = item.part_number + (item.site ? ' · ' + item.site : '');
           li.appendChild(pn);
 
           if (sec.showPrev && item.prev_status) {

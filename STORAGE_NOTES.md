@@ -1,59 +1,13 @@
-# Saved History — Storage Technical Note
+# Inventory data and saved runs
 
-## Current approach: JSON-first
+| Data | Location and lifetime |
+| --- | --- |
+| Raw CSV or XLSX | Private temporary directory during parsing. The upload handler unlinks files when processing finishes. Periodic cleanup handles abandoned files older than one hour. |
+| Unsaved signed-in Pro analysis | Compressed memory cache in the app process, scoped to the owner and a server-generated analysis ID. Entries expire after 30 minutes, with a 64 MB and 128-entry pool. Restart, eviction, or moving to another process can require reanalysis. |
+| Saved inventory run | Supabase `analysis_runs` after the owner chooses **Save run**. The server persists the complete normalized row array, counts, rule version, input basis, and source metadata. The original file is excluded. The owner can reopen and delete the record even after moving to Free. Backups follow the configured provider retention. |
+| Remembered column mapping | Account-scoped browser storage on the current device. Only the selected headers, worksheet and calculation options are needed for reuse. |
+| AI draft | Selected, normalized row facts and bounded guidance go to the configured provider on request. The server checks the returned actions and composes the draft using facts from the run. Draft history stays on the current browser, scoped to the account. The provider's retention follows the deployment terms. |
 
-Each saved analysis run is stored as a single row in the `analysis_runs` table (Supabase/PostgreSQL). Two JSONB columns hold the bulk of the data:
+History lists up to 50 runs per page without loading their result arrays. Opening a run reads the stored array. Table rendering shows 50 rows per page. Older records that hold only a preview identify the available row count when reopened.
 
-| Column | Contents |
-|---|---|
-| `summary_json` | `{ counts, topPriority, thresholds, columnAliases }` — everything needed to re-render the summary, leadership narrative, and priority panel. ~2–5 KB per run. |
-| `results_json` | Full array of `RowResult` objects (one per analyzed part). ~200 bytes × row count. A 1,000-part file ≈ 200 KB; the 50k-row ceiling ≈ 10 MB. |
-
-Scalar metadata (`file_name`, `part_count`, `uploaded_at`, `plan_at_upload`, `source_type`) lives in dedicated columns for filtering and listing without deserializing the JSON.
-
-### Why JSON-first
-
-1. **Speed of implementation** — one INSERT, one SELECT. No join queries, no child-table management.
-2. **Fidelity** — the exact data the user saw is stored verbatim, so "Load" always reproduces the same report. No re-analysis needed.
-3. **Simplicity** — no ORM, no migration versioning beyond the single `CREATE TABLE`.
-
-### Known trade-offs
-
-- **No per-row queries on results**: you cannot query "all parts where coverage < 5" across saved runs without deserializing `results_json`. This is fine today (the product doesn't offer cross-run search) but would block a comparison/trend feature.
-- **Storage cost** — JSONB is larger than normalized relational storage. At pilot scale (< 1,000 users × 50 runs × average 200 KB) the total is ≈ 10 GB, well within Supabase free/pro tier limits.
-- **Payload size** — `POST /api/runs` and `GET /api/runs/:id` transfer the full results array. The 10 MB JSON body limit accommodates the largest files. For very large files, consider server-side compression or pagination.
-
-## Future normalization path
-
-When the product needs any of the following, split `results_json` into a child table:
-
-```
-analysis_results (
-  id           uuid PK,
-  run_id       uuid FK → analysis_runs.id,
-  part_number  text,
-  coverage     numeric,
-  status       text,
-  severity     text,
-  on_hand      numeric,
-  daily_usage  numeric,
-  lead_time    numeric,
-  reason       text,
-  action       text
-)
-```
-
-**Triggers for normalization:**
-- Cross-run trend analysis ("show me how coverage for part X changed over time")
-- Per-part search across all saved runs
-- Storage cost exceeds acceptable threshold
-- Need to index specific result fields (status, severity) for dashboard queries
-
-**Migration strategy:**
-1. Add the child table alongside the existing JSONB column.
-2. Backfill from existing `results_json` with a one-time script.
-3. Update `POST /api/runs` to write both the JSONB column (for backward compat) and the child table.
-4. Update `GET /api/runs/:id` to read from the child table instead of `results_json`.
-5. Once stable, drop `results_json` from new inserts (keep for old rows or migrate fully).
-
-The `summary_json` column can stay as JSONB indefinitely — it's small, and its structure (counts + thresholds + topPriority) doesn't benefit from normalization.
+Keep the app on one instance while it uses the process-local snapshot cache. Put the cache behind shared private storage and verify expiry and ownership before scaling across instances. Review database request size and backup retention with the hosting provider before onboarding pilot customers.

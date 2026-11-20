@@ -1,243 +1,167 @@
 'use strict';
 
-// ---------------------------------------------------------------------------
-// runController — request handlers for the /api/runs history endpoints.
-//
-// All handlers rely on supabaseAdmin and getPlanForUser which are module-level
-// singletons initialised before the first request arrives.
-// ---------------------------------------------------------------------------
-
 const { getPlanForUser } = require('../../plans');
-const { supabaseAdmin }  = require('../../supabaseClient');
-const { compareRuns }    = require('../../comparator');
-const { MODULES }        = require('../lib/modules');
+const { supabaseAdmin } = require('../../supabaseClient');
+const { compareRuns } = require('../../comparator');
+const { MODULES } = require('../lib/modules');
+const { read, forget } = require('../lib/runSnapshots');
 
-// Derive valid module keys from the module registry — single source of truth.
-const VALID_MODULES = new Set(Object.keys(MODULES));
+const metadataColumns = 'id, file_name, uploaded_at, part_count, summary_json, plan_at_upload, source_type, module_key';
+const runColumns = metadataColumns + ', results_json';
+const validId = value => typeof value === 'string' && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(value);
 
-// Temporary debug helper — logs whenever a Pro-gated route denies a request.
-function logAccessDenied(route, userId, plan) {
-  console.warn('[ACCESS_DENIED]', route, {
-    user_id:    userId,
-    sub_status: plan._debug?.sub_status ?? 'unknown',
-    is_admin:   plan._debug?.is_admin   ?? false,
-    reason:     'plan_not_pro',
-  });
+function ownedRun(user, id, columns = runColumns) {
+  return supabaseAdmin.from('analysis_runs').select(columns).eq('user_id', user).eq('id', id).maybeSingle();
 }
 
-// POST /api/runs — save an analysis run
+function hasFullResults(run) {
+  return Array.isArray(run?.results_json) && run.results_json.length === run.part_count &&
+    run.summary_json?.completeness !== 'preview';
+}
+
+function sameBasis(current, baseline) {
+  const a = current.summary_json;
+  const b = baseline.summary_json;
+  return current.module_key === baseline.module_key && current.source_type === baseline.source_type &&
+    a?.ruleVersion && a.ruleVersion === b?.ruleVersion &&
+    a.inputScope === 'ranked' && b.inputScope === 'ranked' &&
+    a.coverageBasis === b.coverageBasis &&
+    (a.worksheet || '') === (b.worksheet || '');
+}
+
+function unavailable(res) {
+  if (supabaseAdmin) return false;
+  res.status(503).json({ error: 'Saved history is temporarily unavailable.' });
+  return true;
+}
+
 async function createRun(req, res) {
-  try {
-  if (!supabaseAdmin) {
-    return res.status(503).json({ error: 'Database is not configured.' });
-  }
-
+  if (unavailable(res)) return;
   const plan = await getPlanForUser(req.user.id, supabaseAdmin);
-  if (!plan.savedHistory) {
-    logAccessDenied('POST /api/runs', req.user.id, plan);
-    return res.status(403).json({ error: 'Saved history is a Pro plan feature.' });
+  if (!plan.savedHistory) return res.status(403).json({ error: 'Saving new runs requires Pro.' });
+  const id = req.body?.analysisId;
+  if (!validId(id)) return res.status(400).json({ error: 'Choose a current analysis to save.' });
+  const existing = await ownedRun(req.user.id, id, metadataColumns);
+  if (existing.error) throw new Error('Failed reading the saved run.');
+  if (existing.data) return res.json(existing.data);
+
+  const result = await read(req.user.id, id);
+  if (!result || result.resultsTruncated || result.sourceType !== 'manual') {
+    const duplicate = await ownedRun(req.user.id, id, metadataColumns);
+    if (duplicate.data) return res.json(duplicate.data);
+    return res.status(409).json({ error: 'This analysis is out of date. Analyze the source file again to save it.' });
   }
 
-  const { file_name, part_count, summary_json, results_json, plan_at_upload, source_type, module_key } = req.body || {};
-
-  if (!summary_json || !results_json) {
-    return res.status(400).json({ error: 'summary_json and results_json are required.' });
-  }
-
-  const sourceValid    = source_type === 'sample' || source_type === 'manual';
-  // module_key identifies which product module produced this run.
-  // Defaults to 'inventory' so all existing rows and clients remain unaffected.
-  const resolvedModule = (typeof module_key === 'string' && VALID_MODULES.has(module_key))
-    ? module_key
-    : 'inventory';
-
-  const { data, error } = await supabaseAdmin
-    .from('analysis_runs')
-    .insert({
-      user_id:        req.user.id,
-      file_name:      typeof file_name === 'string' ? file_name.slice(0, 255) : 'unknown',
-      part_count:     Number.isFinite(part_count) ? part_count : 0,
-      summary_json:   summary_json,
-      results_json:   results_json,
-      plan_at_upload: typeof plan_at_upload === 'string' ? plan_at_upload.slice(0, 16) : 'free',
-      source_type:    sourceValid ? source_type : 'manual',
-      module_key:     resolvedModule,
-    })
-    .select('id, uploaded_at, module_key')
-    .single();
-
-  if (error) {
-    console.error('[POST /api/runs]', error.message);
-    return res.status(500).json({ error: 'Failed to save analysis run.' });
-  }
-
-  res.status(201).json(data);
-  } catch (err) {
-    console.error('[POST /api/runs] unhandled:', err.message);
-    if (!res.headersSent) res.status(500).json({ error: 'An unexpected error occurred.' });
-  }
+  const options = {
+    counts: result.summary, thresholds: result.thresholds, topPriority: result.topPriority,
+    analyzedAt: result.analyzedAt, columnAliases: result.columnAliases, columnMapping: result.columnMapping,
+    worksheet: result.worksheet, ruleVersion: result.ruleVersion, inputScope: result.inputScope,
+    missingColumns: result.missingColumns, usagePeriodDays: result.usagePeriodDays, leadTimeUnit: result.leadTimeUnit,
+    duplicateCount: result.duplicateWarnings?.length || 0,
+    coverageBasis: result.coverageBasis, completeness: 'full', sourceFormat: result.sourceFormat,
+  };
+  const { error } = await supabaseAdmin.from('analysis_runs').upsert({
+    id, user_id: req.user.id, file_name: result.fileName, uploaded_at: result.analyzedAt,
+    part_count: result.summary.total, summary_json: options, results_json: result.results,
+    plan_at_upload: result.plan.key, source_type: 'manual', module_key: 'inventory',
+  }, { onConflict: 'id', ignoreDuplicates: true });
+  if (error) throw new Error('Failed saving the analysis.');
+  const saved = await ownedRun(req.user.id, id, metadataColumns);
+  if (saved.error || !saved.data) throw new Error('Failed reading the saved analysis.');
+  forget(req.user.id, id);
+  res.status(201).json(saved.data);
 }
 
-// GET /api/runs — list the authenticated user's saved runs (most recent first)
 async function listRuns(req, res) {
-  try {
-  if (!supabaseAdmin) {
-    return res.status(503).json({ error: 'Database is not configured.' });
+  if (unavailable(res)) return;
+  const page = Number(req.query.page || 1);
+  if (!Number.isInteger(page) || page < 1 || page > 2000) {
+    return res.status(400).json({ error: 'Choose a valid history page.' });
   }
-
-  const plan = await getPlanForUser(req.user.id, supabaseAdmin);
-  if (!plan.savedHistory) {
-    logAccessDenied('GET /api/runs', req.user.id, plan);
-    return res.status(403).json({ error: 'Saved history is a Pro plan feature.' });
-  }
-
-  // Optional ?module= filter so the procurement dashboard can request only its runs.
-  const moduleFilter = req.query.module;
-  let query = supabaseAdmin
-    .from('analysis_runs')
-    .select('id, file_name, uploaded_at, part_count, summary_json, plan_at_upload, source_type, module_key')
-    .eq('user_id', req.user.id);
-
-  if (typeof moduleFilter === 'string' && VALID_MODULES.has(moduleFilter)) {
-    query = query.eq('module_key', moduleFilter);
-  }
-
-  const { data, error } = await query
-    .order('uploaded_at', { ascending: false })
-    .limit(50);
-
-  if (error) {
-    console.error('[GET /api/runs]', error.message);
-    return res.status(500).json({ error: 'Failed to load history.' });
-  }
-
-  res.json(data);
-  } catch (err) {
-    console.error('[GET /api/runs] unhandled:', err.message);
-    if (!res.headersSent) res.status(500).json({ error: 'An unexpected error occurred.' });
-  }
+  const limit = 50;
+  let query = supabaseAdmin.from('analysis_runs').select(metadataColumns).eq('user_id', req.user.id);
+  if (Object.hasOwn(MODULES, req.query.module || '')) query = query.eq('module_key', req.query.module);
+  const { data, error } = await query.order('uploaded_at', { ascending: false })
+    .order('id', { ascending: false }).range((page - 1) * limit, page * limit);
+  if (error) throw new Error('Failed reading saved history.');
+  res.set('X-History-Has-More', String(data.length > limit)).json(data.slice(0, limit));
 }
 
-// GET /api/runs/:id/compare — compare a run against its immediate predecessor.
-// MUST be registered BEFORE getRun so Express matches /compare before :id.
 async function compareRun(req, res) {
-  try {
-  if (!supabaseAdmin) {
-    return res.status(503).json({ error: 'Database is not configured.' });
+  if (unavailable(res)) return;
+  const { id } = req.params;
+  const baselineId = req.query.baseline;
+  if (!validId(id) || (baselineId !== undefined && !validId(baselineId))) {
+    return res.status(404).json({ error: 'Run could not be found.' });
+  }
+  const { data: target, error } = await ownedRun(req.user.id, id);
+  if (error) throw new Error('Failed reading analysis.');
+  if (!target) return res.status(404).json({ error: 'Run could not be found.' });
+  if (!hasFullResults(target)) {
+    return res.json({ hasPrior: false, reason: 'This saved run is incomplete. Reanalyze its source before comparing.' });
   }
 
-  const plan = await getPlanForUser(req.user.id, supabaseAdmin);
-  if (!plan.savedHistory) {
-    logAccessDenied('GET /api/runs/:id/compare', req.user.id, plan);
-    return res.status(403).json({ error: 'Saved history is a Pro plan feature.' });
+  let baseline;
+  if (baselineId) {
+    const named = await ownedRun(req.user.id, baselineId);
+    if (named.error) throw new Error('Failed reading baseline.');
+    if (!named.data) return res.status(404).json({ error: 'Baseline could not be found.' });
+    baseline = named.data;
+  } else {
+    const previous = await supabaseAdmin.from('analysis_runs').select(metadataColumns)
+      .eq('user_id', req.user.id).eq('module_key', target.module_key).eq('source_type', target.source_type)
+      .lt('uploaded_at', target.uploaded_at).order('uploaded_at', { ascending: false }).limit(50);
+    if (previous.error) throw new Error('Failed reading saved baselines.');
+    const compatible = previous.data.find(run => sameBasis(target, run));
+    if (compatible) {
+      const selected = await ownedRun(req.user.id, compatible.id);
+      if (selected.error) throw new Error('Failed reading baseline.');
+      baseline = selected.data;
+    }
   }
 
-  // Load the target run
-  const { data: targetRun, error: e1 } = await supabaseAdmin
-    .from('analysis_runs')
-    .select('id, uploaded_at, results_json')
-    .eq('id', req.params.id)
-    .eq('user_id', req.user.id)
-    .single();
-
-  if (e1 || !targetRun) {
-    return res.status(404).json({ error: 'Run not found.' });
+  if (!baseline || baseline.uploaded_at >= target.uploaded_at ||
+    !hasFullResults(baseline) || !sameBasis(target, baseline)) {
+    return res.json({ hasPrior: false, reason: 'No earlier complete run with a matching inventory basis.' });
   }
 
-  // Find the most recent run BEFORE this one for the same user
-  const { data: priorRuns, error: e2 } = await supabaseAdmin
-    .from('analysis_runs')
-    .select('id, uploaded_at, results_json, file_name')
-    .eq('user_id', req.user.id)
-    .lt('uploaded_at', targetRun.uploaded_at)
-    .order('uploaded_at', { ascending: false })
-    .limit(1);
-
-  if (e2) {
-    console.error('[GET /api/runs/:id/compare]', e2.message);
-    return res.status(500).json({ error: 'Failed to load comparison data.' });
-  }
-
-  if (!priorRuns || priorRuns.length === 0) {
-    return res.json({ hasPrior: false });
-  }
-
-  const priorRun    = priorRuns[0];
-  const comparison  = compareRuns(
-    targetRun.results_json || [],
-    priorRun.results_json  || []
-  );
-  comparison.priorRunId      = priorRun.id;
-  comparison.priorUploadedAt = priorRun.uploaded_at;
-  comparison.priorFileName   = priorRun.file_name;
-
-  return res.json(comparison);
-  } catch (err) {
-    console.error('[GET /api/runs/:id/compare] unhandled:', err.message, err.stack);
-    if (!res.headersSent) res.status(500).json({ error: 'An unexpected error occurred.' });
-  }
+  return res.json(Object.assign(compareRuns(target.results_json, baseline.results_json), {
+    priorRunId: baseline.id, priorUploadedAt: baseline.uploaded_at, priorFileName: baseline.file_name,
+  }));
 }
 
-// GET /api/runs/:id — retrieve a single saved run (with full results)
 async function getRun(req, res) {
-  try {
-  if (!supabaseAdmin) {
-    return res.status(503).json({ error: 'Database is not configured.' });
-  }
-
-  const plan = await getPlanForUser(req.user.id, supabaseAdmin);
-  if (!plan.savedHistory) {
-    logAccessDenied('GET /api/runs/:id', req.user.id, plan);
-    return res.status(403).json({ error: 'Saved history is a Pro plan feature.' });
-  }
-
-  const { data, error } = await supabaseAdmin
-    .from('analysis_runs')
-    .select('*')
-    .eq('id', req.params.id)
-    .eq('user_id', req.user.id)
-    .single();
-
-  if (error || !data) {
-    return res.status(404).json({ error: 'Run not found.' });
-  }
-
-  res.json(data);
-  } catch (err) {
-    console.error('[GET /api/runs/:id] unhandled:', err.message);
-    if (!res.headersSent) res.status(500).json({ error: 'An unexpected error occurred.' });
-  }
+  if (unavailable(res)) return;
+  if (!validId(req.params.id)) return res.status(404).json({ error: 'Run could not be found.' });
+  const { data, error } = await ownedRun(req.user.id, req.params.id);
+  if (error) throw new Error('Failed reading analysis.');
+  return data ? res.json({ ...data, completeness: hasFullResults(data) ? 'full' : 'preview' })
+    : res.status(404).json({ error: 'Run could not be found.' });
 }
 
-// DELETE /api/runs/:id — delete a saved run
 async function deleteRun(req, res) {
-  try {
-  if (!supabaseAdmin) {
-    return res.status(503).json({ error: 'Database is not configured.' });
-  }
-
-  const plan = await getPlanForUser(req.user.id, supabaseAdmin);
-  if (!plan.savedHistory) {
-    logAccessDenied('DELETE /api/runs/:id', req.user.id, plan);
-    return res.status(403).json({ error: 'Saved history is a Pro plan feature.' });
-  }
-
-  const { error } = await supabaseAdmin
-    .from('analysis_runs')
-    .delete()
-    .eq('id', req.params.id)
-    .eq('user_id', req.user.id);
-
-  if (error) {
-    console.error('[DELETE /api/runs/:id]', error.message);
-    return res.status(500).json({ error: 'Failed to delete run.' });
-  }
-
+  if (unavailable(res)) return;
+  if (!validId(req.params.id)) return res.status(404).json({ error: 'Run could not be found.' });
+  const { error } = await supabaseAdmin.from('analysis_runs').delete().eq('id', req.params.id).eq('user_id', req.user.id);
+  if (error) throw new Error('Failed deleting analysis.');
+  forget(req.user.id, req.params.id);
   res.status(204).end();
-  } catch (err) {
-    console.error('[DELETE /api/runs/:id] unhandled:', err.message);
-    if (!res.headersSent) res.status(500).json({ error: 'An unexpected error occurred.' });
-  }
 }
 
-module.exports = { createRun, listRuns, compareRun, getRun, deleteRun };
+async function getAnalysis(user, id, saved) {
+  if (!validId(id)) return null;
+  if (!saved) return read(user, id);
+  if (!supabaseAdmin) return null;
+  const { data, error } = await ownedRun(user, id);
+  if (error || !data || data.module_key !== 'inventory' || !hasFullResults(data)) return null;
+  const options = data.summary_json || {};
+  return {
+    results: data.results_json, summary: options.counts || options,
+    thresholds: options.thresholds, topPriority: options.topPriority,
+    analyzedAt: options.analyzedAt || data.uploaded_at, fileName: data.file_name,
+    sourceType: data.source_type, worksheet: options.worksheet, columnMapping: options.columnMapping,
+    ruleVersion: options.ruleVersion, usagePeriodDays: options.usagePeriodDays, leadTimeUnit: options.leadTimeUnit,
+  };
+}
+
+module.exports = { createRun, listRuns, compareRun, getRun, deleteRun, getAnalysis };

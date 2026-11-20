@@ -8,144 +8,126 @@
   var track = App.track;
   var checkoutInFlight = false;
 
-  // ── Comparison CSV export ──────────────────────────────────────────────
+  const element = id => document.getElementById(id);
+  const fields = ['part_number', 'site', 'uom', 'usage_uom', 'supplier', 'description', 'on_hand', 'daily_usage',
+    'lead_time', 'coverage', 'lead_time_gap', 'status', 'severity', 'reason', 'recommended_action', 'source_row'];
 
-  var COMPARISON_SECTIONS = [
-    { key: 'newUrgent',      label: 'New Urgent',      showPrev: false },
-    { key: 'resolvedUrgent', label: 'Resolved Urgent', showPrev: true  },
-    { key: 'worsened',       label: 'Worsened',        showPrev: true  },
-    { key: 'improved',       label: 'Improved',        showPrev: true  },
-    { key: 'added',          label: 'New Parts',       showPrev: false },
-    { key: 'removed',        label: 'Removed Parts',   showPrev: false },
-  ];
-
-  function downloadComparisonCSV(cmp) {
-    var escape = function (val) {
-      var s = (val === null || val === undefined) ? '' : String(val);
-      return /[,"\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-    };
-
-    var header = 'category,part_number,prev_status,curr_status,coverage_days';
-    var lines  = [];
-
-    COMPARISON_SECTIONS.forEach(function (sec) {
-      var items = cmp[sec.key] || [];
-      items.forEach(function (item) {
-        lines.push([
-          escape(sec.label),
-          escape(item.part_number),
-          escape(sec.showPrev ? (item.prev_status || '') : ''),
-          escape(item.status || ''),
-          escape(item.coverage !== null && item.coverage !== undefined ? item.coverage : ''),
-        ].join(','));
-      });
-    });
-
-    var csv  = [header].concat(lines).join('\r\n');
-    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    var url  = URL.createObjectURL(blob);
-    var a    = document.createElement('a');
-    a.href     = url;
-    var dateStr = state.lastResponse && state.lastResponse.analyzedAt
-      ? (function () {
-          var d = new Date(state.lastResponse.analyzedAt);
-          return d.getFullYear() + '-' +
-            String(d.getMonth() + 1).padStart(2, '0') + '-' +
-            String(d.getDate()).padStart(2, '0');
-        })()
-      : new Date().toISOString().slice(0, 10);
-    a.download = 'inventory_comparison_' + dateStr + '.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  function csvCell(value) {
+    let text = value == null ? '' : String(value);
+    if (typeof value === 'string' && /^(?:[\s\uFEFF]*[=+@-]|[\t\r\n])/.test(text)) text = "'" + text;
+    return /[,"\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
   }
 
-  if (dom.comparisonExportBtn) {
-    dom.comparisonExportBtn.addEventListener('click', function () {
-      var cmp = state.lastComparison;
-      if (!cmp) return;
-      track('export_comparison_csv_clicked', {
-        new_urgent: (cmp.newUrgent || []).length,
-        worsened:   (cmp.worsened  || []).length,
-      });
-      downloadComparisonCSV(cmp);
-    });
+  function saveBlob(blob, name) {
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = name;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  // ── CSV export ────────────────────────────────────────────────────────────
-
-  var EXPORT_COLUMNS = [
-    'part_number', 'supplier', 'on_hand', 'daily_usage', 'lead_time',
-    'coverage', 'status', 'severity', 'reason', 'recommended_action'
-  ];
-
-  /**
-   * Builds a CSV string from the given rows and triggers a browser download.
-   * Values are quoted and internal quotes are escaped per RFC 4180.
-   */
-  function downloadCSV(rows) {
-    var escape = function (val) {
-      var s = (val === null || val === undefined) ? '' : String(val);
-      // Wrap in quotes if the value contains comma, quote, or newline
-      return /[,"\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-    };
-
-    var header = EXPORT_COLUMNS.join(',');
-    var lines  = rows.map(function (row) {
-      return EXPORT_COLUMNS.map(function (col) { return escape(row[col]); }).join(',');
-    });
-
-    var csv  = [header].concat(lines).join('\r\n');
-    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    var url  = URL.createObjectURL(blob);
-
-    var a = document.createElement('a');
-    a.href     = url;
-    // Use the server-side analyzedAt timestamp (local date) for the filename
-    // so the export matches the analysis date shown in the report.
-    // Falls back to the current local date only if analyzedAt is unavailable.
-    var exportDateStr = state.lastResponse && state.lastResponse.analyzedAt
-      ? (function () {
-          var d = new Date(state.lastResponse.analyzedAt);
-          var y = d.getFullYear();
-          var m = String(d.getMonth() + 1).padStart(2, '0');
-          var day = String(d.getDate()).padStart(2, '0');
-          return y + '-' + m + '-' + day;
-        })()
-      : new Date().toISOString().slice(0, 10);
-    a.download = 'inventory_triage_' + exportDateStr + '.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  function downloadCsv(header, rows, name) {
+    const lines = [header, ...rows].map(row => row.map(csvCell).join(','));
+    saveBlob(new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }), name);
   }
 
-  // ── Export button ───────────────────────────────────────────────────────────
-  dom.exportBtn.addEventListener('click', function () {
-    if (state.currentPlan && !state.currentPlan.entitlements.csvExport) {
-      if (state.billingConfigured) { startCheckout('results_csv_export'); }
-      else { App.showError('CSV export is available on the Pro plan.'); }
-      return;
-    }
-    var visible = App.resultsRenderer.getFilteredResults();
-    if (visible.length === 0) {
-      App.showError('No rows to export with the current filter selection.');
-      return;
-    }
-    track('export_csv_clicked', { row_count: visible.length });
-    downloadCSV(visible);
+  function refreshExportOptions() {
+    const plan = state.currentPlan?.entitlements || state.lastResponse?.plan?.entitlements;
+    element('inventoryExports').classList.toggle('hidden', !plan?.csvExport);
+    element('inventoryPlanLink').classList.toggle('hidden', !!plan?.csvExport);
+    if (!plan?.csvExport) element('inventoryExports').open = false;
+    if (dom.comparisonExportBtn) dom.comparisonExportBtn.disabled = !plan?.csvExport;
+  }
+
+  function allowed() {
+    return Boolean((state.currentPlan?.entitlements || state.lastResponse?.plan?.entitlements)?.csvExport);
+  }
+
+  function exportRows(rows, scope) {
+    if (!allowed() || !rows.length) return;
+    const run = state.lastResponse;
+    const header = [...fields, 'source_file', 'worksheet', 'analyzed_at', 'source_type', 'export_scope', 'run_rows', 'rule_version',
+      'column_mapping', 'usage_period_days', 'lead_time_unit'];
+    const mapping = JSON.stringify(run.columnMapping || {});
+    downloadCsv(header, rows.map(row => [...fields.map(field => field === 'coverage' ?
+      (row.coverage_raw ?? row.coverage) : row[field]), run.fileName, run.worksheet, run.analyzedAt,
+      run.sourceType, scope, run.summary.total, run.ruleVersion, mapping, run.usagePeriodDays, run.leadTimeUnit]),
+    'inventory-' + scope + '.csv');
+    element('inventoryExports').open = false;
+  }
+
+  dom.exportBtn.addEventListener('click', () => exportRows(App.resultsRenderer.getFilteredResults(), 'filtered'));
+  element('exportFullBtn').addEventListener('click', () => {
+    if (!state.lastResponse?.resultsTruncated) exportRows(state.allResults, 'full');
+  });
+  dom.comparisonExportBtn.addEventListener('click', () => {
+    if (!allowed() || !state.lastComparison) return;
+    const labels = ['newUrgent', 'resolvedUrgent', 'worsened', 'improved', 'added', 'removed', 'couldNotVerify'];
+    const rows = labels.flatMap(key => (state.lastComparison[key] || []).map(row =>
+      [key, row.part_number, row.site, row.uom, row.prev_status, row.status, row.coverage, row.reason]));
+    downloadCsv(['category', 'part_number', 'site', 'uom', 'previous_status', 'status', 'coverage', 'reason'],
+      rows, 'inventory-comparison.csv');
   });
 
-  // ── PDF download ──────────────────────────────────────────────────────────
-  // Uses the browser's built-in print engine with the @media print stylesheet.
-  // User selects 'Save as PDF' in the print dialog.
-  dom.pdfBtn.addEventListener('click', function () {
-    if (state.currentPlan && !state.currentPlan.entitlements.pdfExport) {
-      if (state.billingConfigured) { startCheckout('results_pdf_export'); }
-      else { App.showError('PDF export is available on the Pro plan.'); }
-      return;
+  element('exportWorkbookBtn').addEventListener('click', async event => {
+    const button = event.currentTarget;
+    const run = state.lastResponse;
+    if (!allowed() || !run) return;
+    button.disabled = true;
+    try {
+      const token = await window.authModule.getToken();
+      const indices = new Map(run.results.map((row, index) => [row, String(index + 1)]));
+      const rowIds = App.resultsRenderer.getFilteredResults().map(row => row.row_id || indices.get(row));
+      const response = await fetch('/api/inventory/export.xlsx', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ analysisId: run.savedRunId || run.analysisId, saved: Boolean(run.savedRunId), rowIds }),
+      });
+      if (!response.ok) throw new Error((await response.json()).error || 'Could not export the workbook.');
+      saveBlob(await response.blob(), 'inventory-filtered.xlsx');
+      element('inventoryExports').open = false;
+    } catch (error) { App.showError(error.message); }
+    finally { button.disabled = false; }
+  });
+
+  dom.pdfBtn.addEventListener('click', () => {
+    if (!allowed()) return;
+    const run = state.lastResponse;
+    const rows = App.resultsRenderer.getFilteredResults();
+    const report = element('inventoryPrintReport');
+    const heading = document.createElement('h1');
+    heading.textContent = 'Inventory triage report';
+    const subheading = document.createElement('p');
+    subheading.textContent = [run.fileName, run.worksheet, run.analyzedAt, (run.sourceType === 'sample' ? 'Sample' : 'Customer analysis'),
+      'Filtered view: ' + rows.length + ' of ' + run.summary.total + ' rows'].filter(Boolean).join(' · ');
+    const table = document.createElement('table');
+    const columns = ['part_number', 'site', 'on_hand', 'daily_usage', 'lead_time', 'coverage', 'status', 'recommended_action'];
+    const titles = ['Part', 'Site', 'On hand', 'Daily usage', 'Lead days', 'Coverage days', 'Status', 'Next check'];
+    const header = table.createTHead().insertRow();
+    for (const title of titles) {
+      const th = document.createElement('th');
+      th.scope = 'col';
+      th.textContent = title;
+      header.append(th);
     }
+    const body = table.createTBody();
+    for (const row of rows) {
+      const tr = body.insertRow();
+      for (const field of columns) tr.insertCell().textContent =
+        (field === 'coverage' ? (row.coverage_raw ?? row.coverage) : row[field]) ?? '';
+    }
+    const source = document.createElement('p');
+    source.textContent = element('inventoryMappingSummary').textContent;
+    report.replaceChildren(heading, subheading, source, table);
+    report.hidden = false;
+    document.body.classList.add('print-inventory');
+    window.addEventListener('afterprint', () => {
+      document.body.classList.remove('print-inventory');
+      report.hidden = true;
+      report.replaceChildren();
+    }, { once: true });
     track('print_clicked');
     window.print();
   });
@@ -256,98 +238,44 @@
 
   // ── Plan UI ───────────────────────────────────────────────────────────────
 
+  let billingChecks = 0;
+  let billingCheckTimer;
+  function showBillingReturn(plan) {
+    const params = new URLSearchParams(location.search);
+    const result = params.get('billing');
+    if (!result) return;
+    const status = element('billingReturnStatus');
+    status.classList.remove('hidden');
+    clearTimeout(billingCheckTimer);
+    if (result === 'success' && plan.plan !== 'pro') {
+      status.textContent = 'Checkout returned. Waiting for your subscription to be confirmed.';
+      if (billingChecks++ < 5) billingCheckTimer = setTimeout(fetchPlan, 2000);
+      return;
+    }
+    status.textContent = result === 'success' ? 'Your Pro plan is active.' : 'Checkout was cancelled.';
+    params.delete('billing');
+    history.replaceState(null, '', location.pathname + (params.size ? '?' + params.toString() : ''));
+  }
+
   function applyPlanToUI(planData) {
     state.currentPlan = planData;
     state.billingConfigured = !!planData.billingConfigured;
 
-    var isAdmin = state.currentProfile && state.currentProfile.is_admin === true;
-
-    if (dom.planBadge) {
-      var isPro = planData.plan === 'pro' || isAdmin;
-      dom.planBadge.textContent = isPro ? 'Pro' : 'Free';
-      dom.planBadge.className   = isPro ? 'plan-badge plan-badge-pro' : 'plan-badge plan-badge-free';
-    }
-
-    if (!planData.entitlements.csvExport && !isAdmin) {
-      dom.exportBtn.classList.add('locked');
-      dom.exportBtn.setAttribute('title', 'Pro feature ($49/mo): full CSV export for every part');
-      if (dom.exportUpgrade) {
-        while (dom.exportUpgrade.firstChild) dom.exportUpgrade.removeChild(dom.exportUpgrade.firstChild);
-        dom.exportUpgrade.classList.remove('hidden');
-        var csvLabel = document.createElement('span');
-        csvLabel.className = 'upgrade-callout-label';
-        csvLabel.textContent = 'Pro';
-        dom.exportUpgrade.appendChild(csvLabel);
-        if (state.billingConfigured) {
-          var csvBtn = document.createElement('button');
-          csvBtn.type = 'button';
-          csvBtn.className = 'upgrade-callout-btn';
-          csvBtn.setAttribute('data-upgrade', '');
-          csvBtn.setAttribute('data-upgrade-source', 'results_csv_export');
-          csvBtn.textContent = 'Export Full Triage as CSV \u2192';
-          dom.exportUpgrade.appendChild(csvBtn);
-        }
-      }
-    } else {
-      dom.exportBtn.classList.remove('locked');
-      dom.exportBtn.removeAttribute('title');
-      if (dom.exportUpgrade) dom.exportUpgrade.classList.add('hidden');
-    }
-
-    if (!planData.entitlements.pdfExport && !isAdmin) {
-      dom.pdfBtn.classList.add('locked');
-      dom.pdfBtn.setAttribute('title', 'Pro feature ($49/mo): print-ready PDF triage report');
-      if (dom.pdfUpgrade) {
-        while (dom.pdfUpgrade.firstChild) dom.pdfUpgrade.removeChild(dom.pdfUpgrade.firstChild);
-        dom.pdfUpgrade.classList.remove('hidden');
-        var pdfLabel = document.createElement('span');
-        pdfLabel.className = 'upgrade-callout-label';
-        pdfLabel.textContent = 'Pro';
-        dom.pdfUpgrade.appendChild(pdfLabel);
-        if (state.billingConfigured) {
-          var pdfBtn2 = document.createElement('button');
-          pdfBtn2.type = 'button';
-          pdfBtn2.className = 'upgrade-callout-btn';
-          pdfBtn2.setAttribute('data-upgrade', '');
-          pdfBtn2.setAttribute('data-upgrade-source', 'results_pdf_export');
-          pdfBtn2.textContent = 'Export Triage Report as PDF \u2192';
-          dom.pdfUpgrade.appendChild(pdfBtn2);
-        }
-      }
-    } else {
-      dom.pdfBtn.classList.remove('locked');
-      dom.pdfBtn.removeAttribute('title');
-      if (dom.pdfUpgrade) dom.pdfUpgrade.classList.add('hidden');
-    }
-
-    // Show/hide upgrade button (free plan only, when billing is configured; hidden for admins)
-    if (dom.upgradeToProBtn) {
-      if (state.billingConfigured && planData.plan !== 'pro' && !isAdmin) {
-        dom.upgradeToProBtn.classList.remove('hidden');
-      } else {
-        dom.upgradeToProBtn.classList.add('hidden');
-      }
-    }
-
-    // Show/hide manage-billing button
-    if (dom.manageBillingBtn) {
-      if (state.billingConfigured && state.currentUser && planData.plan === 'pro') {
-        dom.manageBillingBtn.classList.remove('hidden');
-      } else {
-        dom.manageBillingBtn.classList.add('hidden');
-      }
-    }
-
-    // Re-evaluate AI helpers visibility when plan changes
+    dom.planBadge.textContent = planData.name;
+    dom.planBadge.className = 'plan-badge';
+    dom.upgradeToProBtn.classList.toggle('hidden', !state.billingConfigured || planData.plan === 'pro');
+    dom.manageBillingBtn.classList.toggle('hidden', !state.billingConfigured || !state.currentUser || planData.plan !== 'pro');
+    refreshExportOptions();
+    if (!planData.entitlements.savedHistory) dom.saveRunBtn.classList.add('hidden');
     App.aiHelpersUI.showAiHelpersPanel();
-    // Refresh Start Your Day card
-    if (App.startYourDay) App.startYourDay.refresh();
+    showBillingReturn(planData);
     resumePendingCheckout();
   }
 
   // Fetches the plan from the server, optionally with auth token for per-user plans.
   async function fetchPlan() {
     try {
+      const owner = state.currentUser?.id;
       var headers = {};
       if (state.currentUser && window.authModule) {
         var token = await window.authModule.getToken();
@@ -356,12 +284,13 @@
       var res = await fetch('/api/plan', { headers: headers });
       if (!res.ok) return;
       var data = await res.json();
-      applyPlanToUI(data);
+      if (owner === state.currentUser?.id) applyPlanToUI(data);
     } catch (_) { /* fail silently */ }
   }
 
   App.exportManager = {
     startCheckout: startCheckout,
+    refreshExportOptions,
     fetchPlan:     fetchPlan,
   };
 })();

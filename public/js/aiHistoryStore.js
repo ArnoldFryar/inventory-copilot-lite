@@ -2,18 +2,21 @@
 (function () {
   'use strict';
 
-  var STORAGE_KEY = 'opscopilot_ai_history';
+  function storageKey() {
+    const owner = window.App.state.currentUser?.id;
+    return owner ? 'opscopilot:ai-history:' + owner : null;
+  }
   var MAX_ENTRIES = 30;
 
   function _read() {
     try {
-      var raw = localStorage.getItem(STORAGE_KEY);
+      var raw = storageKey() ? localStorage.getItem(storageKey()) : null;
       return raw ? JSON.parse(raw) : [];
     } catch (_) { return []; }
   }
 
   function _write(entries) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); } catch (_) { /* quota */ }
+    try { if (storageKey()) localStorage.setItem(storageKey(), JSON.stringify(entries)); } catch (_) { /* quota */ }
   }
 
   /** Save a new AI draft entry. */
@@ -55,7 +58,7 @@
 
   /** Clear all history. */
   function clearHistory() {
-    localStorage.removeItem(STORAGE_KEY);
+    if (storageKey()) localStorage.removeItem(storageKey());
   }
 
   window.App.aiHistoryStore = {

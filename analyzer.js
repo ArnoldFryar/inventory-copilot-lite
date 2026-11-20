@@ -15,6 +15,12 @@ const {
 
 // Numeric weight used for sorting (lower = surfaces first)
 const SEVERITY_ORDER = { High: 0, Medium: 1, Low: 2 };
+const RULE_VERSION = 'inventory-2';
+
+function formatDays(value) {
+  if (value > 0 && value < 0.1) return '<0.1';
+  return Number(value.toPrecision(12)).toString();
+}
 
 // ---------------------------------------------------------------------------
 // NULL_LIKE
@@ -77,7 +83,7 @@ function safePositiveNumber(raw) {
   const cleaned = unformatted.replace(/^[\$€£¥\s]+|[\s%]+$/g, '');
 
   const n = Number(cleaned);          // handles integers, decimals, "1e2"
-  if (!isFinite(n)) return NaN;       // rejects Infinity, -Infinity, NaN
+  if (!cleaned || !Number.isFinite(n)) return NaN;       // rejects Infinity, -Infinity, NaN
   if (n < 0)        return NaN;       // negative inventory/usage/lead-time is invalid
 
   return n;
@@ -117,21 +123,19 @@ function classifyRow(onHand, dailyUsage, leadTime) {
 
   const rawCoverage  = onHand / dailyUsage;
   const coverage     = +rawCoverage.toFixed(1);
-  // pctRemaining is derived from the rounded coverage value (not rawCoverage)
-  // so that the percentage shown in reason strings is consistent with the
-  // coverage value a reviewer sees in the table.  Classification logic
-  // continues to use rawCoverage for precision.
-  const pctRemaining = Math.round((coverage / leadTime) * 100);
+  const shownCoverage = formatDays(rawCoverage);
+  const gap = leadTime - rawCoverage;
+  const pctRemaining = Number(((rawCoverage / leadTime) * 100).toPrecision(4));
 
   // ── Critical stockout (≤ CRITICAL_RATIO of lead time remaining) ────────
   // Coverage at or below 25 % of lead time — standard replenishment lead time
   // cannot complete before stock runs out.  Line stoppage is imminent.
   if (rawCoverage < leadTime && rawCoverage <= leadTime * CRITICAL_RATIO) {
     return {
-      coverage,
+      coverage, coverage_raw: rawCoverage, lead_time_gap: gap,
       status:             'Urgent Stockout Risk',
       severity:           'High',
-      reason:             `Coverage ${coverage} days — only ${pctRemaining}% of lead time ${leadTime} days remains (critical threshold: ${CRITICAL_RATIO * 100}%)`,
+      reason:             `Coverage ${shownCoverage} days — only ${pctRemaining}% of lead time ${leadTime} days remains (critical threshold: ${CRITICAL_RATIO * 100}%)`,
       recommended_action: 'Escalate immediately — coverage may not last until a standard replenishment order arrives'
     };
   }
@@ -141,22 +145,21 @@ function classifyRow(onHand, dailyUsage, leadTime) {
   // At 50 % you are already consuming the "emergency" window.
   if (rawCoverage < leadTime && rawCoverage <= leadTime * URGENT_RATIO) {
     return {
-      coverage,
+      coverage, coverage_raw: rawCoverage, lead_time_gap: gap,
       status:             'Urgent Stockout Risk',
       severity:           'High',
-      reason:             `Coverage ${coverage} days is critically below lead time ${leadTime} days — only ${pctRemaining}% of lead time remains`,
+      reason:             `Coverage ${shownCoverage} days is critically below lead time ${leadTime} days — only ${pctRemaining}% of lead time remains`,
       recommended_action: 'Expedite immediately — coverage is within emergency window'
     };
   }
 
   // ── Standard stockout ─────────────────────────────────────────────────
   if (rawCoverage < leadTime) {
-    const gap = (leadTime - coverage).toFixed(1);
     return {
-      coverage,
+      coverage, coverage_raw: rawCoverage, lead_time_gap: gap,
       status:             'Stockout Risk',
       severity:           'Medium',
-      reason:             `Coverage ${coverage} days — ${gap} days short of lead time (${leadTime} days)`,
+      reason:             `Coverage ${shownCoverage} days — ${formatDays(gap)} days short of lead time (${leadTime} days)`,
       recommended_action: 'Review open POs and expedite if needed'
     };
   }
@@ -169,10 +172,10 @@ function classifyRow(onHand, dailyUsage, leadTime) {
   // belongs in the priority panel alongside active supply risks.
   if (rawCoverage > leadTime * DEAD_STOCK_RATIO) {
     return {
-      coverage,
+      coverage, coverage_raw: rawCoverage, lead_time_gap: gap,
       status:             'Potential Dead Stock',
       severity:           'Medium',
-      reason:             `Coverage ${coverage} days — more than ${DEAD_STOCK_RATIO}\u00d7 lead time of ${leadTime} days`,
+      reason:             `Coverage ${shownCoverage} days — more than ${DEAD_STOCK_RATIO}\u00d7 lead time of ${leadTime} days`,
       recommended_action: 'Evaluate for disposition — possible obsolete or severely over-procured part'
     };
   }
@@ -182,20 +185,20 @@ function classifyRow(onHand, dailyUsage, leadTime) {
   // windows in stock suggests over-procurement or reduced demand.
   if (rawCoverage > leadTime * EXCESS_RATIO) {
     return {
-      coverage,
+      coverage, coverage_raw: rawCoverage, lead_time_gap: gap,
       status:             'Excess Inventory',
       severity:           'Low',
-      reason:             `Coverage ${coverage} days — more than ${EXCESS_RATIO}\u00d7 lead time of ${leadTime} days`,
+      reason:             `Coverage ${shownCoverage} days — more than ${EXCESS_RATIO}\u00d7 lead time of ${leadTime} days`,
       recommended_action: 'Review excess for demand pull-in, return to supplier, or reallocation'
     };
   }
 
   // ── Healthy ───────────────────────────────────────────────────────────
   return {
-    coverage,
+    coverage, coverage_raw: rawCoverage, lead_time_gap: gap,
     status:             'Healthy',
     severity:           'Low',
-    reason:             `Coverage ${coverage} days — adequately stocked against lead time of ${leadTime} days`,
+    reason:             `Coverage ${shownCoverage} days — adequately stocked against lead time of ${leadTime} days`,
     recommended_action: 'No action required'
   };
 }
@@ -223,75 +226,65 @@ function classifyRow(onHand, dailyUsage, leadTime) {
 //    recommended_action : string
 //  }
 // ---------------------------------------------------------------------------
-function analyzeRow(row, fieldMap) {
-  // Use the pre-resolved mapping to extract values by canonical name.
-  // fieldMap[canonical] is the exact raw header key in this CSV.
-  const get = (canonical) => {
-    const key = fieldMap[canonical];
-    return key !== undefined ? row[key] : undefined;
+function analyzeRow(row, fieldMap, options, sourceRow) {
+  const get = field => fieldMap[field] === undefined ? undefined : row[fieldMap[field]];
+  const text = field => String(get(field) ?? '').trim();
+  const part = text('part_number');
+  const onHand = safePositiveNumber(get('on_hand'));
+  const usage = safePositiveNumber(get('daily_usage')) / (options.usagePeriodDays || 1);
+  const lead = safePositiveNumber(get('lead_time')) * (options.leadTimeUnit === 'calendar_weeks' ? 7 : 1);
+  const unit = text('uom');
+  const usageUnit = text('usage_uom');
+  const rowData = {
+    row_id: String(sourceRow),
+    source_row: sourceRow,
+    part_number: part || '(no part number)',
+    supplier: text('supplier'),
+    site: text('site'),
+    uom: unit || usageUnit,
+    usage_uom: usageUnit,
+    description: text('description'),
+    on_hand: Number.isFinite(onHand) ? onHand : null,
+    daily_usage: Number.isFinite(usage) ? usage : null,
+    lead_time: Number.isFinite(lead) ? lead : null,
   };
 
-  const rawPartNumber = get('part_number');
-  const rawOnHand     = get('on_hand');
-  const rawDailyUsage = get('daily_usage');
-  const rawLeadTime   = get('lead_time');
-  const rawSupplier   = get('supplier');
+  const issues = [];
+  if (!part) issues.push('Part number is missing');
+  if (!Number.isFinite(onHand)) issues.push(/^[-−]\s*\d/.test(text('on_hand')) ?
+    'On-hand quantity is negative' : 'On-hand quantity is missing or invalid');
+  if (!Number.isFinite(usage)) issues.push('Daily usage is missing or invalid');
+  if (!Number.isFinite(lead) || lead === 0 || /work(?:ing)?[ -]?days?|business[ -]?days?/i.test(text('lead_time')) ||
+      (options.leadTimeUnit === 'calendar_weeks' ? /days?/i : /weeks?/i).test(text('lead_time'))) {
+    issues.push('Lead time must be greater than zero and use the confirmed calendar basis');
+  }
+  const mixedUnits = unit && usageUnit && normalizeUnit(unit) !== normalizeUnit(usageUnit);
+  if (mixedUnits) issues.push('On-hand and usage units differ');
 
-  const partNumber = (rawPartNumber !== null && rawPartNumber !== undefined)
-    ? String(rawPartNumber).trim()
-    : '';
-  const label = partNumber || '(no part number)';
-
-  const supplier = (rawSupplier !== null && rawSupplier !== undefined)
-    ? String(rawSupplier).trim()
-    : '';
-
-  const onHand     = safePositiveNumber(rawOnHand);
-  const dailyUsage = safePositiveNumber(rawDailyUsage);
-  const leadTime   = safePositiveNumber(rawLeadTime);
-
-  // ── Invalid row: one or more required numeric fields could not be parsed ──
-  const badFields = [];
-  if (isNaN(onHand))     badFields.push('on_hand');
-  if (isNaN(dailyUsage)) badFields.push('daily_usage');
-  if (isNaN(leadTime))   badFields.push('lead_time');
-  // Zero lead time is a data error — instant-replenishment is not a real
-  // ERP scenario; it means the field was not populated or defaulted to 0.
-  // Coverage-based triage is meaningless without a positive lead time.
-  if (!isNaN(leadTime) && leadTime === 0) badFields.push('lead_time (must be > 0)');
-
-  if (badFields.length > 0) {
-    const FRIENDLY_FIELD_NAMES = {
-      'on_hand':                     'Quantity on Hand',
-      'daily_usage':                 'Daily Usage',
-      'lead_time':                   'Lead Time',
-      'lead_time (must be > 0)':     'Lead Time (must be greater than zero)',
-    };
-    const friendlyBadFields = badFields.map(f => FRIENDLY_FIELD_NAMES[f] || f);
+  const rawCoverage = part && !mixedUnits && Number.isFinite(onHand) && usage > 0 ? onHand / usage : null;
+  if (rawCoverage !== null && !Number.isFinite(rawCoverage)) issues.push('Coverage is outside the supported range');
+  if (issues.length) {
     return {
-      part_number:        label,
-      supplier:           supplier,
-      on_hand:            isNaN(onHand)     ? null : onHand,
-      daily_usage:        isNaN(dailyUsage) ? null : dailyUsage,
-      lead_time:          isNaN(leadTime)   ? null : leadTime,
-      coverage:           null,
-      status:             'Invalid',
-      severity:           'Low',
-      reason:             `Missing or unreadable value for: ${friendlyBadFields.join(', ')}`,
-      recommended_action: 'Check the source data — these fields are missing or contain non-numeric values'
+      ...rowData,
+      coverage: Number.isFinite(rawCoverage) ? +rawCoverage.toFixed(1) : null,
+      coverage_raw: Number.isFinite(rawCoverage) ? rawCoverage : null,
+      lead_time_gap: null,
+      status: 'Invalid',
+      severity: 'Low',
+      reason: issues.join('. '),
+      recommended_action: 'Review the source data or column mapping before assigning a shortage rating',
     };
   }
+  return { ...rowData, ...classifyRow(onHand, usage, lead) };
+}
 
-  const classification = classifyRow(onHand, dailyUsage, leadTime);
+function normalizeUnit(value) {
+  const unit = String(value || '').trim().toUpperCase();
+  return ['EA', 'EACH', 'PC', 'PCS', 'PIECE', 'PIECES'].includes(unit) ? 'EA' : unit;
+}
 
-  return {
-    part_number: label,
-    supplier:    supplier,
-    on_hand:     onHand,
-    daily_usage: dailyUsage,
-    lead_time:   leadTime,
-    ...classification
-  };
+function inventoryKey(row) {
+  return JSON.stringify([row.part_number, String(row.site || '').trim().toUpperCase(), normalizeUnit(row.uom)]);
 }
 
 // ---------------------------------------------------------------------------
@@ -306,11 +299,8 @@ function analyzeRow(row, fieldMap) {
 // Null coverage (Invalid / No Usage Data rows) falls through to Tier 3.
 // ---------------------------------------------------------------------------
 function priorityTierOf(row) {
-  const cov = row.coverage;
-  const lt  = row.lead_time;
-  if (cov !== null && cov !== undefined && cov <= 0) return 1;
-  if (cov !== null && cov !== undefined &&
-      lt  !== null && lt  !== undefined && cov < lt)  return 2;
+  if (row.status === 'Urgent Stockout Risk' && row.on_hand === 0) return 1;
+  if (row.status === 'Urgent Stockout Risk' || row.status === 'Stockout Risk') return 2;
   return 3;
 }
 
@@ -334,35 +324,18 @@ function analyzeRows(rows, preResolved) {
   // validation, it passes the result directly here so we don't duplicate
   // the work.  If called standalone (tests, CLI), we resolve internally.
   const firstKeys = rows.length > 0 ? Object.keys(rows[0]) : [];
-  const { mapping, aliases } = preResolved || resolveHeaders(firstKeys);
-
-  if (Object.keys(aliases).length > 0) {
-    const notes = Object.entries(aliases)
-      .map(([canonical, raw]) => `${canonical} ← "${raw}"`).join(', ');
-    console.log(`[analyzeRows] column aliases resolved: ${notes}`);
+  const options = preResolved || resolveHeaders(firstKeys);
+  const { mapping, aliases } = options;
+  const results = rows.map((row, index) => analyzeRow(row, mapping, options, options.sourceRows?.[index] || index + 1));
+  const seen = new Set();
+  const duplicate = new Set();
+  for (const row of results) {
+    if (row.part_number === '(no part number)') continue;
+    const key = inventoryKey(row);
+    if (seen.has(key)) duplicate.add(row.part_number);
+    seen.add(key);
   }
-
-  const results = rows.map(row => analyzeRow(row, mapping));
-
-  // ── Duplicate part number detection ─────────────────────────────────
-  // If the same part number appears more than once, both rows are analyzed
-  // independently. The report will look complete but cover the same part
-  // twice. Surface a warning so the user knows to de-duplicate before acting.
-  const seenParts        = new Set();
-  const duplicateWarnings = [];
-  results.forEach(r => {
-    const pn = r.part_number;
-    if (pn && pn !== '(no part number)') {
-      if (seenParts.has(pn)) {
-        if (!duplicateWarnings.includes(pn)) duplicateWarnings.push(pn);
-      } else {
-        seenParts.add(pn);
-      }
-    }
-  });
-  if (duplicateWarnings.length > 0) {
-    console.warn(`[analyzeRows] duplicate part numbers detected: ${duplicateWarnings.join(', ')}`);
-  }
+  const duplicateWarnings = [...duplicate];
 
   // Sort: Tier 1 (active stockouts) before Tier 2 (imminent risks) before
   // Tier 3 (everything else).
@@ -376,11 +349,11 @@ function analyzeRows(rows, preResolved) {
     const tA = priorityTierOf(a);
     const tB = priorityTierOf(b);
     if (tA !== tB) return tA - tB;
-    const gapA = (a.lead_time != null && a.coverage != null) ? a.lead_time - a.coverage : 0;
-    const gapB = (b.lead_time != null && b.coverage != null) ? b.lead_time - b.coverage : 0;
+    const gapA = a.lead_time_gap ?? 0;
+    const gapB = b.lead_time_gap ?? 0;
     if (gapB !== gapA) return gapB - gapA;  // DESC: larger gap = higher urgency
-    const cA = (a.coverage !== null && a.coverage !== undefined) ? a.coverage : Infinity;
-    const cB = (b.coverage !== null && b.coverage !== undefined) ? b.coverage : Infinity;
+    const cA = a.coverage_raw ?? Infinity;
+    const cB = b.coverage_raw ?? Infinity;
     return cA - cB;  // ASC: lower coverage first
   });
 
@@ -388,6 +361,8 @@ function analyzeRows(rows, preResolved) {
 
   const summary = {
     total:           results.length,
+    zero_on_hand:    count(r => r.on_hand === 0 && r.part_number !== '(no part number)'),
+    scored:          count(r => r.status !== 'Invalid' && r.status !== 'No Usage Data'),
     urgent_stockout: count(r => r.status === 'Urgent Stockout Risk'),
     stockout_risk:   count(r => r.status === 'Stockout Risk'),
     no_usage:        count(r => r.status === 'No Usage Data'),
@@ -429,6 +404,7 @@ function analyzeRows(rows, preResolved) {
     topPriority,
     results,
     analyzedAt:    new Date().toISOString(),
+    ruleVersion: RULE_VERSION,
     // Expose only the five classification thresholds, not the entire cfg module.
     // Sending `cfg` directly would leak any future additions to config.js.
     thresholds: {
@@ -447,4 +423,4 @@ function analyzeRows(rows, preResolved) {
   };
 }
 
-module.exports = { analyzeRows };
+module.exports = { analyzeRows, inventoryKey, normalizeUnit, RULE_VERSION };

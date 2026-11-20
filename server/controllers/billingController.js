@@ -11,6 +11,7 @@
 // ---------------------------------------------------------------------------
 
 const { STRIPE_CONFIG, stripeConfigured, getStripe } = require('../../plans');
+const { hasProAccess } = require('../lib/planAccess');
 const { supabaseAdmin }                               = require('../../supabaseClient');
 
 // Stripe subscription lifecycle event types processed by the webhook.
@@ -49,20 +50,23 @@ async function createCheckoutSession(req, res) {
     // Look up or create a subscription row so we have a Stripe customer ID
     let { data: subRow } = await supabaseAdmin
       .from('user_subscriptions')
-      .select('stripe_customer_id')
+      .select('stripe_customer_id, plan, subscription_status')
       .eq('user_id', userId)
       .single();
 
+    if (hasProAccess({ plan: subRow?.plan, status: subRow?.subscription_status })) {
+      return res.status(409).json({ error: 'Your Pro subscription is active. Manage billing to make changes.' });
+    }
     let customerId = subRow?.stripe_customer_id;
 
     if (!customerId) {
       const customer = await stripe.customers.create({
         email,
         metadata: { supabase_user_id: userId }
-      });
+      }, { idempotencyKey: 'opscopilot-customer-' + userId });
       customerId = customer.id;
 
-      await supabaseAdmin
+      const { error } = await supabaseAdmin
         .from('user_subscriptions')
         .upsert({
           user_id:             userId,
@@ -70,7 +74,8 @@ async function createCheckoutSession(req, res) {
           subscription_status: 'inactive',
           plan:                'free',
           updated_at:          new Date().toISOString()
-        }, { onConflict: 'user_id' });
+        }, { onConflict: 'user_id', ignoreDuplicates: true });
+      if (error) throw new Error('Could not save billing account.');
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -85,9 +90,7 @@ async function createCheckoutSession(req, res) {
 
     res.json({ url: session.url });
   } catch (err) {
-    console.error('[POST /api/billing/checkout] Stripe error:', err.message,
-      '| priceId:', STRIPE_CONFIG.proPriceId || '(not set)',
-      '| userId:', req.user?.id);
+    console.error('[billing] Checkout request failed');
     res.status(500).json({ error: 'Could not create checkout session. Please try again.' });
   }
 }
@@ -133,7 +136,7 @@ async function createPortalSession(req, res) {
 
     res.json({ url: session.url });
   } catch (err) {
-    console.error('[POST /api/billing/portal]', err.message);
+    console.error('[billing] Portal request failed');
     res.status(500).json({ error: 'Could not open billing portal. Please try again.' });
   }
 }
@@ -164,92 +167,49 @@ async function stripeWebhookHandler(req, res) {
     return res.status(400).json({ error: 'Webhook signature verification failed.' });
   }
 
-  // Process subscription lifecycle events
-  if (SUBSCRIPTION_EVENTS.has(event.type)) {
-    try {
-      const obj = event.data.object;
+  if (!SUBSCRIPTION_EVENTS.has(event.type)) return res.json({ received: true });
+  try {
+    const check = await supabaseAdmin.from('stripe_processed_events').select('id').eq('id', event.id).maybeSingle();
+    if (check.error) throw new Error('Could not check billing delivery.');
+    if (check.data) return res.json({ received: true });
 
-      if (event.type === 'checkout.session.completed') {
-        // Session object shape: { customer, subscription, metadata }
-        const userId     = obj.metadata?.user_id || obj.metadata?.supabase_user_id;
-        const customerId = obj.customer;
-        const subId      = obj.subscription;
-
-        if (!userId) {
-          console.warn('[Stripe webhook] checkout.session.completed: no user_id in session metadata');
-        } else {
-          const { error } = await supabaseAdmin
-            .from('user_subscriptions')
-            .upsert({
-              user_id:                userId,
-              stripe_customer_id:     customerId,
-              stripe_subscription_id: subId,
-              subscription_status:    'active',
-              plan:                   'pro',
-              updated_at:             new Date().toISOString()
-            }, { onConflict: 'user_id' });
-
-          if (error) {
-            console.error('[Stripe webhook] checkout upsert error:', error.message);
-          } else {
-            console.log(`[Stripe webhook] checkout.session.completed: user ${userId} → pro/active`);
-            // Log upgrade_completed event
-            supabaseAdmin.from('events').insert({
-              user_id:    userId,
-              event_name: 'upgrade_completed',
-              properties: { plan: 'pro', source: 'stripe_checkout' },
-            }).then(({ error: evErr }) => {
-              if (evErr) console.error('[Stripe webhook] event insert error:', evErr.message);
-            });
-          }
-        }
-      } else {
-        // customer.subscription.created / .updated / .deleted
-        const customerId = obj.customer;
-        const priceId    = obj.items?.data?.[0]?.price?.id || '';
-        const plan       = (priceId === STRIPE_CONFIG.proPriceId) ? 'pro' : 'free';
-        const periodEnd  = obj.current_period_end
-          ? new Date(obj.current_period_end * 1000).toISOString()
-          : null;
-
-        // Prefer user_id from subscription metadata; fall back to DB lookup by customer
-        let userId = obj.metadata?.user_id || obj.metadata?.supabase_user_id;
-        if (!userId) {
-          const { data: existing } = await supabaseAdmin
-            .from('user_subscriptions')
-            .select('user_id')
-            .eq('stripe_customer_id', customerId)
-            .single();
-          userId = existing?.user_id;
-        }
-
-        if (!userId) {
-          console.warn(`[Stripe webhook] ${event.type}: no user found for customer ${customerId}`);
-        } else {
-          const { error } = await supabaseAdmin
-            .from('user_subscriptions')
-            .upsert({
-              user_id:                userId,
-              stripe_customer_id:     customerId,
-              stripe_subscription_id: obj.id,
-              subscription_status:    obj.status,
-              plan,
-              current_period_end:     periodEnd,
-              updated_at:             new Date().toISOString()
-            }, { onConflict: 'user_id' });
-
-          if (error) console.error('[Stripe webhook] upsert error:', error.message);
-          else       console.log(`[Stripe webhook] ${event.type}: user ${userId} → ${plan}/${obj.status}`);
-        }
-      }
-    } catch (dbErr) {
-      console.error('[Stripe webhook] DB error:', dbErr.message);
-      // Still return 200 so Stripe won't retry endlessly
+    const source = event.data.object;
+    if (event.type === 'checkout.session.completed' && source.mode !== 'subscription') {
+      return res.json({ received: true });
     }
-  }
+    const customer = typeof source.customer === 'string' ? source.customer : source.customer?.id;
+    if (!customer) return res.json({ received: true });
+    const account = await supabaseAdmin.from('user_subscriptions').select('user_id')
+      .eq('stripe_customer_id', customer).maybeSingle();
+    if (account.error) throw new Error('Could not find the billing account.');
+    const owner = account.data?.user_id || source.metadata?.user_id || source.metadata?.supabase_user_id;
+    if (!owner) return res.json({ received: true });
 
-  // Acknowledge receipt (Stripe retries on non-2xx)
-  res.json({ received: true });
+    // Read the provider's current state so late or duplicate deliveries do not
+    // overwrite a newer subscription with an old webhook payload.
+    const observedAt = new Date().toISOString();
+    const subscriptions = await stripe.subscriptions.list({
+      customer, status: 'all', limit: 100,
+    }).autoPagingToArray({ limit: 1000 });
+    if (subscriptions.length === 1000) throw new Error('Subscription lookup exceeded its reconciliation limit.');
+    const proSubscriptions = subscriptions.filter(subscription =>
+      subscription.items.data.some(item => item.price.id === STRIPE_CONFIG.proPriceId));
+    const effective = proSubscriptions.find(subscription => hasProAccess({ plan: 'pro', status: subscription.status })) ||
+      proSubscriptions.sort((first, second) => second.created - first.created)[0];
+    const periodEnd = effective?.current_period_end ||
+      effective?.items.data.find(item => item.price.id === STRIPE_CONFIG.proPriceId)?.current_period_end;
+    const { error } = await supabaseAdmin.rpc('record_subscription_event', {
+      p_event_id: event.id, p_observed_at: observedAt, p_user_id: owner,
+      p_customer_id: customer, p_subscription_id: effective?.id || null,
+      p_plan: effective ? 'pro' : 'free', p_status: effective?.status || 'inactive',
+      p_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+    });
+    if (error) throw new Error('Billing state could not be persisted.');
+    return res.json({ received: true });
+  } catch (_) {
+    console.error('[billing] Subscription reconciliation failed');
+    return res.status(503).json({ error: 'Subscription update could not be saved. Retry delivery.' });
+  }
 }
 
 module.exports = { createCheckoutSession, createPortalSession, stripeWebhookHandler };

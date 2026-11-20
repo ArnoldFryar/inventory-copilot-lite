@@ -49,7 +49,7 @@ const ALIASES = {
     'oh',        'qoh',
     'stock',     'stock_qty',   'stock qty',   'current_stock',  'current stock',
     'inventory',
-    'available', 'available_qty', 'available qty',
+    'available', 'available_qty', 'available qty', 'available to promise', 'atp',
     'balance',   'stock_balance', 'stock balance',
     'unrestricted', 'unrestricted stock',   // SAP EWM term
     'on-hand',   'on-hand qty',
@@ -91,6 +91,11 @@ const ALIASES = {
   ],
 
   // ── Optional field — not required for analysis but enriches AI helpers ──
+  site: ['site', 'location', 'warehouse', 'plant', 'warehouse code', 'site code'],
+  uom: ['uom', 'stock uom', 'unit of measure', 'inventory uom', 'base unit'],
+  usage_uom: ['usage uom', 'consumption uom', 'demand uom'],
+  description: ['description', 'item description', 'part description', 'material description'],
+
   supplier: [
     'supplier',
     'supplier_name',  'supplier name',
@@ -161,7 +166,10 @@ function resolveHeaders(rawKeys) {
     }
   }
 
-  return { mapping, aliases, missing };
+  const candidates = Object.fromEntries(Object.entries(ALIASES).map(([key, names]) => [
+    key, rawKeys.filter(header => names.includes(header.trim().toLowerCase())),
+  ]));
+  return { mapping, aliases, missing, candidates };
 }
 
 // ---------------------------------------------------------------------------
@@ -180,4 +188,4 @@ function acceptedNames(canonical) {
   return rest > 0 ? `${list} (+ ${rest} more)` : list;
 }
 
-module.exports = { ALIASES, resolveHeaders, acceptedNames };
+module.exports = { ALIASES, REQUIRED_FIELDS, resolveHeaders, acceptedNames };

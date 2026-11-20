@@ -1,184 +1,254 @@
-/* uploadController.js — file upload, sample-data loading, and live-demo. */
+/* File input, import review, saved mapping, and run replacement. */
 (function () {
   'use strict';
 
-  var App   = window.App;
-  var dom   = App.dom;
-  var state = App.state;
-  var track = App.track;
-  var SAMPLE_BUTTON_LABEL = 'Run sample analysis';
+  const { dom, state, track } = window.App;
+  const App = window.App;
+  const element = id => document.getElementById(id);
+  const panel = element('inventoryMapping');
+  const fields = element('mappingFields');
+  const fieldsByKey = [
+    ['part_number', 'Part number', true], ['on_hand', 'On-hand quantity', true],
+    ['daily_usage', 'Usage'], ['lead_time', 'Lead time'], ['site', 'Site or warehouse'],
+    ['uom', 'On-hand unit'], ['usage_uom', 'Usage unit'], ['supplier', 'Supplier'],
+    ['description', 'Description'],
+  ];
+  let pendingFile;
+  let lastReview;
+  let requestId = 0;
 
-  // ── File selection ────────────────────────────────────────────────────────
-  dom.fileInput.addEventListener('change', function () {
-    var file = dom.fileInput.files[0];
-    if (file) {
-      dom.fileLabel.textContent = file.name;
-      dom.submitBtn.disabled = false;
-      dom.submitBtn.classList.add('is-ready');
-    } else {
-      dom.fileLabel.textContent = 'Choose a CSV or Excel file\u2026';
-      dom.submitBtn.disabled = true;
-      dom.submitBtn.classList.remove('is-ready');
-    }
+  function chooseFile() {
+    element('inventoryUpload').classList.remove('hidden');
+    dom.fileInput.click();
+  }
+
+  function markReplacement() {
+    const previous = Boolean(state.lastResponse);
+    element('previousRunNote').classList.toggle('hidden', !previous);
+    element('inventoryUpload').classList.remove('hidden');
+  }
+
+  function setFile(file) {
+    requestId++;
+    pendingFile = file;
+    lastReview = null;
+    panel.classList.add('hidden');
+    dom.fileLabel.textContent = file ? file.name : '';
+    dom.fileLabel.classList.toggle('hidden', !file);
+    dom.submitBtn.classList.toggle('hidden', !file);
+    dom.submitBtn.disabled = !file;
+    element('reviewInventoryMapping').classList.toggle('hidden', !file);
     App.hideError();
-    App.hideResults();
+    if (file) markReplacement();
+    element('inventoryUploadStatus').textContent = '';
+  }
+
+  element('chooseInventoryFile').addEventListener('click', chooseFile);
+  element('newInventoryAnalysis').addEventListener('click', () => {
+    markReplacement();
+    element('chooseInventoryFile').focus();
+  });
+  dom.fileInput.addEventListener('change', () => setFile(dom.fileInput.files[0]));
+  const uploadSection = element('inventoryUpload');
+  uploadSection.addEventListener('dragover', event => {
+    if (event.dataTransfer.types.includes('Files')) event.preventDefault();
+  });
+  uploadSection.addEventListener('drop', event => {
+    if (!event.dataTransfer.files.length) return;
+    event.preventDefault();
+    setFile(event.dataTransfer.files[0]);
   });
 
-  // ── Form submit ───────────────────────────────────────────────────────────
-  dom.form.addEventListener('submit', async function (event) {
-    event.preventDefault();
-    var priorSource = state.analysisSource;
-    App.hideError();
-    App.hideResults();
-    if (dom.demoBadge) dom.demoBadge.classList.add('hidden');
+  function profileKey() {
+    return state.currentUser?.id ? 'opscopilot:inventory-columns:' + state.currentUser.id : null;
+  }
 
-    var file = dom.fileInput.files[0];
-    if (!file) {
-      App.showError('Please select a CSV or Excel (.xlsx) file before submitting.');
-      return;
-    }
+  function profiles() {
+    try { return profileKey() ? JSON.parse(localStorage.getItem(profileKey()) || '[]') : []; }
+    catch (_) { return []; }
+  }
 
-    // Client-side file-size guard MUST run before the inFlight flag is set.
-    var MAX_MB    = 5;
-    var MAX_BYTES = MAX_MB * 1024 * 1024;
-    if (file.size > MAX_BYTES) {
-      track('upload_failed', { reason: 'file_too_large_client' });
-      App.showError('File is too large. Maximum allowed size is ' + MAX_MB + ' MB.');
-      return;
-    }
+  function compatible(profile, review) {
+    if ((review.worksheet || '') !== (profile.worksheet || '')) return false;
+    if (profile.headerRow !== review.headerRow) return false;
+    if (!Object.values(profile.mapping).filter(Boolean).every(value => review.headers.includes(value))) return false;
+    return !Object.entries(review.candidates).some(([field, candidates]) =>
+      candidates.some(candidate => !profile.headers.includes(candidate) && candidate !== profile.mapping[field]));
+  }
 
-    // Prevent double-submit
-    if (state.inFlight) return;
-    if (priorSource === 'sample') {
-      state.analysisSource = 'sample';
-    } else {
-      state.analysisSource = 'upload';
+  function remember(options) {
+    const key = profileKey();
+    if (!key || !lastReview) return;
+    const candidate = { ...options, headers: lastReview.headers };
+    const previous = profiles().filter(profile => !compatible(profile, lastReview));
+    try { localStorage.setItem(key, JSON.stringify([candidate, ...previous].slice(0, 12))); }
+    catch (_) { element('inventoryUploadStatus').textContent = 'The browser could not remember the mapping.'; }
+  }
+
+  function addOption(select, value, label) {
+    const choice = document.createElement('option');
+    choice.value = value;
+    choice.textContent = label;
+    select.append(choice);
+  }
+
+  function showReview(review, preferred) {
+    lastReview = review;
+    fields.replaceChildren();
+    for (const [key, label, required] of fieldsByKey) {
+      const wrap = document.createElement('label');
+      wrap.textContent = label + (required ? ' (required)' : '');
+      const select = document.createElement('select');
+      select.name = key;
+      addOption(select, '', required ? 'Choose a column' : 'Unavailable');
+      for (const header of review.headers) addOption(select, header, header);
+      if (key in (preferred?.mapping || {})) select.value = preferred.mapping[key];
+      else select.value = review.mapping[key] || '';
+      wrap.append(select);
+      fields.append(wrap);
     }
+    const sheet = element('mappingSheet');
+    sheet.replaceChildren();
+    for (const name of review.worksheets || []) addOption(sheet, name, name);
+    sheet.value = review.worksheet || '';
+    element('mappingSheetField').classList.toggle('hidden', !review.worksheets?.length);
+    element('mappingHeaderRow').value = review.headerRow;
+    element('mappingUsageBasis').value = preferred?.usagePeriodDays > 1 ? 'total' : 'daily';
+    element('mappingUsageDays').value = preferred?.usagePeriodDays > 1 ? preferred.usagePeriodDays : '';
+    element('mappingLeadUnits').value = preferred?.leadTimeUnit || 'calendar_days';
+    element('mappingUsageBasis').dispatchEvent(new Event('change'));
+    element('saveInventoryMappingField').classList.toggle('hidden', !profileKey());
+    const preview = document.createElement('table');
+    const header = preview.createTHead().insertRow();
+    for (const name of review.headers) {
+      const cell = document.createElement('th');
+      cell.scope = 'col';
+      cell.textContent = name;
+      header.append(cell);
+    }
+    const body = preview.createTBody();
+    for (const values of review.examples) {
+      const row = body.insertRow();
+      for (const value of values) row.insertCell().textContent = value;
+    }
+    element('mappingPreview').replaceChildren(preview);
+    panel.classList.remove('hidden');
+    element('mappingTitle').focus();
+  }
+
+  async function analyze(file, options = {}, flags = {}) {
+    if (!file || state.inFlight) return;
+    if (file.size > 5 * 1024 * 1024) return App.showError('The file exceeds the 5 MB upload limit.');
+    const runRequest = ++requestId;
     state.inFlight = true;
+    dom.loadSampleBtn.disabled = true;
+    App.hideError();
     App.setLoading(true);
-    track('upload_started');
-
-    var formData = new FormData();
-    formData.append('csvfile', file);
+    element('inventoryUploadStatus').textContent = flags.inspect ? 'Reading column names…' : 'Analyzing inventory…';
 
     try {
-      var response = await fetch('/upload', { method: 'POST', body: formData });
-
-      var data;
-      try {
-        data = await response.json();
-      } catch (_) {
-        throw new Error('The server returned an unexpected response. Please try again.');
-      }
-
-      if (!response.ok) {
-        var errMsg = (data && data.error) ? data.error : '';
-        track('upload_failed', { reason: App.uploadErrorCategory(response.status, errMsg), http_status: response.status });
-        App.showError(errMsg || 'Server error (' + response.status + ').');
+      const form = new FormData();
+      form.append('csvfile', file);
+      if (options.mapping) form.append('mapping', JSON.stringify(options.mapping));
+      if (options.worksheet) form.append('worksheet', options.worksheet);
+      if (options.headerRow) form.append('headerRow', options.headerRow);
+      if (options.usagePeriodDays) form.append('usagePeriodDays', options.usagePeriodDays);
+      if (options.leadTimeUnit) form.append('leadTimeUnit', options.leadTimeUnit);
+      if (flags.inspect) form.append('inspect', 'true');
+      if (flags.sample) form.append('sample', 'true');
+      const token = await window.authModule?.getToken();
+      const response = await fetch('/upload', {
+        method: 'POST', body: form,
+        headers: token ? { Authorization: 'Bearer ' + token } : {},
+      });
+      const data = await response.json();
+      if (runRequest !== requestId) return;
+      if (data.code === 'mapping_required') {
+        const saved = profiles().find(profile => compatible(profile, data));
+        if (saved && (!flags.inspect || flags.tryProfile)) {
+          state.inFlight = false;
+          return await analyze(file, saved);
+        }
+        if (flags.tryProfile && !data.requiresReview) {
+          state.inFlight = false;
+          return await analyze(file);
+        }
+        showReview(data, saved);
         return;
       }
-
+      if (!response.ok) throw new Error(data.error || 'The file could not be analyzed.');
+      if (flags.remember) remember(options);
+      panel.classList.add('hidden');
+      state.analysisSource = flags.sample ? 'sample' : 'upload';
       App.resultsRenderer.renderAll(data);
-      App.historyManager.autoSaveRun(data);
-      if (App.dailySignal) App.dailySignal.record();
-
-    } catch (err) {
-      track('upload_failed', { reason: 'network_error' });
-      App.showError(err.message || 'A network error occurred. Please check your connection.');
+      uploadSection.classList.add('hidden');
+      element('analysisTitle').focus();
+    } catch (error) {
+      if (runRequest === requestId) {
+        track('upload_failed', { reason: 'analysis_error' });
+        App.showError(error.message || 'The file could not be analyzed.');
+      }
     } finally {
       state.inFlight = false;
+      dom.loadSampleBtn.disabled = false;
       App.setLoading(false);
+      dom.submitBtn.disabled = !pendingFile;
+      element('inventoryUploadStatus').textContent = '';
     }
+  }
+
+  dom.form.addEventListener('submit', event => {
+    event.preventDefault();
+    analyze(pendingFile, {}, profiles().length ? { inspect: true, tryProfile: true } : {});
+  });
+  element('reviewInventoryMapping').addEventListener('click', () => analyze(pendingFile, {}, { inspect: true }));
+  function refreshReview() {
+    const headerRow = element('mappingHeaderRow');
+    if (!headerRow.reportValidity()) return;
+    analyze(pendingFile, { worksheet: element('mappingSheet').value, headerRow: headerRow.value }, { inspect: true });
+  }
+  element('mappingRefresh').addEventListener('click', refreshReview);
+  element('mappingSheet').addEventListener('change', () => {
+    element('mappingHeaderRow').value = '';
+    refreshReview();
+  });
+  element('mappingUsageBasis').addEventListener('change', event => {
+    element('mappingDaysField').classList.toggle('hidden', event.target.value === 'daily');
+  });
+  element('applyInventoryMapping').addEventListener('click', () => {
+    const mapping = Object.fromEntries([...fields.querySelectorAll('select')].map(select => [select.name, select.value]));
+    if (!mapping.part_number || !mapping.on_hand) return App.showError('Map part number and on-hand quantity to continue.');
+    const useTotal = element('mappingUsageBasis').value === 'total';
+    const days = element('mappingUsageDays');
+    if (useTotal && (!days.value || !days.checkValidity())) return App.showError('Enter the number of calendar days covered by the usage column.');
+    const worksheet = element('mappingSheet').value;
+    const headerRow = Number(element('mappingHeaderRow').value);
+    if (worksheet !== (lastReview.worksheet || '') || headerRow !== lastReview.headerRow) {
+      return App.showError('Refresh the preview after changing the worksheet or header row.');
+    }
+    analyze(pendingFile, {
+      mapping, worksheet, headerRow, usagePeriodDays: useTotal ? Number(days.value) : 1,
+      leadTimeUnit: element('mappingLeadUnits').value,
+    }, { remember: !element('saveInventoryMappingField').classList.contains('hidden') && element('saveInventoryMapping').checked });
   });
 
-  // ── Load sample data ──────────────────────────────────────────────────────
-  dom.loadSampleBtn.addEventListener('click', async function () {
-    if (state.inFlight) {
-      App.showError('An upload is already in progress. Please wait for it to complete.');
-      return;
-    }
-    dom.loadSampleBtn.disabled    = true;
-    dom.loadSampleBtn.textContent = 'Loading\u2026';
-    App.hideError();
-
+  dom.loadSampleBtn.addEventListener('click', async () => {
+    if (state.inFlight) return;
+    dom.loadSampleBtn.disabled = true;
     try {
-      var response = await fetch('/sample-data');
+      const response = await fetch('/sample-data');
       if (!response.ok) throw new Error('Could not load the sample file.');
-
-      var blob = await response.blob();
-      var file = new File([blob], 'sample_inventory.csv', { type: 'text/csv' });
-
-      // Programmatically populate the file input
-      var dt = new DataTransfer();
-      dt.items.add(file);
-      dom.fileInput.files = dt.files;
-
-      // Sync the label and submit button state, then auto-submit
-      dom.fileInput.dispatchEvent(new Event('change'));
-      state.analysisSource = 'sample';
+      const file = new File([await response.blob()], 'sample_inventory.csv', { type: 'text/csv' });
       track('sample_loaded');
-      dom.form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-
-    } catch (err) {
-      App.showError(err.message || 'Failed to load sample data.');
-    } finally {
-      dom.loadSampleBtn.disabled    = false;
-      dom.loadSampleBtn.textContent = SAMPLE_BUTTON_LABEL;
-    }
+      await analyze(file, {}, { sample: true });
+    } catch (error) { App.showError(error.message); }
+    finally { dom.loadSampleBtn.disabled = false; }
   });
 
-  // ── Sample CSV download link ──────────────────────────────────────────────
-  var sampleDownloadLink = document.getElementById('sampleDownloadLink');
-  if (sampleDownloadLink) {
-    sampleDownloadLink.addEventListener('click', function () {
-      track('sample_csv_downloaded');
-    });
-  }
-
-  // ── Live demo ─────────────────────────────────────────────────────────────
-  if (dom.liveDemoBtn) {
-    dom.liveDemoBtn.addEventListener('click', async function () {
-      if (state.inFlight) {
-        App.showError('An upload is already in progress. Please wait for it to complete.');
-        return;
-      }
-      state.analysisSource = 'demo';
-      state.inFlight = true;
-      dom.liveDemoBtn.disabled    = true;
-      dom.liveDemoBtn.textContent = 'Loading\u2026';
-      App.hideError();
-      App.hideResults();
-      state.analysisSource = 'demo';
-      if (dom.demoBadge) dom.demoBadge.classList.add('hidden');
-
-      try {
-        var response = await fetch('/api/demo-analysis');
-        if (!response.ok) throw new Error('Could not load the demo analysis.');
-
-        var data = await response.json();
-        if (dom.demoBadge) dom.demoBadge.classList.remove('hidden');
-        track('demo_loaded');
-        App.resultsRenderer.renderAll(data);
-        if (App.dailySignal) App.dailySignal.record();
-      } catch (err) {
-        App.showError(err.message || 'Failed to load demo analysis.');
-      } finally {
-        state.inFlight = false;
-        dom.liveDemoBtn.disabled    = false;
-        dom.liveDemoBtn.textContent = '\u25B6 Try Live Demo';
-      }
-    });
-  }
-
-  if (dom.nextStepUploadBtn) {
-    dom.nextStepUploadBtn.addEventListener('click', function () {
-      var uploadSection = document.querySelector('.upload-section');
-      if (uploadSection) uploadSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      if (dom.fileInput) {
-        window.setTimeout(function () {
-          dom.fileInput.click();
-        }, 180);
-      }
-    });
-  }
+  App.resetInventoryUpload = () => {
+    dom.fileInput.value = '';
+    setFile(null);
+    uploadSection.classList.remove('hidden');
+    element('previousRunNote').classList.add('hidden');
+  };
 })();

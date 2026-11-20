@@ -797,7 +797,7 @@ testAsync('XLSX parser selects the first valid visible sheet and returns CSV-com
     assert.equal(parsed.meta.preambleRowsSkipped, 2);
     assert.deepEqual(parsed.meta.worksheetsAvailable, ['Cover', 'Inventory Data']);
     assert.equal(parsed.rows.length, 1);
-    assert.deepEqual(parsed.rows[0], {
+    assert.deepEqual({ ...parsed.rows[0] }, {
       'Part No': 'MFG-1001',
       'QTY ON HAND': 50,
       'Avg Daily Usage': 5,
@@ -1120,7 +1120,7 @@ test('compareRuns: removed part from prior run', () => {
   const cmp = compareRuns(current, prior);
   assert.equal(cmp.removed.length, 1);
   assert.equal(cmp.removed[0].part_number, 'D2');
-  assert.equal(cmp.resolvedUrgent.length, 1, 'removed urgent part should count as resolved');
+  assert.equal(cmp.resolvedUrgent.length, 0, 'a missing row does not confirm recovery');
 });
 
 test('compareRuns: mixed scenario — worsened + improved + unchanged', () => {
@@ -1247,13 +1247,13 @@ test('compareRuns: no changes produces stable sentence', () => {
   assert.equal(cmp.unchanged, 1);
 });
 
-test('STATUS_RISK ordering: Urgent < Stockout < Dead Stock < No Usage < Excess < Invalid < Healthy', () => {
+test('STATUS_RISK orders scored rows and excludes unverified rows', () => {
   assert.ok(STATUS_RISK['Urgent Stockout Risk'] < STATUS_RISK['Stockout Risk']);
   assert.ok(STATUS_RISK['Stockout Risk'] < STATUS_RISK['Potential Dead Stock']);
-  assert.ok(STATUS_RISK['Potential Dead Stock'] < STATUS_RISK['No Usage Data']);
-  assert.ok(STATUS_RISK['No Usage Data'] < STATUS_RISK['Excess Inventory']);
-  assert.ok(STATUS_RISK['Excess Inventory'] < STATUS_RISK['Invalid']);
-  assert.ok(STATUS_RISK['Invalid'] < STATUS_RISK['Healthy']);
+  assert.ok(STATUS_RISK['Potential Dead Stock'] < STATUS_RISK['Excess Inventory']);
+  assert.ok(STATUS_RISK['Excess Inventory'] < STATUS_RISK['Healthy']);
+  assert.equal(STATUS_RISK['No Usage Data'], undefined);
+  assert.equal(STATUS_RISK.Invalid, undefined);
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1687,8 +1687,7 @@ test('AI_HELPER_ERROR log shape has helperType, error, timestamp', () => {
 
 console.log('\n[P43] Comparator: duplicate part_number handling');
 
-test('compareRuns: duplicate part_number uses last occurrence (Map overwrite)', () => {
-  // If a run has duplicate part numbers, the comparator Map uses the last one
+test('compareRuns: duplicate inventory identity is unverified', () => {
   const current = [
     { part_number: 'DUP-1', status: 'Healthy',              severity: 'Low',  coverage: 30 },
     { part_number: 'DUP-1', status: 'Urgent Stockout Risk', severity: 'High', coverage: 0.5 },
@@ -1698,9 +1697,8 @@ test('compareRuns: duplicate part_number uses last occurrence (Map overwrite)', 
   ];
   const cmp = compareRuns(current, prior);
   assert.ok(cmp.hasPrior);
-  // Last occurrence in current is Urgent, prior was Healthy → worsened
-  assert.equal(cmp.worsened.length, 1);
-  assert.equal(cmp.worsened[0].status, 'Urgent Stockout Risk');
+  assert.equal(cmp.worsened.length, 0);
+  assert.equal(cmp.couldNotVerify[0].part_number, 'DUP-1');
 });
 
 console.log('\n[P44] Plan entitlements: inline require in /api/plan');
@@ -1961,7 +1959,7 @@ test('auth and upgrade dialogs use the shared keyboard modal manager', () => {
   assert.ok(stateStore.includes('App.modalManager'));
   assert.ok(stateStore.includes("event.key === 'Escape'"));
   assert.ok(stateStore.includes("event.key !== 'Tab'"));
-  assert.ok(authUI.includes('App.modalManager.open(dom.authModal, dom.authEmail)'));
+  assert.ok(authUI.includes('App.modalManager.open(dom.authModal,'));
   assert.ok(html.includes('aria-labelledby="authModalTitle"'));
   assert.ok(html.includes('aria-labelledby="upgradeModalTitle"'));
 });
@@ -1972,7 +1970,7 @@ test('premium dashboard refresh exposes compact desktop and mobile navigation', 
   const html = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
   const manifest = fs.readFileSync(path.join(__dirname, 'public', 'style.css'), 'utf8');
   assert.ok(html.includes('class="mobile-workspace-nav"'));
-  assert.ok(html.includes('class="hero-output-preview"'));
+  assert.ok(html.includes('id="chooseInventoryFile"'));
   assert.ok(manifest.includes('@import "./styles/premium-refresh.css";'));
 });
 

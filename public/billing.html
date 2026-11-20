@@ -46,7 +46,7 @@
       <p class="billing-value-copy">Pro is built for the repeat cadence: save each baseline, export the review packet, compare the next run, and draft the follow-up your team needs to act.</p>
       <div class="billing-value-grid" aria-label="Pro outcomes">
         <div>
-          <strong>Unlimited triage</strong>
+          <strong>Full results</strong>
           <span>Analyze full ERP exports without the Free row cap.</span>
         </div>
         <div>
@@ -56,6 +56,28 @@
         <div>
           <strong>Trend proof</strong>
           <span>Show new, resolved, improved, and worsened risks.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="billing-card billing-comparison">
+      <h2>Compare plans</h2>
+      <div class="billing-plans-grid">
+        <div class="billing-plan-col billing-plan-col--free">
+          <h3>Free</h3>
+          <ul>
+            <li>Full-file counts with a preview of the first 50 ranked rows</li>
+            <li>CSV and XLSX imports, with column mapping</li>
+            <li>Review parts, coverage, and data gaps</li>
+          </ul>
+        </div>
+        <div class="billing-plan-col billing-plan-col--pro">
+          <h3>Pro <span id="publicPlanPrice" class="billing-plan-price-inline"></span></h3>
+          <ul>
+            <li>Full results up to 50,000 rows and 5 MB</li>
+            <li>CSV, XLSX and print reports</li>
+            <li>Explicit run saves, comparisons and AI drafts</li>
+          </ul>
         </div>
       </div>
     </section>
@@ -94,7 +116,7 @@
       <!-- Section B — Action Buttons -->
       <section class="billing-card billing-actions">
         <button id="upgradeBtn" class="billing-btn billing-btn--primary hidden" type="button">
-          Upgrade to Pro · $49/month
+          Upgrade to Pro
         </button>
         <button id="manageBtn" class="billing-btn billing-btn--secondary hidden" type="button">
           Manage Subscription
@@ -102,32 +124,6 @@
         <p id="actionSpinner" class="billing-action-spinner hidden">Redirecting&hellip;</p>
       </section>
 
-      <!-- Section C — Plan Comparison -->
-      <section class="billing-card billing-comparison">
-        <h2>Compare Plans</h2>
-        <div class="billing-plans-grid">
-          <div class="billing-plan-col billing-plan-col--free">
-            <h3>Free</h3>
-            <ul>
-              <li>Up to 50 parts per analysis</li>
-              <li>Executive Summary &amp; health score</li>
-              <li>Action Required priority panel</li>
-              <li>Leadership narrative</li>
-              <li>No saved history or exports</li>
-            </ul>
-          </div>
-          <div class="billing-plan-col billing-plan-col--pro">
-            <h3>Pro <span class="billing-plan-price-inline">$49<span class="billing-plan-price-period">/mo</span></span></h3>
-            <ul>
-              <li>Unlimited parts per analysis</li>
-              <li>Full results table, CSV &amp; PDF export</li>
-              <li>Saved analysis history</li>
-              <li>Run-over-run comparison</li>
-              <li>AI-powered follow-up drafts grounded in the current run</li>
-            </ul>
-          </div>
-        </div>
-      </section>
 
     </div>
   </main>

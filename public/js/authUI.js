@@ -5,7 +5,21 @@
   var App   = window.App;
   var dom   = App.dom;
   var state = App.state;
-  var DEFAULT_AUTH_HINT = 'Sign in to save every analysis, track trends, and build an audit trail for leadership.';
+  var DEFAULT_AUTH_HINT = 'Sign in to access your saved runs and Pro features.';
+  const forgot = document.getElementById('authForgot');
+  const emailLabel = dom.authForm.querySelector('[for=authEmail]');
+  const passwordLabel = dom.authForm.querySelector('[for=authPassword]');
+  const toggleRow = dom.authToggleBtn.closest('p');
+  const labels = { signin: 'Sign in', signup: 'Create account', reset: 'Send reset link', recovery: 'Update password' };
+
+  function feedback(message, success) {
+    dom.authError.textContent = message;
+    dom.authError.classList.toggle('auth-success', Boolean(success));
+    dom.authError.classList.toggle('hidden', !message);
+    dom.authError.setAttribute('role', success ? 'status' : 'alert');
+    dom.authEmail.setAttribute('aria-describedby', 'authError');
+    dom.authPassword.setAttribute('aria-describedby', 'authError');
+  }
 
   // ── Open auth modal ───────────────────────────────────────────────────────
   dom.signInBtn.addEventListener('click', function () {
@@ -34,28 +48,32 @@
   // ── Toggle between sign in / sign up ──────────────────────────────────────
   dom.authToggleBtn.addEventListener('click', function () {
     setAuthMode(state.authMode === 'signin' ? 'signup' : 'signin');
+    dom.authModalHint.textContent = DEFAULT_AUTH_HINT;
   });
 
   function setAuthMode(mode) {
     state.authMode = mode;
-    if (mode === 'signup') {
-      dom.authModalTitle.textContent = 'Create account';
-      dom.authSubmitBtn.textContent = 'Create account';
-      dom.authToggleText.textContent = 'Already have an account?';
-      dom.authToggleBtn.textContent = 'Sign in';
-      dom.authPassword.setAttribute('autocomplete', 'new-password');
-    } else {
-      dom.authModalTitle.textContent = 'Sign in';
-      dom.authSubmitBtn.textContent = 'Sign in';
-      dom.authToggleText.textContent = 'No account?';
-      dom.authToggleBtn.textContent = 'Create one';
-      dom.authPassword.setAttribute('autocomplete', 'current-password');
-    }
-    if (dom.authModalHint && !dom.authModalHint.getAttribute('data-contextual')) {
-      dom.authModalHint.textContent = DEFAULT_AUTH_HINT;
-    }
-    dom.authError.classList.add('hidden');
+    dom.authModalTitle.textContent = labels[mode];
+    dom.authSubmitBtn.textContent = labels[mode];
+    dom.authToggleText.textContent = mode === 'signin' ? 'No account?' : 'Back to your account';
+    dom.authToggleBtn.textContent = mode === 'signin' ? 'Create one' : 'Sign in';
+    dom.authEmail.required = mode !== 'recovery';
+    dom.authEmail.classList.toggle('hidden', mode === 'recovery');
+    emailLabel.classList.toggle('hidden', mode === 'recovery');
+    dom.authPassword.required = mode !== 'reset';
+    dom.authPassword.classList.toggle('hidden', mode === 'reset');
+    passwordLabel.classList.toggle('hidden', mode === 'reset');
+    forgot.classList.toggle('hidden', mode !== 'signin');
+    toggleRow.classList.toggle('hidden', mode === 'recovery');
+    dom.authPassword.setAttribute('autocomplete', ['signup', 'recovery'].includes(mode) ? 'new-password' : 'current-password');
+    feedback('', false);
   }
+
+  forgot.addEventListener('click', function () {
+    setAuthMode('reset');
+    dom.authModalHint.textContent = 'Enter your account email to receive a password reset link.';
+    dom.authEmail.focus();
+  });
 
   function openAuthModal(mode, options) {
     options = options || {};
@@ -65,29 +83,45 @@
       if (options.hint) dom.authModalHint.setAttribute('data-contextual', 'true');
       else dom.authModalHint.removeAttribute('data-contextual');
     }
-    App.modalManager.open(dom.authModal, dom.authEmail);
+    App.modalManager.open(dom.authModal, mode === 'recovery' ? dom.authPassword : dom.authEmail);
   }
 
   // ── Submit auth form ──────────────────────────────────────────────────────
   dom.authForm.addEventListener('submit', async function (e) {
     e.preventDefault();
-    dom.authError.classList.add('hidden');
+    const mode = state.authMode;
+    feedback('', false);
     dom.authSubmitBtn.disabled = true;
-    dom.authSubmitBtn.textContent = state.authMode === 'signup' ? 'Creating\u2026' : 'Signing in\u2026';
+    dom.authSubmitBtn.textContent = 'Working…';
 
     try {
-      if (state.authMode === 'signup') {
-        await window.authModule.signUp(dom.authEmail.value, dom.authPassword.value);
-      } else {
-        await window.authModule.signIn(dom.authEmail.value, dom.authPassword.value);
+      if (mode === 'reset') {
+        await window.authModule.resetPassword(dom.authEmail.value);
+        feedback('Check your inbox for the password reset link.', true);
+        return;
       }
+      if (mode === 'recovery') {
+        await window.authModule.updatePassword(dom.authPassword.value);
+        closeAuthModal();
+        history.replaceState(null, '', window.location.pathname);
+        return;
+      }
+      if (mode === 'signup') {
+        const result = await window.authModule.signUp(dom.authEmail.value, dom.authPassword.value);
+        if (!result.session) {
+          feedback('Check your inbox to confirm your email and activate your account.', true);
+          return;
+        }
+      } else await window.authModule.signIn(dom.authEmail.value, dom.authPassword.value);
       closeAuthModal();
     } catch (err) {
-      dom.authError.textContent = err.message || 'Authentication failed.';
-      dom.authError.classList.remove('hidden');
+      feedback(err.message || 'Account request failed. Please try again.', false);
     } finally {
       dom.authSubmitBtn.disabled = false;
-      setAuthMode(state.authMode);
+      dom.authSubmitBtn.textContent = labels[state.authMode];
+      if (!dom.authModal.classList.contains('hidden') && !dom.authModal.contains(document.activeElement)) {
+        dom.authSubmitBtn.focus();
+      }
     }
   });
 
@@ -130,20 +164,24 @@
   });
 
   // ── Auth state change handler ─────────────────────────────────────────────
-  function onAuthStateChanged(_event, session) {
+  function onAuthStateChanged(event, session) {
+    const previous = state.currentUser?.id;
     state.currentUser = session?.user || null;
-    if (state.currentUser) {
-      window.authModule.fetchProfile(state.currentUser.id).then(function (profile) {
-        state.currentProfile = profile;
-        if (App.startYourDay) App.startYourDay.refresh();
-      });
-    } else {
-      state.currentProfile = null;
+    if (previous !== state.currentUser?.id) {
+      state.currentPlan = null;
+      if (previous) {
+        App.hideResults();
+        App.resetInventoryUpload?.();
+      }
     }
     updateAccountUI();
-    App.historyManager.refreshHistory();
-    // Re-fetch plan to get per-user subscription state
-    App.exportManager.fetchPlan();
+    if (event === 'PASSWORD_RECOVERY') {
+      openAuthModal('recovery', { hint: 'Choose a new password for your account.' });
+    }
+    if (previous !== state.currentUser?.id || event === 'INITIAL_SESSION') {
+      App.historyManager.refreshHistory();
+      setTimeout(App.exportManager.fetchPlan, 0);
+    }
   }
 
   function getInitial(email) {
@@ -165,10 +203,6 @@
       dom.accountMenu.classList.remove('hidden');
       dom.signInBtn.classList.add('hidden');
       closeAccountDropdown();
-      if (dom.saveRunBtn && state.lastResponse) {
-        var canSaveHistory = state.currentPlan && state.currentPlan.entitlements.savedHistory;
-        if (canSaveHistory) dom.saveRunBtn.classList.remove('hidden');
-      }
     } else {
       dom.accountMenu.classList.add('hidden');
       dom.signInBtn.classList.remove('hidden');

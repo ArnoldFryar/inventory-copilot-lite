@@ -21,11 +21,16 @@ const {
   deleteRun
 }                = require('../controllers/runController');
 
-router.post('/api/runs',            requireAuth, createRun);
-router.get('/api/runs',             requireAuth, listRuns);
+const handle = fn => (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  fn(req, res).catch(next);
+};
+
+router.post('/api/runs',            requireAuth, handle(createRun));
+router.get('/api/runs',             requireAuth, handle(listRuns));
 // /compare MUST be before /:id so Express matches the literal segment first.
-router.get('/api/runs/:id/compare', requireAuth, compareRun);
-router.get('/api/runs/:id',         requireAuth, getRun);
-router.delete('/api/runs/:id',      requireAuth, deleteRun);
+router.get('/api/runs/:id/compare', requireAuth, handle(compareRun));
+router.get('/api/runs/:id',         requireAuth, handle(getRun));
+router.delete('/api/runs/:id',      requireAuth, handle(deleteRun));
 
 module.exports = router;

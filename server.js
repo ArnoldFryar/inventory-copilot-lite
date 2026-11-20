@@ -9,6 +9,7 @@
 // ---------------------------------------------------------------------------
 
 const express = require('express');
+const compression = require('compression');
 const fs      = require('fs');
 const path    = require('path');
 
@@ -45,8 +46,7 @@ app.use((_req, res, next) => {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   }
 
-  // script-src: always allow jsdelivr (Supabase browser SDK loaded from CDN)
-  // and Tailwind Play CDN (used on ops.html marketing page)
+  // The marketing pages load Tailwind and shared assets from CDNs.
   const scriptSrc = "'self' https://cdn.jsdelivr.net https://cdn.tailwindcss.com";
 
   // style-src: always allow inline (used throughout) + Google Fonts stylesheet
@@ -122,6 +122,10 @@ if (process.env.ENABLE_HOST_DIAGNOSTICS === 'true') {
 // ---------------------------------------------------------------------------
 // Static files
 // ---------------------------------------------------------------------------
+app.get('/assets/vendor/supabase.js', (_req, res) => {
+  res.sendFile(path.join(path.dirname(require.resolve('@supabase/supabase-js')), 'umd', 'supabase.js'));
+});
+app.use(compression());
 app.use(express.static(PUBLIC_DIR));
 
 // ---------------------------------------------------------------------------
@@ -144,6 +148,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(require('./server/routes/system'));
 app.use(require('./server/routes/billing'));
 app.use(require('./server/routes/history'));
+app.use(require('./server/routes/inventoryExport'));
 app.use(require('./server/routes/ai'));
 app.use(require('./server/routes/upload'));
 app.use(require('./server/routes/events'));
@@ -154,7 +159,8 @@ app.use(require('./server/routes/pfep'));
 // ---------------------------------------------------------------------------
 // Global error handler for parser errors and errors forwarded by route code.
 // ---------------------------------------------------------------------------
-app.use((err, _req, res, _next) => {
+app.use((err, _req, res, next) => {
+  if (res.headersSent) return next(err);
   if (err && (err.type === 'entity.parse.failed' ||
               (err instanceof SyntaxError && err.status === 400 && 'body' in err))) {
     return res.status(400).json({ error: 'Invalid JSON request body.' });
@@ -164,10 +170,8 @@ app.use((err, _req, res, _next) => {
     return res.status(413).json({ error: 'Request body is too large.' });
   }
 
-  console.error('[Unhandled route error]', err.message || err);
-  if (!res.headersSent) {
-    res.status(500).json({ error: 'An unexpected server error occurred.' });
-  }
+  console.error('[server] Request handler failed');
+  res.status(500).json({ error: 'An unexpected server error occurred.' });
 });
 
 // ---------------------------------------------------------------------------
@@ -209,8 +213,7 @@ if (require.main === module) {
     process.exit(1);
   }
 
-  // Express 4 does not automatically forward rejected async handlers.
-  // Route-level try/catch remains primary; this logs any final escape.
+  // Log a generic signal if a background operation fails.
   process.on('unhandledRejection', (reason) => {
     console.error('[unhandledRejection]', reason);
   });
